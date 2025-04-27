@@ -1,4 +1,4 @@
-import prisma from '../../db/prisma';
+import prisma from '../../database/prisma';
 import { User } from '@prisma/client'; // Importar el tipo User generado
 
 // Tipos para los datos de entrada (pueden moverse a un archivo de tipos)

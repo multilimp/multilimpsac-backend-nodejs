@@ -17,7 +17,6 @@ class Server {
     this.app = express();
 
     this.middlewares();
-    // this.conectarBD(); // Eliminado
     this.rutas();
     this.manejoErroresGlobal();
   }

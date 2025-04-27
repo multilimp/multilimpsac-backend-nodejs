@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import logger from '../../config/logger';
+import logger from '../../../config/logger';
 
 interface HandleErrorParams {
   res: Response;

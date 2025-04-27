@@ -14,7 +14,7 @@
     "paths": {                             // Mapeo de rutas para módulos
       "@/*": ["src/*"],
       "@helpers/*": ["helpers/*"],
-      "@utils/*": ["utils/*"]
+      "@utils/*": ["src/shared/utils/*"]
     }
   },
   "include": ["./**/*.ts"],                // Incluye todos los archivos .ts en el proyecto

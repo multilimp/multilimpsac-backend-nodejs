@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { handleError } from '../../middleware/handleError'; // Ruta corregida
+import { handleError } from '../../shared/middleware/handleError'; // Ruta corregida
 import * as userService from './user.service'; // Importar servicio
 
 export const listUsers = async (req: Request, res: Response) => {
