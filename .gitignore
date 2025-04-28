@@ -2,6 +2,12 @@
 /node_modules
 /prisma-client
 
+# Prisma files
+# Ignore the database file
+
+generated
+
+
 # Environment variables
 .env
 .env.development.local

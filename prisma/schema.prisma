@@ -1,6 +1,6 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "../prisma-client"
+  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -60,15 +60,16 @@ model SaldoProveedor {
   id            Int    @id @default(autoincrement())
   proveedorId   Int
   tipoMovimiento MovimientoProveedor @default(A_FAVOR) // Puede ser "A FAVOR" o "DEBE"
-  monto         Float
+  monto         Decimal
   descripcion   String?
   fecha         DateTime  @default(now())
   activo        Boolean   @default(true)
 
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
 
   proveedor     Proveedor @relation(fields: [proveedorId], references: [id])
+
   @@map("saldos_proveedor")
 }
 
@@ -82,8 +83,8 @@ model CuentaBancariaProveedor {
   moneda       Moneda
   activa       Boolean   @default(true)
 
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
 
   proveedor    Proveedor @relation(fields: [proveedorId], references: [id])
   @@map("cuentas_bancarias_proveedor")
@@ -172,7 +173,7 @@ model Catalogo {
   empresa     Empresa @relation(fields: [empresaId], references: [id])
   ordenesCompra OrdenCompra[] // Relación inversa añadida
 
-  @@map("catalogos_empresa")
+  @@map("catalogos")
 }
 
 model Cotizacion {
@@ -182,7 +183,7 @@ model Cotizacion {
   clienteId         Int    @map("cliente_id")
   contactoClienteId Int?   @map("contacto_cliente_id")
 
-  montoTotal Float    @map("monto_total")
+  montoTotal Decimal    @map("monto_total")
   tipoPago   TipoPago @map("tipo_pago")
   notaPago   String?  @map("nota_pago")
   notaPedido String?  @map("nota_pedido")
@@ -217,8 +218,8 @@ model CotizacionProducto {
   cantidad       Int
   cantidadAlmacen Int?      @map("cantidad_almacen")
   cantidadTotal  Int        @map("cantidad_total")
-  precioUnitario Float      @map("precio_unitario")
-  total          Float
+  precioUnitario Decimal      @map("precio_unitario")
+  total          Decimal
 
   cotizacionId   Int        @map("cotizacion_id")
 
@@ -293,33 +294,39 @@ model OrdenCompra {
   // Relaciones con modelos aún no definidos (añadir estos modelos después)
   // pagosTesoreria       PagoTesoreria[]
 
-  // Eliminar relaciones antiguas si ya no aplican
-  // cotizacionId Int? @map("cotizacion_id")
-  // cotizacion Cotizacion? @relation(fields: [cotizacionId], references: [id])
-  // estado OrdenCompraEstado @default(PENDIENTE)
 
   @@map("ordenes_compra")
   OrdenCompraAgrupada OrdenCompraAgrupada[]
 }
 
+// filepath: c:\Users\HAROLD\Documents\TECSUP\Tesis\template-express\prisma\schema.prisma
+// ...existing code...
 model AgrupacionOrdenCompra {
   id          Int     @id @default(autoincrement())
-  codigoGrupo String     @db.VarChar(255)
+  codigoGrupo String     @map("codigo_grupo") @db.VarChar(255) // Añadido @map
   descripcion String?
   fecha       DateTime   @default(now())
 
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  createdAt   DateTime   @default(now()) @map("created_at") // Auditoría añadida
+  updatedAt   DateTime   @updatedAt @map("updated_at") // Auditoría añadida
 
   ordenesCompra OrdenCompraAgrupada[]
-}
-model OrdenCompraAgrupada {
-  id                   Int    @id @default(autoincrement())
-  agrupacionOrdenCompraId Int
-  ordenCompraId        Int
 
-  agrupacion           AgrupacionOrdenCompra @relation(fields: [agrupacionOrdenCompraId], references: [id])
-  ordenCompra          OrdenCompra            @relation(fields: [ordenCompraId], references: [id])
+  @@map("agrupaciones_orden_compra") // Mapeo añadido
+}
+
+model OrdenCompraAgrupada {
+  id                      Int @id @default(autoincrement())
+  agrupacionOrdenCompraId Int @map("agrupacion_orden_compra_id") // Añadido @map
+  ordenCompraId           Int @map("orden_compra_id") // Añadido @map
+
+  createdAt DateTime @default(now()) @map("created_at") // Auditoría añadida
+  updatedAt DateTime @updatedAt @map("updated_at") // Auditoría añadida
+
+  agrupacion  AgrupacionOrdenCompra @relation(fields: [agrupacionOrdenCompraId], references: [id])
+  ordenCompra OrdenCompra           @relation(fields: [ordenCompraId], references: [id])
+
+  @@map("ordenes_compra_agrupadas")
 }
 
 model OrdenCompraPrivada {
@@ -374,7 +381,7 @@ model OrdenProveedor {
   fechaRecepcion      DateTime? @map("fecha_recepcion")
 
   notaPedido          String?   @map("nota_pedido")
-  totalProveedor      Float?    @map("total_proveedor")
+  totalProveedor      Decimal?    @map("total_proveedor")
   tipoPago            String?   @map("tipo_pago")
   notaPago            String?   @map("nota_pago")
   notaGestionOp       String?   @map("nota_gestion_op")
@@ -416,8 +423,8 @@ model OpProducto {
   cantidad         Int
   cantidadAlmacen  Int?           @map("cantidad_almacen")
   cantidadTotal    Int            @map("cantidad_total")
-  precioUnitario   Float          @map("precio_unitario")
-  total            Float
+  precioUnitario   Decimal          @map("precio_unitario")
+  total            Decimal
 
   ordenProveedorId Int            @map("orden_proveedor_id")
 
@@ -483,7 +490,7 @@ model PagoOrdenProveedor {
   bancoPago        String?   @map("banco_pago") @db.VarChar(255)
   descripcionPago  String?   @map("descripcion_pago")
   archivoPago      String?   @map("archivo_pago") @db.VarChar(255)
-  montoPago        Float?    @map("monto_pago")
+  montoPago        Decimal?   @map("monto_pago") @db.Decimal(10, 4)
   estadoPago       Boolean   @default(false) @map("estado_pago")
   activo           Boolean   @default(true)
   ordenProveedorId Int?      @map("orden_proveedor_id")
@@ -502,7 +509,7 @@ model Producto {
   nombre       String
   descripcion  String?
   unidadMedida String?  @map("unidad_medida")
-  precioBase   Float?   @map("precio_base")
+  precioBase   Decimal? @map("precio_base") @db.Decimal(10, 4)
   estado       Boolean? @default(true)
 
   createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
