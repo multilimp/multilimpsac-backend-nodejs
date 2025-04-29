@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only index.ts",
     "build": "tsc",
+    "generate": "prisma generate",
     "start": "node dist/index.js"
   },
   "author": "Name",

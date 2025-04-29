@@ -3,7 +3,7 @@ import logger from '../../../config/logger';
 
 interface HandleErrorParams {
   res: Response;
-  error: any; // O un tipo de error más específico si lo tienes
+  error?: any; // O un tipo de error más específico si lo tienes
   msg?: string;
   statusCode?: number; // Añadir opción para código de estado personalizado
 }

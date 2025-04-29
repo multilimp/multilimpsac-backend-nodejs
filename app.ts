@@ -4,7 +4,13 @@ import cors from 'cors';
 import helmet from 'helmet';
 
 import logger from './config/logger';
-import userRoutes from '@/modules/user/user.routes';
+
+// routes
+// import userRoutes from './src/modules/user/user.routes';
+import clientRoutes from './src/modules/client/client.routes';
+import providerRoutes from './src/modules/provider/provider.routes';
+import providerBalanceRoutes from './src/modules/providerBalance/providerBalance.routes';
+import providerBankAccountRoutes from './src/modules/providerBankAccount/providerBankAccount.routes';
 
 dotenv.config();
 
@@ -13,7 +19,7 @@ class Server {
   private readonly puerto: string | number;
 
   constructor() {
-    this.puerto = process.env.PORT || 5000;
+    this.puerto = process.env.PORT ?? 5000;
     this.app = express();
 
     this.middlewares();
@@ -40,11 +46,17 @@ class Server {
   }
 
   rutas() {
-    // Corregir el error de tipo dejando que TS infiera los tipos
-    this.app.get('/', (req, res) => res.json({ message: 'BACKEND TS' }));
-    this.app.use('/api/users', userRoutes);
+    this.app.get('/', (req, res) => res.json({ message: 'BACKEND MULTILIMP SAC' }));
+
+    // this.app.use('/api/users', userRoutes);
+    this.app.use('/api/clients', clientRoutes);
+    this.app.use('/api/providers', providerRoutes);
+    this.app.use('/api/provider-balance', providerBalanceRoutes);
+    this.app.use('/api/provider-bank-account', providerBankAccountRoutes);
+
     // Ruta 404 - Debe ir después de todas las demás rutas
-    this.app.use((req, res) => { // Dejar que TS infiera req y res aquí también
+    this.app.use((req, res) => {
+      // Dejar que TS infiera req y res aquí también
       res.status(404).json({ message: 'Ruta no encontrada' });
     });
   }
