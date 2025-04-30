@@ -1,22 +1,22 @@
 {
   "compilerOptions": {
-    "target": "ES2016",                     // Especifica la versión de ECMAScript de destino
-    "module": "CommonJS",                  // Especifica la generación de código de módulo
-    "outDir": "./dist",                    // Redirige la estructura de salida al directorio especificado
-    "rootDir": "./",                       // Especifica el directorio raíz de los archivos de entrada
-    "strict": true,                        // Habilita todas las opciones estrictas de verificación de tipos
-    "esModuleInterop": true,               // Permite la interoperabilidad con módulos CommonJS
-    "skipLibCheck": true,                  // Omite la verificación de tipos de los archivos de declaración
-    "forceConsistentCasingInFileNames": true, // Asegura la consistencia en el uso de mayúsculas y minúsculas en los nombres de archivo
-    "resolveJsonModule": true,             // Permite importar módulos JSON
-    "sourceMap": true,                     // Genera archivos source map para depuración
-    "baseUrl": ".",                        // Directorio base para resolver módulos no relativos
-    "paths": {                             // Mapeo de rutas para módulos
+    "target": "ES2016",
+    "module": "CommonJS",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "sourceMap": true,
+    "baseUrl": ".",
+    "paths": {
       "@/*": ["src/*"],
-      "@helpers/*": ["helpers/*"],
+      "@helpers/*": ["src/shared/helpers/*"],
       "@utils/*": ["src/shared/utils/*"]
     }
   },
-  "include": ["./**/*.ts"],                // Incluye todos los archivos .ts en el proyecto
-  "exclude": ["node_modules", "dist"]      // Excluye los directorios node_modules y dist
+  "include": ["./src/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
 }

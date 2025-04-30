@@ -1,6 +1,6 @@
+
+import { Empresa } from 'generated/prisma';
 import prisma from '../../database/prisma';
-// Cambiar la importación para usar el alias @prisma/client
-import { Empresa } from '@prisma/client';
 
 type CreateCompanyData = Omit<Empresa, 'id' | 'createdAt' | 'updatedAt'>;
 // Incluir logoUrl como campo opcional en UpdateCompanyData

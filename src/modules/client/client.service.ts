@@ -1,8 +1,5 @@
+import { Cliente } from 'generated/prisma';
 import prisma from '../../database/prisma';
-// Cambiar la importación para usar el alias @prisma/client
-import { Cliente } from '@prisma/client';
-
-// import { Cliente } from '../../../generated/prisma'; // Comentar o eliminar la línea anterior
 
 type CreateClientData = Omit<Cliente, 'id' | 'createdAt' | 'updatedAt'>;
 type UpdateClientData = Partial<CreateClientData>;

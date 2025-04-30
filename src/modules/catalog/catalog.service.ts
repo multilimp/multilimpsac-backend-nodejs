@@ -1,5 +1,5 @@
+import { Catalogo } from 'generated/prisma';
 import prisma from '../../database/prisma';
-import { Catalogo } from '@prisma/client';
 
 // Tipos para los datos de entrada
 type CreateCatalogData = Omit<Catalogo, 'id' | 'createdAt' | 'updatedAt'>;

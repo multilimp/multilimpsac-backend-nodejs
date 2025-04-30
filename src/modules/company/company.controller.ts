@@ -2,8 +2,8 @@ import { Request, Response } from 'express';
 import { handleError } from '../../shared/middleware/handleError';
 import * as companyService from './company.service';
 import formidable, { File } from 'formidable';
-import { uploadFileS3 } from '../../shared/services/s3.service'; // Importar el servicio S3
-import logger from '../../../config/logger'; // Importar logger
+import logger from '../../shared/config/logger';
+import { uploadFileR2 } from '@/shared/services/s3.service';
 
 export const listCompanies = async (req: Request, res: Response) => {
   try {
@@ -70,7 +70,7 @@ export const deleteCompany = async (req: Request, res: Response) => {
 };
 
 export const uploadCompanyLogo = async (req: Request, res: Response) => {
-  const form = formidable({ keepExtensions: true, maxFileSize: 5 * 1024 * 1024 }); // Limitar a 5MB
+  const form = formidable({ keepExtensions: true, maxFileSize: 5 * 1024 * 1024 });
 
   form.parse(req, async (err, fields, files) => {
     try {
@@ -84,38 +84,41 @@ export const uploadCompanyLogo = async (req: Request, res: Response) => {
         throw new Error('ID de empresa inválido.');
       }
 
-      // formidable v3 usa 'files.logo' donde 'logo' es el name del input file
-      // Asegúrate que el input file en el frontend tenga name="logo"
-      const logoFile = files.logo; // Type is File | File[] | undefined
+      const logoFiles = files.logo;
+      let logoFile: File | undefined;
 
-      // 1. Check if the file exists
-      if (!logoFile) {
+      if (!logoFiles) {
         throw new Error('No se envió ningún archivo con el nombre "logo".');
       }
 
-      // 2. Check if it's an array (multiple files with same name)
-      if (Array.isArray(logoFile)) {
-        // Handle case where multiple files are uploaded if necessary,
-        // otherwise throw an error if only one is expected.
-        throw new Error('Se esperaba un solo archivo de logo, pero se recibieron múltiples.');
+      if (Array.isArray(logoFiles)) {
+        if (logoFiles.length === 1) {
+          logoFile = logoFiles[0];
+        } else if (logoFiles.length === 0) {
+          throw new Error('No se envió ningún archivo con el nombre "logo".');
+        } else {
+          throw new Error('Se esperaba un solo archivo de logo, pero se recibieron múltiples.');
+        }
+      } else {
+        logoFile = logoFiles;
       }
 
-      // 3. At this point, logoFile is confirmed to be a single File object.
-      // Check if the filepath property exists and is valid.
       if (!logoFile) {
-        throw new Error('El archivo de logo procesado no tiene una ruta (filepath) válida.');
+         // Esta comprobación es redundante debido a la lógica anterior, pero segura.
+         throw new Error('No se pudo determinar el archivo de logo.');
       }
 
-      // Subir el archivo a S3 en la carpeta 'logos-empresa'
-      // Now logoFile is guaranteed to be a File object with a filepath
-      const logoUrl = await uploadFileS3(logoFile, 'logos-empresa');
 
-      // Actualizar la empresa con la nueva URL del logo
-      const updatedCompany = await companyService.updateCompany(companyId, { logoUrl });
+      const logoUrl = await uploadFileR2(logoFile, 'logos-empresa');
+
+      const updatedCompany = await companyService.updateCompany(companyId, { logo: logoUrl }); // Asegúrate que el campo en el servicio sea 'logo' o 'logoUrl' según tu modelo Prisma y servicio
 
       res.status(200).json(updatedCompany);
     } catch (error) {
-      handleError({ res, error, msg: 'Error al subir el logo de la empresa' });
+      logger.error('Error al subir el logo de la empresa:', error);
+      // Asegúrate que el error que pasas a handleError sea una instancia de Error
+      const errorInstance = error instanceof Error ? error : new Error(String(error));
+      handleError({ res, error: errorInstance, msg: 'Error al subir el logo de la empresa' });
     }
   });
 };

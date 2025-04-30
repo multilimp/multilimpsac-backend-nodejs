@@ -25,110 +25,114 @@ model Cliente {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  contactos     Contacto[]
-  cotizaciones  Cotizacion[]
-  ordenesCompra OrdenCompra[]
+  contactos            Contacto[]
+  cotizaciones         Cotizacion[]
+  ordenesCompra        OrdenCompra[]
   ordenesCompraPrivada OrdenCompraPrivada[] // Relación inversa añadida
 
   @@map("clientes")
 }
 
 model Proveedor {
-  id               Int              @id @default(autoincrement())
-  razonSocial      String           @map("razon_social")
-  ruc              String           @unique
-  direccion        String?
-  telefono         String?
-  email            String?
-  estado           Boolean          @default(true)
-  departamento     String?
-  provincia        String?
-  distrito         String?
+  id           Int     @id @default(autoincrement())
+  razonSocial  String  @map("razon_social")
+  ruc          String  @unique
+  direccion    String?
+  telefono     String?
+  email        String?
+  estado       Boolean @default(true)
+  departamento String?
+  provincia    String?
+  distrito     String?
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
   contactos        Contacto[]
   ordenesProveedor OrdenProveedor[]
-  saldosProveedor   SaldoProveedor[]
+  saldosProveedor  SaldoProveedor[]
   cuentasBancarias CuentaBancariaProveedor[]
 
   @@map("proveedores")
 }
 
 model SaldoProveedor {
-  id            Int    @id @default(autoincrement())
-  proveedorId   Int
+  id             Int                 @id @default(autoincrement())
+  proveedorId    Int
   tipoMovimiento MovimientoProveedor @default(A_FAVOR) // Puede ser "A FAVOR" o "DEBE"
-  monto         Decimal
-  descripcion   String?
-  fecha         DateTime  @default(now())
-  activo        Boolean   @default(true)
+  monto          Decimal
+  descripcion    String?
+  fecha          DateTime            @default(now())
+  activo         Boolean             @default(true)
 
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  proveedor     Proveedor @relation(fields: [proveedorId], references: [id])
+  proveedor Proveedor @relation(fields: [proveedorId], references: [id])
 
   @@map("saldos_proveedor")
 }
 
 model CuentaBancariaProveedor {
-  id           Int    @id @default(autoincrement())
+  id           Int        @id @default(autoincrement())
   proveedorId  Int
   banco        String
   numeroCuenta String
   numeroCci    String?
   tipoCuenta   TipoCuenta
   moneda       Moneda
-  activa       Boolean   @default(true)
-
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime  @updatedAt @map("updated_at")
-
-  proveedor    Proveedor @relation(fields: [proveedorId], references: [id])
-  @@map("cuentas_bancarias_proveedor")
-}
-
-
-model Transporte {
-  id          Int        @id @default(autoincrement())
-  razonSocial String     @map("razon_social")
-  ruc         String     @unique
-  direccion   String?
-  telefono    String?
-  email       String?
-  estado      Boolean    @default(true)
+  activa       Boolean    @default(true)
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  contactos   Contacto[]
+  proveedor Proveedor @relation(fields: [proveedorId], references: [id])
+
+  @@map("cuentas_bancarias_proveedor")
+}
+
+model Transporte {
+  id           Int     @id @default(autoincrement())
+  razonSocial  String  @map("razon_social")
+  ruc          String  @unique
+  cobertura    String?
+  departamento String?
+  provincia    String?
+  distrito     String?
+  direccion    String?
+  telefono     String?
+  email        String?
+  estado       Boolean @default(true)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  contactos            Contacto[]
   transportesAsignados TransporteAsignado[]
 
   @@map("transportes")
 }
 
 model Empresa {
-  id            Int           @id @default(autoincrement())
-  razonSocial   String        @map("razon_social")
-  ruc           String        @unique
-  direccion     String?
-  telefono      String?
-  email         String?
-  departamento  String?
-  provincia     String?
-  distrito      String?
-  logo          String?
-  direcciones   String?
-  web           String?
+  id           Int     @id @default(autoincrement())
+  razonSocial  String  @map("razon_social")
+  ruc          String  @unique
+  direccion    String?
+  telefono     String?
+  email        String?
+  departamento String?
+  provincia    String?
+  distrito     String?
+  logo         String?
+  direcciones  String?
+  web          String?
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  catalogos     Catalogo[]
-  cotizaciones  Cotizacion[]
-  ordenesCompra OrdenCompra[]
+  catalogos        Catalogo[]
+  cotizaciones     Cotizacion[]
+  ordenesCompra    OrdenCompra[]
   ordenesProveedor OrdenProveedor[]
 
   @@map("empresas")
@@ -149,13 +153,13 @@ model Contacto {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  cliente      Cliente?     @relation(fields: [clienteId], references: [id])
-  proveedor    Proveedor?   @relation(fields: [proveedorId], references: [id])
-  transporte   Transporte?  @relation(fields: [transporteId], references: [id])
-  Cotizacion   Cotizacion[]
-  ordenesProveedor OrdenProveedor[]
+  cliente              Cliente?             @relation(fields: [clienteId], references: [id])
+  proveedor            Proveedor?           @relation(fields: [proveedorId], references: [id])
+  transporte           Transporte?          @relation(fields: [transporteId], references: [id])
+  Cotizacion           Cotizacion[]
+  ordenesProveedor     OrdenProveedor[]
   transportesAsignados TransporteAsignado[]
-  ordenesCompra OrdenCompra[] // Relación inversa para contactoClienteId
+  ordenesCompra        OrdenCompra[] // Relación inversa para contactoClienteId
   ordenesCompraPrivada OrdenCompraPrivada[] // Relación inversa añadida
 
   @@map("contactos")
@@ -170,7 +174,7 @@ model Catalogo {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  empresa     Empresa @relation(fields: [empresaId], references: [id])
+  empresa       Empresa       @relation(fields: [empresaId], references: [id])
   ordenesCompra OrdenCompra[] // Relación inversa añadida
 
   @@map("catalogos")
@@ -183,7 +187,7 @@ model Cotizacion {
   clienteId         Int    @map("cliente_id")
   contactoClienteId Int?   @map("contacto_cliente_id")
 
-  montoTotal Decimal    @map("monto_total")
+  montoTotal Decimal  @map("monto_total")
   tipoPago   TipoPago @map("tipo_pago")
   notaPago   String?  @map("nota_pago")
   notaPedido String?  @map("nota_pedido")
@@ -205,110 +209,108 @@ model Cotizacion {
   empresa         Empresa   @relation(fields: [empresaId], references: [id])
   contactoCliente Contacto? @relation(fields: [contactoClienteId], references: [id])
 
-  productos     CotizacionProducto[]
+  productos CotizacionProducto[]
 
   @@map("cotizaciones")
 }
 
 model CotizacionProducto {
-  id             Int        @id @default(autoincrement())
-  codigo         String
-  descripcion    String
-  unidadMedida   String?    @map("unidad_medida")
-  cantidad       Int
-  cantidadAlmacen Int?      @map("cantidad_almacen")
-  cantidadTotal  Int        @map("cantidad_total")
-  precioUnitario Decimal      @map("precio_unitario")
-  total          Decimal
+  id              Int     @id @default(autoincrement())
+  codigo          String
+  descripcion     String
+  unidadMedida    String? @map("unidad_medida")
+  cantidad        Int
+  cantidadAlmacen Int?    @map("cantidad_almacen")
+  cantidadTotal   Int     @map("cantidad_total")
+  precioUnitario  Decimal @map("precio_unitario")
+  total           Decimal
 
-  cotizacionId   Int        @map("cotizacion_id")
+  cotizacionId Int @map("cotizacion_id")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  cotizacion     Cotizacion @relation(fields: [cotizacionId], references: [id])
+  cotizacion Cotizacion @relation(fields: [cotizacionId], references: [id])
 
   @@map("cotizacion_productos")
 }
 
-
 model OrdenCompra {
-  id                      Int      @id @default(autoincrement())
-  codigoVenta             String   @unique @map("codigo_venta")
-  fechaEmision            DateTime? @map("fecha_emision") @db.Date
-  archivoOc               String?  @map("archivo_oc")
+  id           Int       @id @default(autoincrement())
+  codigoVenta  String    @unique @map("codigo_venta")
+  fechaEmision DateTime? @map("fecha_emision") @db.Date
+  archivoOc    String?   @map("archivo_oc")
 
   // Relaciones principales
-  empresaId               Int?     @map("empresa_id")
-  clienteId               Int?     @map("cliente_id")
-  contactoClienteId       Int?     @map("contacto_cliente_id")
-  catalogoEmpresaId       Int?     @map("catalogo_empresa_id")
+  empresaId         Int? @map("empresa_id")
+  clienteId         Int? @map("cliente_id")
+  contactoClienteId Int? @map("contacto_cliente_id")
+  catalogoEmpresaId Int? @map("catalogo_empresa_id")
 
   // Ventas
-  ventaPrivada            Boolean  @default(false) @map("venta_privada")
-  provinciaEntrega        String?  @map("provincia_entrega")
-  distritoEntrega         String?  @map("distrito_entrega")
-  departamentoEntrega     String?  @map("departamento_entrega")
-  direccionEntrega        String?  @map("direccion_entrega")
-  referenciaEntrega       String?  @map("referencia_entrega")
-  fechaEntrega            DateTime? @map("fecha_entrega") @db.Date
-  montoVenta              Decimal? @map("monto_venta") @db.Decimal(10, 2)
-  fechaForm               DateTime? @map("fecha_form") @db.Date
-  fechaMaxForm            DateTime? @map("fecha_max_form") @db.Date
-  productos               Json?    // Mapeado desde $table->json('productos')
-  documentoOce            String?  @map("documento_oce")
-  documentoOcf            String?  @map("documento_ocf")
-  siaf                    String?
-  etapaSiaf               String?  @map("etapa_siaf")
-  fechaSiaf               DateTime? @map("fecha_siaf") @db.Date
+  ventaPrivada        Boolean   @default(false) @map("venta_privada")
+  provinciaEntrega    String?   @map("provincia_entrega")
+  distritoEntrega     String?   @map("distrito_entrega")
+  departamentoEntrega String?   @map("departamento_entrega")
+  direccionEntrega    String?   @map("direccion_entrega")
+  referenciaEntrega   String?   @map("referencia_entrega")
+  fechaEntrega        DateTime? @map("fecha_entrega") @db.Date
+  montoVenta          Decimal?  @map("monto_venta") @db.Decimal(10, 2)
+  fechaForm           DateTime? @map("fecha_form") @db.Date
+  fechaMaxForm        DateTime? @map("fecha_max_form") @db.Date
+  productos           Json? // Mapeado desde $table->json('productos')
+  documentoOce        String?   @map("documento_oce")
+  documentoOcf        String?   @map("documento_ocf")
+  siaf                String?
+  etapaSiaf           String?   @map("etapa_siaf")
+  fechaSiaf           DateTime? @map("fecha_siaf") @db.Date
 
   // Seguimiento
-  documentoPeruCompras    String?  @map("documento_peru_compras")
-  fechaPeruCompras        DateTime? @map("fecha_peru_compras") @db.Date
-  fechaEntregaOc          DateTime? @map("fecha_entrega_oc") @db.Date // Campo duplicado? Revisar si es necesario
+  documentoPeruCompras String?   @map("documento_peru_compras")
+  fechaPeruCompras     DateTime? @map("fecha_peru_compras") @db.Date
+  fechaEntregaOc       DateTime? @map("fecha_entrega_oc") @db.Date // Campo duplicado? Revisar si es necesario
 
   // Cobranzas
-  penalidad               Decimal? @db.Decimal(10, 2)
-  netoCobrado             Decimal? @map("neto_cobrado") @db.Decimal(10, 2)
-  estadoCobranza          String?  @map("estado_cobranza")
-  fechaEstadoCobranza     DateTime? @map("fecha_estado_cobranza") @db.Date
-  fechaProximaGestion     DateTime? @map("fecha_proxima_gestion") @db.Date
+  penalidad           Decimal?  @db.Decimal(10, 2)
+  netoCobrado         Decimal?  @map("neto_cobrado") @db.Decimal(10, 2)
+  estadoCobranza      String?   @map("estado_cobranza")
+  fechaEstadoCobranza DateTime? @map("fecha_estado_cobranza") @db.Date
+  fechaProximaGestion DateTime? @map("fecha_proxima_gestion") @db.Date
 
-  etapaActual             String   @default("creacion") @map("etapa_actual")
-  estadoActivo            Boolean  @default(true) @map("estado_activo")
+  etapaActual  String  @default("creacion") @map("etapa_actual")
+  estadoActivo Boolean @default(true) @map("estado_activo")
 
   // Campos de auditoría (ya existentes)
-  createdAt               DateTime @default(now()) @map("created_at")
-  updatedAt               DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relaciones (actualizadas/añadidas)
-  empresa                 Empresa?  @relation(fields: [empresaId], references: [id])
-  cliente                 Cliente?  @relation(fields: [clienteId], references: [id])
-  contactoCliente         Contacto? @relation(fields: [contactoClienteId], references: [id])
-  catalogoEmpresa         Catalogo? @relation(fields: [catalogoEmpresaId], references: [id])
-  ordenesProveedor        OrdenProveedor[]
-  ordenCompraPrivada      OrdenCompraPrivada? // Relación uno a uno
-  facturaciones           Facturacion[] // Relación inversa añadida
-  gestionCobranzas        GestionCobranza[] // Relación inversa añadida
+  empresa            Empresa?            @relation(fields: [empresaId], references: [id])
+  cliente            Cliente?            @relation(fields: [clienteId], references: [id])
+  contactoCliente    Contacto?           @relation(fields: [contactoClienteId], references: [id])
+  catalogoEmpresa    Catalogo?           @relation(fields: [catalogoEmpresaId], references: [id])
+  ordenesProveedor   OrdenProveedor[]
+  ordenCompraPrivada OrdenCompraPrivada? // Relación uno a uno
+  facturaciones      Facturacion[] // Relación inversa añadida
+  gestionCobranzas   GestionCobranza[] // Relación inversa añadida
 
   // Relaciones con modelos aún no definidos (añadir estos modelos después)
   // pagosTesoreria       PagoTesoreria[]
-
+  OrdenCompraAgrupada OrdenCompraAgrupada[]
 
   @@map("ordenes_compra")
-  OrdenCompraAgrupada OrdenCompraAgrupada[]
 }
 
 // filepath: c:\Users\HAROLD\Documents\TECSUP\Tesis\template-express\prisma\schema.prisma
 // ...existing code...
 model AgrupacionOrdenCompra {
-  id          Int     @id @default(autoincrement())
-  codigoGrupo String     @map("codigo_grupo") @db.VarChar(255) // Añadido @map
+  id          Int      @id @default(autoincrement())
+  codigoGrupo String   @map("codigo_grupo") @db.VarChar(255) // Añadido @map
   descripcion String?
-  fecha       DateTime   @default(now())
+  fecha       DateTime @default(now())
 
-  createdAt   DateTime   @default(now()) @map("created_at") // Auditoría añadida
-  updatedAt   DateTime   @updatedAt @map("updated_at") // Auditoría añadida
+  createdAt DateTime @default(now()) @map("created_at") // Auditoría añadida
+  updatedAt DateTime @updatedAt @map("updated_at") // Auditoría añadida
 
   ordenesCompra OrdenCompraAgrupada[]
 
@@ -330,156 +332,156 @@ model OrdenCompraAgrupada {
 }
 
 model OrdenCompraPrivada {
-  id                  Int      @id @default(autoincrement())
-  ordenCompraId       Int      @unique @map("orden_compra_id") // Clave foránea y única para relación 1-1
-  clienteId           Int?     @map("cliente_id")
-  contactoClienteId   Int?     @map("contacto_cliente_id")
-  estadoPago          String?  @map("estado_pago")
-  fechaPago           DateTime? @map("fecha_pago") @db.Date
-  documentoPago       String?  @map("documento_pago")
+  id                Int       @id @default(autoincrement())
+  ordenCompraId     Int       @unique @map("orden_compra_id") // Clave foránea y única para relación 1-1
+  clienteId         Int?      @map("cliente_id")
+  contactoClienteId Int?      @map("contacto_cliente_id")
+  estadoPago        String?   @map("estado_pago")
+  fechaPago         DateTime? @map("fecha_pago") @db.Date
+  documentoPago     String?   @map("documento_pago")
 
-  createdAt           DateTime @default(now()) @map("created_at")
-  updatedAt           DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relaciones
-  ordenCompra         OrdenCompra @relation(fields: [ordenCompraId], references: [id])
-  cliente             Cliente?    @relation(fields: [clienteId], references: [id])
-  contactoCliente     Contacto?   @relation(fields: [contactoClienteId], references: [id])
-  pagos               PagoOrdenCompraPrivada[] // Relación inversa
+  ordenCompra     OrdenCompra              @relation(fields: [ordenCompraId], references: [id])
+  cliente         Cliente?                 @relation(fields: [clienteId], references: [id])
+  contactoCliente Contacto?                @relation(fields: [contactoClienteId], references: [id])
+  pagos           PagoOrdenCompraPrivada[] // Relación inversa
 
   @@map("ordenes_compra_privadas")
 }
 
 model PagoOrdenCompraPrivada {
-  id                      Int      @id @default(autoincrement())
-  ordenCompraPrivadaId    Int      @map("orden_compra_privada_id")
-  fechaPago               DateTime? @map("fecha_pago") @db.Date
-  bancoPago               String?  @map("banco_pago")
-  descripcionPago         String?  @map("descripcion_pago") @db.Text // Asumiendo que puede ser largo
-  archivoPago             String?  @map("archivo_pago")
-  montoPago               Decimal? @map("monto_pago") @db.Decimal(10, 2)
-  estadoPago              Boolean  @default(false) @map("estado_pago")
+  id                   Int       @id @default(autoincrement())
+  ordenCompraPrivadaId Int       @map("orden_compra_privada_id")
+  fechaPago            DateTime? @map("fecha_pago") @db.Date
+  bancoPago            String?   @map("banco_pago")
+  descripcionPago      String?   @map("descripcion_pago") @db.Text // Asumiendo que puede ser largo
+  archivoPago          String?   @map("archivo_pago")
+  montoPago            Decimal?  @map("monto_pago") @db.Decimal(10, 2)
+  estadoPago           Boolean   @default(false) @map("estado_pago")
 
-  createdAt               DateTime @default(now()) @map("created_at")
-  updatedAt               DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relación
-  ordenCompraPrivada      OrdenCompraPrivada @relation(fields: [ordenCompraPrivadaId], references: [id])
+  ordenCompraPrivada OrdenCompraPrivada @relation(fields: [ordenCompraPrivadaId], references: [id])
 
   @@map("pagos_ordenes_compra_privadas")
 }
 
 model OrdenProveedor {
-  id                  Int       @id @default(autoincrement())
-  codigoOp            String    @map("codigo_op") @db.VarChar(255)
-  empresaId           Int?      @map("empresa_id")
-  proveedorId         Int?      @map("proveedor_id")
-  contactoProveedorId Int?      @map("contacto_proveedor_id")
+  id                  Int    @id @default(autoincrement())
+  codigoOp            String @map("codigo_op") @db.VarChar(255)
+  empresaId           Int?   @map("empresa_id")
+  proveedorId         Int?   @map("proveedor_id")
+  contactoProveedorId Int?   @map("contacto_proveedor_id")
 
-  fechaDespacho       DateTime? @map("fecha_despacho")
-  fechaProgramada     DateTime? @map("fecha_programada")
-  fechaRecepcion      DateTime? @map("fecha_recepcion")
+  fechaDespacho   DateTime? @map("fecha_despacho")
+  fechaProgramada DateTime? @map("fecha_programada")
+  fechaRecepcion  DateTime? @map("fecha_recepcion")
 
-  notaPedido          String?   @map("nota_pedido")
-  totalProveedor      Decimal?    @map("total_proveedor")
-  tipoPago            String?   @map("tipo_pago")
-  notaPago            String?   @map("nota_pago")
-  notaGestionOp       String?   @map("nota_gestion_op")
+  notaPedido     String?  @map("nota_pedido")
+  totalProveedor Decimal? @map("total_proveedor")
+  tipoPago       String?  @map("tipo_pago")
+  notaPago       String?  @map("nota_pago")
+  notaGestionOp  String?  @map("nota_gestion_op")
 
-  tipoEntrega         String?   @map("tipo_entrega")
-  retornoMercaderia   String?   @map("retorno_mercaderia")
-  estadoOp            String?   @map("estado_op")
-  fechaEntrega        String?   @map("fecha_entrega")
-  cargoOea            String?   @map("cargo_oea")
+  tipoEntrega       String? @map("tipo_entrega")
+  retornoMercaderia String? @map("retorno_mercaderia")
+  estadoOp          String? @map("estado_op")
+  fechaEntrega      String? @map("fecha_entrega")
+  cargoOea          String? @map("cargo_oea")
 
-  etiquetado          String?
-  embalaje            String?
-  observaciones       String?
-  notaAdicional       String?   @map("nota_adicional")
+  etiquetado    String?
+  embalaje      String?
+  observaciones String?
+  notaAdicional String? @map("nota_adicional")
 
-  activo              Boolean   @default(true)
-  ordenCompraId       Int?      @map("orden_compra_id")
+  activo        Boolean @default(true)
+  ordenCompraId Int?    @map("orden_compra_id")
 
-  createdAt           DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt           DateTime? @updatedAt @map("updated_at") @db.Timestamp(6)
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamp(6)
 
-  empresa             Empresa?   @relation(fields: [empresaId], references: [id])
-  proveedor           Proveedor? @relation(fields: [proveedorId], references: [id])
-  contactoProveedor   Contacto?  @relation(fields: [contactoProveedorId], references: [id])
-  ordenCompra         OrdenCompra? @relation(fields: [ordenCompraId], references: [id])
+  empresa           Empresa?     @relation(fields: [empresaId], references: [id])
+  proveedor         Proveedor?   @relation(fields: [proveedorId], references: [id])
+  contactoProveedor Contacto?    @relation(fields: [contactoProveedorId], references: [id])
+  ordenCompra       OrdenCompra? @relation(fields: [ordenCompraId], references: [id])
 
-  productos           OpProducto[]
-  pagos               PagoOrdenProveedor[]
+  productos            OpProducto[]
+  pagos                PagoOrdenProveedor[]
   transportesAsignados TransporteAsignado[]
 
   @@map("ordenes_proveedor")
 }
 
 model OpProducto {
-  id               Int            @id @default(autoincrement())
-  codigo           String
-  descripcion      String
-  unidadMedida     String?        @map("unidad_medida")
-  cantidad         Int
-  cantidadAlmacen  Int?           @map("cantidad_almacen")
-  cantidadTotal    Int            @map("cantidad_total")
-  precioUnitario   Decimal          @map("precio_unitario")
-  total            Decimal
+  id              Int     @id @default(autoincrement())
+  codigo          String
+  descripcion     String
+  unidadMedida    String? @map("unidad_medida")
+  cantidad        Int
+  cantidadAlmacen Int?    @map("cantidad_almacen")
+  cantidadTotal   Int     @map("cantidad_total")
+  precioUnitario  Decimal @map("precio_unitario")
+  total           Decimal
 
-  ordenProveedorId Int            @map("orden_proveedor_id")
+  ordenProveedorId Int @map("orden_proveedor_id")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  ordenProveedor   OrdenProveedor @relation(fields: [ordenProveedorId], references: [id])
+  ordenProveedor OrdenProveedor @relation(fields: [ordenProveedorId], references: [id])
 
   @@map("productos_orden_proveedor")
 }
 
 model TransporteAsignado {
-  id                     Int      @id @default(autoincrement())
-  codigoTransporte       String   @map("codigo_transporte")
-  transporteId           Int      @map("transporte_id")
-  ordenProveedorId       Int      @map("orden_proveedor_id")
-  contactoTransporteId   Int?     @map("contacto_transporte_id")
-  destino                String?
-  region                 String?
-  provincia              String?
-  distrito               String?
-  direccion              String?
-  notaTransporte         String?  @map("nota_transporte")
-  cotizacionTransporte   String?  @map("cotizacion_transporte")
-  estadoPago             String?  @map("estado_pago")
-  montoFlete             Decimal? @map("monto_flete") @db.Decimal(10, 2)
-  grt                    String?
+  id                   Int      @id @default(autoincrement())
+  codigoTransporte     String   @map("codigo_transporte")
+  transporteId         Int      @map("transporte_id")
+  ordenProveedorId     Int      @map("orden_proveedor_id")
+  contactoTransporteId Int?     @map("contacto_transporte_id")
+  destino              String?
+  region               String?
+  provincia            String?
+  distrito             String?
+  direccion            String?
+  notaTransporte       String?  @map("nota_transporte")
+  cotizacionTransporte String?  @map("cotizacion_transporte")
+  estadoPago           String?  @map("estado_pago")
+  montoFlete           Decimal? @map("monto_flete") @db.Decimal(10, 2)
+  grt                  String?
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  transporte             Transporte     @relation(fields: [transporteId], references: [id])
-  ordenProveedor         OrdenProveedor @relation(fields: [ordenProveedorId], references: [id])
-  contactoTransporte     Contacto?      @relation(fields: [contactoTransporteId], references: [id])
+  transporte         Transporte     @relation(fields: [transporteId], references: [id])
+  ordenProveedor     OrdenProveedor @relation(fields: [ordenProveedorId], references: [id])
+  contactoTransporte Contacto?      @relation(fields: [contactoTransporteId], references: [id])
 
-  pagos                  PagoTransporteAsignado[]
+  pagos PagoTransporteAsignado[]
 
   @@map("transportes_asignados")
 }
 
 model PagoTransporteAsignado {
-  id                     Int       @id @default(autoincrement())
-  transporteAsignadoId   Int       @map("transporte_asignado_id")
-  fechaPago              DateTime? @map("fecha_pago") @db.Date
-  bancoPago              String?   @map("banco_pago")
-  descripcionPago        String?   @map("descripcion_pago")
-  archivoPago            String?   @map("archivo_pago")
-  montoPago              Decimal?  @map("monto_pago") @db.Decimal(10, 2)
-  estadoPago             Boolean?  @map("estado_pago") @default(false)
-  activo                 Boolean?  @default(true)
+  id                   Int       @id @default(autoincrement())
+  transporteAsignadoId Int       @map("transporte_asignado_id")
+  fechaPago            DateTime? @map("fecha_pago") @db.Date
+  bancoPago            String?   @map("banco_pago")
+  descripcionPago      String?   @map("descripcion_pago")
+  archivoPago          String?   @map("archivo_pago")
+  montoPago            Decimal?  @map("monto_pago") @db.Decimal(10, 2)
+  estadoPago           Boolean?  @default(false) @map("estado_pago")
+  activo               Boolean?  @default(true)
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  transporteAsignado     TransporteAsignado @relation(fields: [transporteAsignadoId], references: [id])
+  transporteAsignado TransporteAsignado @relation(fields: [transporteAsignadoId], references: [id])
 
   @@map("pagos_transportes_asignados")
 }
@@ -490,19 +492,18 @@ model PagoOrdenProveedor {
   bancoPago        String?   @map("banco_pago") @db.VarChar(255)
   descripcionPago  String?   @map("descripcion_pago")
   archivoPago      String?   @map("archivo_pago") @db.VarChar(255)
-  montoPago        Decimal?   @map("monto_pago") @db.Decimal(10, 4)
+  montoPago        Decimal?  @map("monto_pago") @db.Decimal(10, 4)
   estadoPago       Boolean   @default(false) @map("estado_pago")
   activo           Boolean   @default(true)
   ordenProveedorId Int?      @map("orden_proveedor_id")
 
-  createdAt        DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt        DateTime? @updatedAt @map("updated_at") @db.Timestamp(6)
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamp(6)
 
-  ordenProveedor   OrdenProveedor? @relation(fields: [ordenProveedorId], references: [id])
+  ordenProveedor OrdenProveedor? @relation(fields: [ordenProveedorId], references: [id])
 
   @@map("pagos_orden_proveedor")
 }
-
 
 model Producto {
   id           Int      @id @default(autoincrement())
@@ -512,8 +513,8 @@ model Producto {
   precioBase   Decimal? @map("precio_base") @db.Decimal(10, 4)
   estado       Boolean? @default(true)
 
-  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   stockProductos StockProducto[]
 
@@ -521,10 +522,10 @@ model Producto {
 }
 
 model StockProducto {
-  id         Int    @id @default(autoincrement())
-  productoId Int    @map("producto_id")
-  almacenId  Int    @map("almacen_id")
-  cantidad   Int    @default(0)
+  id         Int @id @default(autoincrement())
+  productoId Int @map("producto_id")
+  almacenId  Int @map("almacen_id")
+  cantidad   Int @default(0)
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -537,13 +538,13 @@ model StockProducto {
 }
 
 model Almacen {
-  id         Int      @id @default(autoincrement())
-  nombre     String
-  direccion  String?
-  ciudad     String?
+  id        Int     @id @default(autoincrement())
+  nombre    String
+  direccion String?
+  ciudad    String?
 
-  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt  DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   stockProductos StockProducto[]
 
@@ -552,52 +553,52 @@ model Almacen {
 
 // Nuevo modelo Facturacion
 model Facturacion {
-  id                  Int       @id @default(autoincrement())
-  ordenCompraId       Int       @map("orden_compra_id")
-  factura             String?
-  fechaFactura        DateTime? @map("fecha_factura") @db.Date
-  grr                 String?
-  retencion           Decimal?  @db.Decimal(10, 2)
-  detraccion          Decimal?  @db.Decimal(10, 2)
-  formaEnvioFactura   String?   @map("forma_envio_factura")
-  estado              Int?      @default(1)
+  id                Int       @id @default(autoincrement())
+  ordenCompraId     Int       @map("orden_compra_id")
+  factura           String?
+  fechaFactura      DateTime? @map("fecha_factura") @db.Date
+  grr               String?
+  retencion         Decimal?  @db.Decimal(10, 2)
+  detraccion        Decimal?  @db.Decimal(10, 2)
+  formaEnvioFactura String?   @map("forma_envio_factura")
+  estado            Int?      @default(1)
 
-  createdAt           DateTime  @default(now()) @map("created_at")
-  updatedAt           DateTime  @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relación
-  ordenCompra         OrdenCompra @relation(fields: [ordenCompraId], references: [id])
+  ordenCompra OrdenCompra @relation(fields: [ordenCompraId], references: [id])
 
   @@map("facturaciones")
 }
 
 // Nuevo modelo GestionCobranza
 model GestionCobranza {
-  id                  Int       @id @default(autoincrement())
-  ordenCompraId       Int       @map("orden_compra_id")
-  historial           String?   @db.Text // Asumiendo que puede ser largo
-  descripcion         String?   @db.Text // Asumiendo que puede ser largo
-  fechaGestion        DateTime? @map("fecha_gestion") @db.Date
-  documentoUrl        String?   @map("documento_url")
-  estado              Int?      @default(1)
+  id            Int       @id @default(autoincrement())
+  ordenCompraId Int       @map("orden_compra_id")
+  historial     String?   @db.Text // Asumiendo que puede ser largo
+  descripcion   String?   @db.Text // Asumiendo que puede ser largo
+  fechaGestion  DateTime? @map("fecha_gestion") @db.Date
+  documentoUrl  String?   @map("documento_url")
+  estado        Int?      @default(1)
 
-  createdAt           DateTime  @default(now()) @map("created_at")
-  updatedAt           DateTime  @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relación
-  ordenCompra         OrdenCompra @relation(fields: [ordenCompraId], references: [id])
+  ordenCompra OrdenCompra @relation(fields: [ordenCompraId], references: [id])
 
   @@map("gestion_cobranzas")
 }
 
 model Usuario {
-  id        Int      @id @default(autoincrement())
-  nombre    String
-  email     String   @unique
-  password  String
-  role      Role     @default(USER)
+  id       Int     @id @default(autoincrement())
+  nombre   String
+  email    String  @unique
+  password String
+  role     Role    @default(USER)
   foto     String?
-  estado    Boolean  @default(true)
+  estado   Boolean @default(true)
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -655,4 +656,3 @@ enum Moneda {
   SOLES
   DOLARES
 }
-

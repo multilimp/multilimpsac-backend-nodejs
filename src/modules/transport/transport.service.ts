@@ -1,6 +1,6 @@
+import { Transporte } from 'generated/prisma';
 import prisma from '../../database/prisma';
-// Cambiar la importación para usar el alias @prisma/client
-import { Transporte } from '@prisma/client';
+
 
 type CreateTransportData = Omit<Transporte, 'id' | 'createdAt' | 'updatedAt'>;
 type UpdateTransportData = Partial<CreateTransportData>;

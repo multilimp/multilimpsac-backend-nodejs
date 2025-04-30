@@ -1,6 +1,6 @@
+import { Contacto, ContactoTipo, Prisma } from 'generated/prisma';
 import prisma from '../../database/prisma';
-import { Contacto, ContactoTipo, Prisma } from '@prisma/client';
-import logger from '../../../config/logger';
+import logger from '../../shared/config/logger';
 
 // Tipo base omitiendo campos generados y relacionales directos que se infieren
 type BaseContactData = Omit<Contacto, 'id' | 'createdAt' | 'updatedAt' | 'clienteId' | 'proveedorId' | 'transporteId'>;

@@ -1,5 +1,5 @@
+import { OrdenCompra } from 'generated/prisma';
 import prisma from '../../database/prisma';
-import { OrdenCompra, Empresa } from '@prisma/client';
 import { CreateOrdenCompraData, UpdateOrdenCompraData } from './orden-compra.types';
 import { customAlphabet } from 'nanoid'; // Para generar códigos únicos más robustos
 

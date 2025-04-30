@@ -2,8 +2,8 @@ import dotenv from 'dotenv';
 import express, { Application, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import logger from './src/shared/config/logger';
 
-import logger from './config/logger';
 
 // routes
 // import userRoutes from './src/modules/user/user.routes';
@@ -11,6 +11,8 @@ import clientRoutes from './src/modules/client/client.routes';
 import providerRoutes from './src/modules/provider/provider.routes';
 import providerBalanceRoutes from './src/modules/providerBalance/providerBalance.routes';
 import providerBankAccountRoutes from './src/modules/providerBankAccount/providerBankAccount.routes';
+import companyRoutes from './src/modules/company/company.routes';
+import transportRoutes from './src/modules/transport/transport.routes';
 
 dotenv.config();
 
@@ -46,17 +48,18 @@ class Server {
   }
 
   rutas() {
-    this.app.get('/', (req, res) => res.json({ message: 'BACKEND MULTILIMP SAC' }));
+    this.app.get('/api', (req, res) => res.json({ message: 'BACKEND MULTILIMP SAC' }));
 
     // this.app.use('/api/users', userRoutes);
     this.app.use('/api/clients', clientRoutes);
     this.app.use('/api/providers', providerRoutes);
     this.app.use('/api/provider-balance', providerBalanceRoutes);
     this.app.use('/api/provider-bank-account', providerBankAccountRoutes);
+    this.app.use('/api/companies', companyRoutes);
+    this.app.use('/api/transports', transportRoutes);
 
     // Ruta 404 - Debe ir después de todas las demás rutas
-    this.app.use((req, res) => {
-      // Dejar que TS infiera req y res aquí también
+    this.app.use((req: Request, res: Response) => {
       res.status(404).json({ message: 'Ruta no encontrada' });
     });
   }
