@@ -1,5 +1,5 @@
+import { Usuario } from 'generated/prisma';
 import prisma from '../../database/prisma';
-import { Usuario } from '../../../generated/prisma'; // Importar el tipo Usuario generado
 
 // Tipos para los datos de entrada (pueden moverse a un archivo de tipos)
 type CreateUserData = Omit<Usuario, 'id' | 'createdAt' | 'updatedAt'>;

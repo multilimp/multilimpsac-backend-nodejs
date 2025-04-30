@@ -1,5 +1,8 @@
 import prisma from '../../database/prisma';
-import { SaldoProveedor } from '../../../generated/prisma';
+// Cambiar la importación para usar el alias @prisma/client
+import { SaldoProveedor } from '@prisma/client';
+
+// import { SaldoProveedor } from '../../../generated/prisma'; // Comentar o eliminar la línea anterior
 
 type CreateProviderBalanceData = Omit<SaldoProveedor, 'id' | 'createdAt' | 'updatedAt'>;
 type UpdateProviderBalanceData = Partial<CreateProviderBalanceData>;

@@ -1,5 +1,8 @@
 import prisma from '../../database/prisma';
-import { CuentaBancariaProveedor } from '../../../generated/prisma';
+// Cambiar la importación para usar el alias @prisma/client
+import { CuentaBancariaProveedor } from '@prisma/client';
+
+// import { CuentaBancariaProveedor } from '../../../generated/prisma'; // Comentar o eliminar la línea anterior
 
 type CreateProviderBankAccountData = Omit<CuentaBancariaProveedor, 'id' | 'createdAt' | 'updatedAt'>;
 type UpdateProviderBankAccountData = Partial<CreateProviderBankAccountData>;

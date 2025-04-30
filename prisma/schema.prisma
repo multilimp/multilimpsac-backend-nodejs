@@ -590,6 +590,21 @@ model GestionCobranza {
   @@map("gestion_cobranzas")
 }
 
+model Usuario {
+  id        Int      @id @default(autoincrement())
+  nombre    String
+  email     String   @unique
+  password  String
+  role      Role     @default(USER)
+  foto     String?
+  estado    Boolean  @default(true)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("usuarios")
+}
+
 enum ContactoTipo {
   CLIENTE
   PROVEEDOR

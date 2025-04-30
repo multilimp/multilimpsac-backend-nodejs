@@ -1,4 +1,5 @@
 // src/db/prisma.ts
+// Cambiar la importación para usar el alias @prisma/client
 import { PrismaClient } from '@prisma/client';
 
 // Opcional: Configurar logging si lo deseas
