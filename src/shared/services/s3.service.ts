@@ -1,6 +1,7 @@
 import { PutObjectCommand } from '@aws-sdk/client-s3';
 import fs from 'fs';
 import { File } from 'formidable';
+import { nanoid } from 'nanoid';
 import { config } from '../config/env';
 import logger from '../config/logger';
 import { r2Client } from '../api/r2Client';
@@ -13,7 +14,7 @@ export const uploadFileR2 = async (file: File, folder: string = ''): Promise<str
 
   let fileStream;
   try {
-    const numeroRandom = Date.now() + '-' + Math.random().toString(36).substring(2, 15);
+    const numeroRandom = nanoid();
     fileStream = fs.createReadStream(filePath);
 
     const originalFilename = file.originalFilename || 'archivo-sin-nombre';
