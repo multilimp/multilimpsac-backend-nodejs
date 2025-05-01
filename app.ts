@@ -4,9 +4,9 @@ import cors from 'cors';
 import helmet from 'helmet';
 import logger from './src/shared/config/logger';
 
-
 // routes
 // import userRoutes from './src/modules/user/user.routes';
+import ubigeoRoutes from './src/modules/ubigeo/ubigeo.routes';
 import clientRoutes from './src/modules/client/client.routes';
 import providerRoutes from './src/modules/provider/provider.routes';
 import providerBalanceRoutes from './src/modules/providerBalance/providerBalance.routes';
@@ -51,6 +51,7 @@ class Server {
     this.app.get('/api', (req, res) => res.json({ message: 'BACKEND MULTILIMP SAC' }));
 
     // this.app.use('/api/users', userRoutes);
+    this.app.use('/api/ubigeo', ubigeoRoutes);
     this.app.use('/api/clients', clientRoutes);
     this.app.use('/api/providers', providerRoutes);
     this.app.use('/api/provider-balance', providerBalanceRoutes);
