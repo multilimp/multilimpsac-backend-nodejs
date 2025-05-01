@@ -26,6 +26,7 @@ model Cliente {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   contactos            Contacto[]
+  cuentasBancarias     CuentaBancaria[]
   cotizaciones         Cotizacion[]
   ordenesCompra        OrdenCompra[]
   ordenesCompraPrivada OrdenCompraPrivada[] // Relación inversa añadida
@@ -51,7 +52,7 @@ model Proveedor {
   contactos        Contacto[]
   ordenesProveedor OrdenProveedor[]
   saldosProveedor  SaldoProveedor[]
-  cuentasBancarias CuentaBancariaProveedor[]
+  cuentasBancarias CuentaBancaria[]
 
   @@map("proveedores")
 }
@@ -73,22 +74,30 @@ model SaldoProveedor {
   @@map("saldos_proveedor")
 }
 
-model CuentaBancariaProveedor {
-  id           Int        @id @default(autoincrement())
-  proveedorId  Int
+model CuentaBancaria {
+  id           Int                @id @default(autoincrement())
+  referenciaId Int                @map("referencia_id")
+  tipoCuenta   CuentaBancariaTipo @map("tipo_cuenta")
   banco        String
   numeroCuenta String
   numeroCci    String?
-  tipoCuenta   TipoCuenta
   moneda       Moneda
-  activa       Boolean    @default(true)
+  activa       Boolean            @default(true)
+
+  clienteId    Int? @map("cliente_id")
+  proveedorId  Int? @map("proveedor_id")
+  transporteId Int? @map("transporte_id")
+  empresaId    Int? @map("empresa_id")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  proveedor Proveedor @relation(fields: [proveedorId], references: [id])
+  cliente    Cliente?    @relation(fields: [clienteId], references: [id])
+  proveedor  Proveedor?  @relation(fields: [proveedorId], references: [id])
+  transporte Transporte? @relation(fields: [transporteId], references: [id])
+  empresa    Empresa?    @relation(fields: [empresaId], references: [id])
 
-  @@map("cuentas_bancarias_proveedor")
+  @@map("cuentas_bancarias")
 }
 
 model Transporte {
@@ -107,6 +116,7 @@ model Transporte {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  cuentasBancarias     CuentaBancaria[]
   contactos            Contacto[]
   transportesAsignados TransporteAsignado[]
 
@@ -134,21 +144,25 @@ model Empresa {
   cotizaciones     Cotizacion[]
   ordenesCompra    OrdenCompra[]
   ordenesProveedor OrdenProveedor[]
+  cuentasBancarias CuentaBancaria[]
 
   @@map("empresas")
 }
 
 model Contacto {
-  id           Int          @id @default(autoincrement())
-  nombre       String
-  telefono     String?
-  email        String?
-  tipo         ContactoTipo
-  referenciaId Int          @map("referencia_id")
-  clienteId    Int?         @map("cliente_id")
-  proveedorId  Int?         @map("proveedor_id")
-  transporteId Int?         @map("transporte_id")
-  cargo        String?
+  id               Int          @id @default(autoincrement())
+  nombre           String
+  telefono         String?
+  email            String?
+  cargo            String?
+  cumpleanos       DateTime?
+  nota             String?
+  usuarioDestacado Boolean?     @map("usuario_destacado")
+  tipo             ContactoTipo
+  referenciaId     Int          @map("referencia_id")
+  clienteId        Int?         @map("cliente_id")
+  proveedorId      Int?         @map("proveedor_id")
+  transporteId     Int?         @map("transporte_id")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -655,4 +669,11 @@ enum TipoCuenta {
 enum Moneda {
   SOLES
   DOLARES
+}
+
+enum CuentaBancariaTipo {
+  CLIENTE
+  PROVEEDOR
+  TRANSPORTE
+  EMPRESA
 }
