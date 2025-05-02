@@ -61,6 +61,7 @@ class Server {
   rutas() {
     this.app.get('/api', (req, res) => res.json({ message: 'BACKEND MULTILIMP SAC' }));
 
+    this.app.use('/api/ubigeo', ubigeoRoutes);
     // this.app.use('/api/users', userRoutes);
     this.app.use('/api/clients', clientRoutes);
     this.app.use('/api/providers', providerRoutes);
