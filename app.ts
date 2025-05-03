@@ -22,6 +22,7 @@ import ordenCompraRoutes from './src/modules/ordenCompra/ordenCompra.routes';
 import ordenProveedorRoutes from './src/modules/ordenProveedor/ordenProveedor.routes';
 import productoRoutes from './src/modules/producto/producto.routes';
 import agrupacionOrdenCompraRoutes from './src/modules/agrupacionOrdenCompra/agrupacionOrdenCompra.routes';
+import ventasRoutes from './src/modules/features/ventas/ventas.routes'
 
 dotenv.config();
 
@@ -78,6 +79,7 @@ class Server {
     this.app.use('/api/ordenes-proveedor', ordenProveedorRoutes);
     this.app.use('/api/productos', productoRoutes);
     this.app.use('/api/agrupaciones-oc', agrupacionOrdenCompraRoutes);
+    this.app.use('/api/ventas', ventasRoutes);
 
     // Ruta 404 - Debe ir después de todas las demás rutas
     this.app.use((req: Request, res: Response) => {
