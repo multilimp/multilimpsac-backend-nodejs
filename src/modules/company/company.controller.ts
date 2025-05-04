@@ -3,7 +3,7 @@ import { handleError } from '../../shared/middleware/handleError';
 import * as companyService from './company.service';
 import formidable, { File } from 'formidable';
 import logger from '../../shared/config/logger';
-import { uploadFileR2 } from '@/shared/services/s3.service';
+import { uploadFileR2 } from '../../shared/services/s3.service';
 
 export const listCompanies = async (req: Request, res: Response) => {
   try {

@@ -1,5 +1,5 @@
 import { S3Client } from '@aws-sdk/client-s3';
-import { config } from '@/shared/config/env';
+import { config } from '../../shared/config/env';
 
 export const r2Client = new S3Client({
   region: config.r2.region,

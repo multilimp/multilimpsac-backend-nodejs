@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { departamentos, distritos, provincias } from './ubigeo.data';
-import { handleError } from '@/shared/middleware/handleError';
+import { handleError } from '../../shared/middleware/handleError';
 
 export const getRegions = async (req: Request, res: Response) => {
   try {

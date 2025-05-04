@@ -7,7 +7,7 @@
     "dev": "ts-node-dev -r tsconfig-paths/register --respawn --transpile-only index.ts",
     "build": "tsc",
     "generate": "prisma generate",
-    "start": "node dist/index.js",
+     "start": "node -r tsconfig-paths/register dist/index.js",
     "prisma:refresh": "prisma generate && prisma db push"
   },
   "author": "Name",

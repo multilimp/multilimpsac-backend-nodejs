@@ -1,4 +1,4 @@
-import { handleError } from '@/shared/middleware/handleError';
+import { handleError } from '../../shared/middleware/handleError';
 import { Request, Response } from 'express';
 import formidable, { File } from 'formidable';
 import path from 'path';

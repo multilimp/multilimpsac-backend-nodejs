@@ -2,26 +2,26 @@ import dotenv from 'dotenv';
 import express, { Application, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import logger from './src/shared/config/logger';
+import logger from './shared/config/logger';
 
 // routes
-import ubigeoRoutes from './src/modules/ubigeo/ubigeo.routes';
-import clientRoutes from './src/modules/client/client.routes';
-import providerRoutes from './src/modules/provider/provider.routes';
-import providerBalanceRoutes from './src/modules/providerBalance/providerBalance.routes';
-import bankAccountRoutes from './src/modules/bankAccount/bankAccount.routes';
-import companyRoutes from './src/modules/company/company.routes';
-import transportRoutes from './src/modules/transport/transport.routes';
-import fileRoutes from './src/modules/file/file.routes';
-import contactRoutes from './src/modules/contact/contact.routes';
-import catalogRoutes from './src/modules/catalog/catalog.routes';
-import userRoutes from './src/modules/user/user.routes';
-import almacenRoutes from './src/modules/almacen/almacen.routes';
-import cotizacionRoutes from './src/modules/cotizacion/cotizacion.routes';
-import ordenCompraRoutes from './src/modules/ordenCompra/ordenCompra.routes';
-import ordenProveedorRoutes from './src/modules/ordenProveedor/ordenProveedor.routes';
-import productoRoutes from './src/modules/producto/producto.routes';
-import agrupacionOrdenCompraRoutes from './src/modules/agrupacionOrdenCompra/agrupacionOrdenCompra.routes';
+import ubigeoRoutes from './modules/ubigeo/ubigeo.routes';
+import clientRoutes from './modules/client/client.routes';
+import providerRoutes from './modules/provider/provider.routes';
+import providerBalanceRoutes from './modules/providerBalance/providerBalance.routes';
+import bankAccountRoutes from './modules/bankAccount/bankAccount.routes';
+import companyRoutes from './modules/company/company.routes';
+import transportRoutes from './modules/transport/transport.routes';
+import fileRoutes from './modules/file/file.routes';
+import contactRoutes from './modules/contact/contact.routes';
+import catalogRoutes from './modules/catalog/catalog.routes';
+import userRoutes from './modules/user/user.routes';
+import almacenRoutes from './modules/almacen/almacen.routes';
+import cotizacionRoutes from './modules/cotizacion/cotizacion.routes';
+import ordenCompraRoutes from './modules/ordenCompra/ordenCompra.routes';
+import ordenProveedorRoutes from './modules/ordenProveedor/ordenProveedor.routes';
+import productoRoutes from './modules/producto/producto.routes';
+import agrupacionOrdenCompraRoutes from './modules/agrupacionOrdenCompra/agrupacionOrdenCompra.routes';
 
 dotenv.config();
 

@@ -1,4 +1,4 @@
-import Server from './app';
+import Server from "./app";
 
 const servidor = new Server();
 servidor.iniciarServidor();
