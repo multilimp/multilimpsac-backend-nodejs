@@ -17,8 +17,19 @@ export const getProviderById = (id: number): Promise<Proveedor | null> => {
   });
 };
 
-export const createProvider = (data: CreateProviderData): Promise<Proveedor> => {
-  return prisma.proveedor.create({ data });
+export const createProvider = (data: any): Promise<Proveedor> => {
+  const mappedData = {
+    ruc: data.ruc,
+    razonSocial: data.razon_social ?? data.razonSocial,
+    direccion: data.direccion,
+    telefono: data.telefono,
+    email: data.email,
+    estado: data.estado,
+    departamento: data.departamento,
+    provincia: data.provincia,
+    distrito: data.distrito,
+  };
+  return prisma.proveedor.create({ data: mappedData });
 };
 
 export const updateProvider = (id: number, data: UpdateProviderData): Promise<Proveedor> => {
