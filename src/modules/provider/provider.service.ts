@@ -1,4 +1,4 @@
-import { Proveedor } from 'generated/prisma';
+import { Proveedor } from '../../../generated/prisma';
 import prisma from '../../database/prisma';
 // Cambiar la importación para usar el alias @prisma/client
 

@@ -10,14 +10,14 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "sourceMap": true,
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["src/*"],
-      "@helpers/*": ["src/shared/helpers/*"],
-      "@utils/*": ["src/shared/utils/*"],
-      "@config/*": ["src/shared/config/*"],
-      "@shared/*": ["src/shared/*"],
-    }
+    // "baseUrl": ".",
+    // "paths": {
+    //   "@/*": ["src/*"],
+    //   "@helpers/*": ["src/shared/helpers/*"],
+    //   "@utils/*": ["src/shared/utils/*"],
+    //   "@config/*": ["src/shared/config/*"],
+    //   "@shared/*": ["src/shared/*"],
+    // }
   },
   "include": ["./src/**/*.ts", "src/app.ts", "index.ts"],
   "exclude": ["node_modules", "dist"]

@@ -1,4 +1,4 @@
-import { OrdenCompra, Prisma } from 'generated/prisma';
+import { OrdenCompra, Prisma } from '../../../generated/prisma';
 import prisma from '../../database/prisma';
 
 export const getAllOrdenesCompra = (args?: Prisma.OrdenCompraFindManyArgs): Promise<OrdenCompra[]> => {

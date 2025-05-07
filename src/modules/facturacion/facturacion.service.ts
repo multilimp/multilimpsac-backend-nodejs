@@ -1,4 +1,4 @@
-import { Facturacion } from 'generated/prisma';
+import { Facturacion } from '../../../generated/prisma';
 import prisma from '../../database/prisma';
 type CreateFacturacionData = Omit<Facturacion, 'id' | 'createdAt' | 'updatedAt'>;
 type UpdateFacturacionData = Partial<CreateFacturacionData>;

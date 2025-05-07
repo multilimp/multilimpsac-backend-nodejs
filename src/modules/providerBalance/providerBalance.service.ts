@@ -1,4 +1,4 @@
-import { SaldoProveedor } from 'generated/prisma';
+import { SaldoProveedor } from '../../../generated/prisma';
 import prisma from '../../database/prisma';
 
 

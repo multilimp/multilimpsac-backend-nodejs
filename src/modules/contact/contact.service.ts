@@ -1,4 +1,4 @@
-import { Contacto, ContactoTipo, Prisma } from 'generated/prisma';
+import { Contacto, ContactoTipo, Prisma } from '../../../generated/prisma';
 import prisma from '../../database/prisma';
 import logger from '../../shared/config/logger';
 

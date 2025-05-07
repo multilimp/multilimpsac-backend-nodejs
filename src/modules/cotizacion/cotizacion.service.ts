@@ -1,4 +1,4 @@
-import { Cotizacion, Prisma } from 'generated/prisma';
+import { Cotizacion, Prisma } from '../../../generated/prisma';
 import prisma from '../../database/prisma';
 
 // Asumiendo que CotizacionProducto se maneja aquí o se pasa como data anidada

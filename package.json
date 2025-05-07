@@ -5,9 +5,10 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "ts-node-dev -r tsconfig-paths/register --respawn --transpile-only index.ts",
-    "build": "tsc",
+    "build": "tsc && npm run copy-prisma",
     "generate": "prisma generate",
-    "start": "node index.js",
+    "start": "node dist/index.js",
+    "copy-prisma": "cp -r generated dist/generated",
     "prisma:refresh": "prisma generate && prisma db push"
   },
   "author": "Name",

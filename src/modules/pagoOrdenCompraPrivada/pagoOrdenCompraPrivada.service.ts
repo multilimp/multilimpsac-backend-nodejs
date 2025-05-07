@@ -1,4 +1,4 @@
-import { PagoOrdenCompraPrivada } from 'generated/prisma';
+import { PagoOrdenCompraPrivada } from '../../../generated/prisma';
 import prisma from '../../database/prisma';
 type CreatePagoOrdenCompraPrivadaData = Omit<PagoOrdenCompraPrivada, 'id' | 'createdAt' | 'updatedAt'>;
 type UpdatePagoOrdenCompraPrivadaData = Partial<CreatePagoOrdenCompraPrivadaData>;

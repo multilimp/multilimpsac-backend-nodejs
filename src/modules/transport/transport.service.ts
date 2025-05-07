@@ -1,4 +1,4 @@
-import { Transporte } from 'generated/prisma';
+import { Transporte } from '../../../generated/prisma';
 import prisma from '../../database/prisma';
 
 

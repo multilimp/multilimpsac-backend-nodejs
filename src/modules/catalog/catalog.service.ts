@@ -1,4 +1,4 @@
-import { Catalogo } from 'generated/prisma';
+import { Catalogo } from '../../../generated/prisma';
 import prisma from '../../database/prisma';
 
 // Tipos para los datos de entrada
