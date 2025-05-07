@@ -7,7 +7,7 @@
     "dev": "ts-node-dev -r tsconfig-paths/register --respawn --transpile-only index.ts",
     "build": "tsc",
     "generate": "prisma generate",
-    "start": "node dist/index.js",
+    "start": "node index.js",
     "prisma:refresh": "prisma generate && prisma db push"
   },
   "author": "Name",
@@ -15,8 +15,6 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.799.0",
     "@prisma/client": "^6.6.0",
-    "@types/formidable": "^3.4.5",
-    "@types/uuid": "^10.0.0",
     "bcryptjs": "^3.0.2",
     "cors": "2.8.5",
     "dotenv": "^16.0.3",
@@ -34,6 +32,8 @@
     "@types/joi": "^17.2.3",
     "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^20.14.12",
+    "@types/formidable": "^3.4.5",
+    "@types/uuid": "^10.0.0",
     "eslint": "8.39.0",
     "eslint-config-standard": "17.0.0",
     "eslint-plugin-import": "2.27.5",
