@@ -31,6 +31,10 @@ Backend para la aplicación MULTILIMP SAC, desarrollado con Express, TypeScript 
     AWS_S3_ENDPOINT="TU_R2_ENDPOINT_URL" # ej: https://<ACCOUNT_ID>.r2.cloudflarestorage.com
     R2_PUBLIC_DOMAIN="TU_R2_DOMINIO_PUBLICO" # ej: r2.dominio.com o <BUCKET_NAME>.<ACCOUNT_ID>.r2.dev
 
+    # JWT
+    JWT_SECRET="ESTO_ES_UN_SECRETO_MUY_LARGO_Y_SEGURO_DE_AL_MENOS_32_CARACTERES"
+    JWT_EXPIRES_IN="1h"
+
     # Aplicación
     PORT=5000
     ```

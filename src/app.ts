@@ -16,6 +16,7 @@ import fileRoutes from './modules/file/file.routes';
 import contactRoutes from './modules/contact/contact.routes';
 import catalogRoutes from './modules/catalog/catalog.routes';
 import userRoutes from './modules/user/user.routes';
+import authRoutes from './modules/auth/auth.routes'; // Añadir esta línea
 import almacenRoutes from './modules/almacen/almacen.routes';
 import cotizacionRoutes from './modules/cotizacion/cotizacion.routes';
 import ordenCompraRoutes from './modules/ordenCompra/ordenCompra.routes';
@@ -61,8 +62,9 @@ class Server {
   rutas() {
     this.app.get('/api', (req, res) => res.json({ message: 'BACKEND MULTILIMP SAC' }));
 
+    this.app.use('/api/auth', authRoutes); // Añadir esta línea para las rutas de autenticación
     this.app.use('/api/ubigeo', ubigeoRoutes);
-    // this.app.use('/api/users', userRoutes);
+    this.app.use('/api/users', userRoutes);
     this.app.use('/api/clients', clientRoutes);
     this.app.use('/api/providers', providerRoutes);
     this.app.use('/api/provider-balance', providerBalanceRoutes);

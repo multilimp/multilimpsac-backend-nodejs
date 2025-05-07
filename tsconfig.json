@@ -3,7 +3,7 @@
     "target": "ES2016",
     "module": "CommonJS",
     "outDir": "./dist",
-    "rootDir": "./src",
+    "rootDir": ".",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -19,6 +19,6 @@
       "@shared/*": ["src/shared/*"],
     }
   },
-  "include": ["./src/**/*.ts", "src/app.ts", "src/index.ts"],
+  "include": ["./src/**/*.ts", "src/app.ts", "index.ts"],
   "exclude": ["node_modules", "dist"]
 }

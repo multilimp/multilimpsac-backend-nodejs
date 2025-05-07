@@ -14,6 +14,8 @@ const envVarsSchema = z.object({
   AWS_S3_ENDPOINT: z.string().url(),
   AWS_REGION: z.string().default('auto'),
   R2_PUBLIC_URL: z.string().url(),
+  JWT_SECRET: z.string().min(32, 'JWT_SECRET debe tener al menos 32 caracteres'),
+  JWT_EXPIRES_IN: z.number().default(36000), // 1 hora en segundos
 });
 
 const result = envVarsSchema.safeParse(process.env);
@@ -41,5 +43,9 @@ export const config = Object.freeze({
     endpoint: envVars.AWS_S3_ENDPOINT,
     region: envVars.AWS_REGION,
     publicUrl: envVars.R2_PUBLIC_URL,
+  },
+  jwt: {
+    secret: envVars.JWT_SECRET,
+    expiresIn: envVars.JWT_EXPIRES_IN,
   },
 });

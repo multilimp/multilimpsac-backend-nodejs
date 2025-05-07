@@ -13,19 +13,15 @@ export const listUsers = async (req: Request, res: Response) => {
 
 export const createUser = async (req: Request, res: Response) => {
   try {
-    // Aquí iría la validación del req.body si se implementa
     const newUser = await userService.createUser(req.body);
     res.status(201).json(newUser);
   } catch (error) {
-    // Considerar errores específicos (ej. email duplicado)
     handleError({ res, error, msg: 'Error al crear usuario' });
   }
 };
 
-// ... implementar getById, updateUser, deleteUser de forma similar ...
 
 export const getUser = async (req: Request, res: Response) => {
-  // Nueva función para obtener por ID
   try {
     const id = parseInt(req.params.userId, 10);
     if (isNaN(id)) {
