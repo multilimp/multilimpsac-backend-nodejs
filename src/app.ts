@@ -4,7 +4,6 @@ import cors from 'cors';
 import helmet from 'helmet';
 import logger from './shared/config/logger';
 
-// routes
 import ubigeoRoutes from './modules/ubigeo/ubigeo.routes';
 import clientRoutes from './modules/client/client.routes';
 import providerRoutes from './modules/provider/provider.routes';
@@ -16,13 +15,14 @@ import fileRoutes from './modules/file/file.routes';
 import contactRoutes from './modules/contact/contact.routes';
 import catalogRoutes from './modules/catalog/catalog.routes';
 import userRoutes from './modules/user/user.routes';
-import authRoutes from './modules/auth/auth.routes'; // Añadir esta línea
+import authRoutes from './modules/auth/auth.routes';
 import almacenRoutes from './modules/almacen/almacen.routes';
 import cotizacionRoutes from './modules/cotizacion/cotizacion.routes';
 import ordenCompraRoutes from './modules/ordenCompra/ordenCompra.routes';
 import ordenProveedorRoutes from './modules/ordenProveedor/ordenProveedor.routes';
 import productoRoutes from './modules/producto/producto.routes';
 import agrupacionOrdenCompraRoutes from './modules/agrupacionOrdenCompra/agrupacionOrdenCompra.routes';
+import { authenticateToken } from './shared/middleware/auth.middleware';
 
 dotenv.config();
 
@@ -48,11 +48,12 @@ class Server {
   }
 
   middlewares() {
-    this.app.use(helmet()); // Añade cabeceras de seguridad
-    this.app.use(cors()); // Permite solicitudes de origen cruzado
-    this.app.use(express.json()); // Parsea bodies JSON
-    this.app.use(express.urlencoded({ extended: false })); // Parsea bodies URL-encoded
-    // Middleware para logging de solicitudes (opcional pero útil)
+    this.app.use(helmet());
+// ...existing code...
+    this.app.use(cors());
+    this.app.use(express.json());
+    this.app.use(express.urlencoded({ extended: false }));
+
     this.app.use((req: Request, res: Response, next: NextFunction) => {
       logger.info(`${req.method} ${req.url}`);
       next();
@@ -62,7 +63,10 @@ class Server {
   rutas() {
     this.app.get('/api', (req, res) => res.json({ message: 'BACKEND MULTILIMP SAC' }));
 
-    this.app.use('/api/auth', authRoutes); // Añadir esta línea para las rutas de autenticación
+    this.app.use('/api/auth', authRoutes);
+
+    this.app.use(authenticateToken);
+
     this.app.use('/api/ubigeo', ubigeoRoutes);
     this.app.use('/api/users', userRoutes);
     this.app.use('/api/clients', clientRoutes);
@@ -70,6 +74,7 @@ class Server {
     this.app.use('/api/provider-balance', providerBalanceRoutes);
     this.app.use('/api/bank-accounts', bankAccountRoutes);
     this.app.use('/api/companies', companyRoutes);
+// ...existing code...
     this.app.use('/api/transports', transportRoutes);
     this.app.use('/api/files', fileRoutes);
     this.app.use('/api/contacts', contactRoutes);
@@ -81,17 +86,14 @@ class Server {
     this.app.use('/api/productos', productoRoutes);
     this.app.use('/api/agrupaciones-oc', agrupacionOrdenCompraRoutes);
 
-    // Ruta 404 - Debe ir después de todas las demás rutas
     this.app.use((req: Request, res: Response) => {
       res.status(404).json({ message: 'Ruta no encontrada' });
     });
   }
 
   manejoErroresGlobal() {
-    // Dejar que TS infiera los tipos aquí también puede ayudar
     this.app.use((err: any, req: Request, res: Response, next: NextFunction) => {
       logger.error(`Error no controlado: ${err.message}`, { stack: err.stack });
-      // Considera usar tu helper handleError aquí si quieres estandarizar respuestas de error
       res.status(500).json({ message: 'Error interno del servidor' });
     });
   }

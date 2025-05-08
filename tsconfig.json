@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
-    "target": "ES2016",
+    "target": "ES2020",
     "module": "CommonJS",
+    "moduleResolution": "node",
     "outDir": "./dist",
     "rootDir": ".",
     "strict": true,
@@ -10,15 +11,25 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "sourceMap": true,
-    // "baseUrl": ".",
-    // "paths": {
-    //   "@/*": ["src/*"],
-    //   "@helpers/*": ["src/shared/helpers/*"],
-    //   "@utils/*": ["src/shared/utils/*"],
-    //   "@config/*": ["src/shared/config/*"],
-    //   "@shared/*": ["src/shared/*"],
-    // }
+    "baseUrl": "./src",
+    "paths": {
+      "@/*": ["*"],
+      "@app/*": ["app/*"],
+      "@entities/*": ["entities/*"],
+      "@features/*": ["features/*"],
+      "@widgets/*": ["widgets/*"],
+      "@pages/*": ["pages/*"],
+      "@processes/*": ["processes/*"],
+      "@shared/*": ["shared/*"],
+      "@modules/*": ["modules/*"]
+    },
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true
   },
-  "include": ["./src/**/*.ts", "src/app.ts", "index.ts"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["./src/**/*.ts", "index.ts"],
+  "exclude": ["node_modules", "dist", "**/*.spec.ts", "**/*.test.ts"]
 }
