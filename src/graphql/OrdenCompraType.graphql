@@ -1,0 +1,121 @@
+# En un archivo .graphql o construido con graphql-js
+type OrdenCompra {
+  id: ID!
+  codigoVenta: String!
+  fechaEmision: String # Usar String para fechas ISO, o un Scalar de Fecha personalizado
+  montoVenta: Float
+  etapaActual: String
+  estadoActivo: Boolean
+  productos: String # Para campos JSON, puedes usar String o un tipo JSON Scalar personalizado
+  # Campos adicionales de OrdenCompra que podrías necesitar:
+  archivoOc: String
+  ventaPrivada: Boolean
+  direccionEntrega: String
+  distritoEntrega: String
+  provinciaEntrega: String
+  departamentoEntrega: String
+  referenciaEntrega: String
+  fechaEntrega: String
+  # ...otros campos relevantes de tu modelo Prisma OrdenCompra
+
+  cliente: Cliente
+  empresa: Empresa
+  contactoCliente: Contacto
+  ordenesProveedor: [OrdenProveedor]
+  # ... otras relaciones que quieras exponer
+}
+
+type Cliente {
+  id: ID!
+  razonSocial: String!
+  ruc: String!
+  email: String
+  # Campos adicionales de Cliente:
+  telefono: String
+  direccion: String
+  departamento: String
+  provincia: String
+  distrito: String
+  estado: Boolean
+  codigoUnidadEjecutora: String
+  # ... otros campos relevantes
+}
+
+type Empresa {
+  id: ID!
+  razonSocial: String!
+  ruc: String!
+  # Campos adicionales de Empresa:
+  telefono: String
+  email: String
+  direccion: String
+  logo: String
+  web: String
+  # ... otros campos relevantes
+}
+
+type Contacto {
+  id: ID!
+  nombre: String!
+  email: String
+  telefono: String
+  # Campos adicionales de Contacto:
+  cargo: String
+  # tipo: String # Si necesitas el tipo de contacto (CLIENTE, PROVEEDOR, etc.)
+  # ... otros campos relevantes
+}
+
+# Definición del tipo Proveedor si aún no existe
+type Proveedor {
+  id: ID!
+  razonSocial: String!
+  ruc: String!
+  email: String
+  telefono: String
+  # ... otros campos relevantes de tu modelo Prisma Proveedor
+}
+
+type OrdenProveedor {
+    id: ID!
+    codigoOp: String!
+    totalProveedor: Float
+    # Campos adicionales de OrdenProveedor:
+    fechaDespacho: String
+    fechaProgramada: String
+    fechaRecepcion: String
+    tipoPago: String
+    estadoOp: String // Asumiendo que tienes un campo así
+    proveedor: Proveedor // Relación con Proveedor
+    # ... otros campos relevantes de tu modelo Prisma OrdenProveedor
+}
+
+# Podrías necesitar un tipo para los filtros
+input OrdenCompraFiltersInput {
+  clienteId: Int
+  empresaId: Int
+  # ... otros filtros que quieras soportar
+  search: String
+  fechaFrom: String # Formato YYYY-MM-DD
+  fechaTo: String   # Formato YYYY-MM-DD
+  etapaActual: String
+  estadoActivo: Boolean
+  # ... puedes añadir más filtros según necesites
+}
+
+type OrdenCompraPaginated {
+    data: [OrdenCompra!]!
+    total: Int!
+    totalPages: Int!
+    page: Int!
+    pageSize: Int!
+}
+
+type Query {
+  ordenCompra(id: ID!): OrdenCompra
+  ordenesCompra(
+      page: Int,
+      pageSize: Int,
+      filters: OrdenCompraFiltersInput,
+      orderBy: String # ej: "createdAt_ASC" o "montoVenta_DESC"
+  ): OrdenCompraPaginated
+}

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { handleError } from '@/shared/middleware/handleError';
+import { handleError } from '../../shared/middleware/handleError';
 import * as contactService from './contact.service';
 import { ContactoTipo } from '@prisma/client';
 
