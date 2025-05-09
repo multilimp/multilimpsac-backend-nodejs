@@ -11,6 +11,17 @@ export const listOrdenesProveedor = async (req: Request, res: Response) => {
   }
 };
 
+export const getOrdenesProveedorByOrdenCompraId = async (req: Request, res: Response) => {
+  try {
+    const ordenes = await ordenProveedorService.getOrdenesProveedorByOrdenCompraId(
+      parseInt(req.query.ordenCompraId as string, 10)
+    );
+    res.status(200).json(ordenes);
+  } catch (error) {
+    handleError({ res, error, msg: 'Error al listar órdenes de compra' });
+  }
+};
+
 export const createOrdenProveedor = async (req: Request, res: Response) => {
   try {
     const newOrden = await ordenProveedorService.createOrdenProveedor(req.body);
@@ -49,15 +60,3 @@ export const updateOrdenProveedor = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteOrdenProveedor = async (req: Request, res: Response) => {
-  try {
-    const id = parseInt(req.params.ordenProveedorId, 10);
-    if (isNaN(id)) {
-      return res.status(400).json({ message: 'ID de orden de proveedor inválido' });
-    }
-    await ordenProveedorService.deleteOrdenProveedor(id);
-    res.status(204).send();
-  } catch (error) {
-    handleError({ res, error, msg: 'Error al eliminar orden de proveedor' });
-  }
-};

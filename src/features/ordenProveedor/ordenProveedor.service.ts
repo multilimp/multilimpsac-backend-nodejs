@@ -32,6 +32,21 @@ const processOrdenProveedorData = (data: any) => {
   return data;
 }
 
+export const getOrdenesProveedorByOrdenCompraId = (ordenCompraId: number): Promise<OrdenProveedor[]> => {
+  return prisma.ordenProveedor.findMany({
+    where: { ordenCompraId },
+    include: {
+      empresa: true,
+      proveedor: true,
+      contactoProveedor: true,
+      ordenCompra: true,
+      productos: true,
+      pagos: true,
+      transportesAsignados: { include: { transporte: true, contactoTransporte: true, pagos: true } },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+}
 
 export const getAllOrdenesProveedor = (): Promise<OrdenProveedor[]> => {
   return prisma.ordenProveedor.findMany({
@@ -65,7 +80,7 @@ export const getOrdenProveedorById = (id: number): Promise<OrdenProveedor | null
 export const createOrdenProveedor = (data: CreateOrdenProveedorData): Promise<OrdenProveedor> => {
    if (!data.codigoOp) {
     throw new Error('Falta el campo requerido: codigoOp.');
-  }
+    }
   const processedData = processOrdenProveedorData(data);
   return prisma.ordenProveedor.create({
     data: processedData as any,
@@ -90,26 +105,3 @@ export const updateOrdenProveedor = (id: number, data: UpdateOrdenProveedorData)
   });
 };
 
-export const deleteOrdenProveedor = (id: number): Promise<OrdenProveedor> => {
-  // Considerar borrado en cascada o manejo de relaciones dependientes
-  return prisma.$transaction(async (tx) => {
-    // Eliminar OpProducto, PagoOrdenProveedor, TransporteAsignado (y sus pagos) si es necesario
-    await tx.opProducto.deleteMany({ where: { ordenProveedorId: id } });
-    await tx.pagoOrdenProveedor.deleteMany({ where: { ordenProveedorId: id } });
-    // Para TransporteAsignado, también eliminar sus pagos
-    const transportes = await tx.transporteAsignado.findMany({ where: { ordenProveedorId: id }, select: { id: true } });
-    const transporteIds = transportes.map(t => t.id);
-    if (transporteIds.length > 0) {
-      await tx.pagoTransporteAsignado.deleteMany({ where: { transporteAsignadoId: { in: transporteIds } } });
-      await tx.transporteAsignado.deleteMany({ where: { id: { in: transporteIds } } });
-    }
-
-    const deletedOrdenProveedor = await tx.ordenProveedor.delete({ where: { id } });
-    return deletedOrdenProveedor;
-  });
-  /*
-  return prisma.ordenProveedor.delete({
-    where: { id },
-  });
-  */
-};

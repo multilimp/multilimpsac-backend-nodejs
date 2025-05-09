@@ -19,10 +19,10 @@ import authRoutes from './modules/auth/auth.routes';
 import almacenRoutes from './modules/almacen/almacen.routes';
 import cotizacionRoutes from './modules/cotizacion/cotizacion.routes';
 import ordenCompraRoutes from './modules/ordenCompra/ordenCompra.routes';
-import ordenProveedorRoutes from './modules/ordenProveedor/ordenProveedor.routes';
 import productoRoutes from './modules/producto/producto.routes';
 import agrupacionOrdenCompraRoutes from './modules/agrupacionOrdenCompra/agrupacionOrdenCompra.routes';
 import { authenticateToken } from './shared/middleware/auth.middleware';
+import ordenProveedorRoutes from './features/ordenProveedor/ordenProveedor.routes';
 
 dotenv.config();
 
@@ -67,24 +67,28 @@ class Server {
 
     this.app.use(authenticateToken);
 
+    // entidades
     this.app.use('/api/ubigeo', ubigeoRoutes);
+    this.app.use('/api/transports', transportRoutes);
     this.app.use('/api/users', userRoutes);
     this.app.use('/api/clients', clientRoutes);
     this.app.use('/api/providers', providerRoutes);
     this.app.use('/api/provider-balance', providerBalanceRoutes);
     this.app.use('/api/bank-accounts', bankAccountRoutes);
-    this.app.use('/api/companies', companyRoutes);
-// ...existing code...
-    this.app.use('/api/transports', transportRoutes);
-    this.app.use('/api/files', fileRoutes);
     this.app.use('/api/contacts', contactRoutes);
+    this.app.use('/api/companies', companyRoutes);
     this.app.use('/api/catalogs', catalogRoutes);
+
+    // procesos
     this.app.use('/api/almacenes', almacenRoutes);
     this.app.use('/api/cotizaciones', cotizacionRoutes);
     this.app.use('/api/ordenes-compra', ordenCompraRoutes);
     this.app.use('/api/ordenes-proveedor', ordenProveedorRoutes);
     this.app.use('/api/productos', productoRoutes);
     this.app.use('/api/agrupaciones-oc', agrupacionOrdenCompraRoutes);
+
+    // archivos
+    this.app.use('/api/files', fileRoutes);
 
     this.app.use((req: Request, res: Response) => {
       res.status(404).json({ message: 'Ruta no encontrada' });
