@@ -22,7 +22,7 @@ import ordenCompraRoutes from './modules/ordenCompra/ordenCompra.routes';
 import productoRoutes from './modules/producto/producto.routes';
 import agrupacionOrdenCompraRoutes from './modules/agrupacionOrdenCompra/agrupacionOrdenCompra.routes';
 import { authenticateToken } from './shared/middleware/auth.middleware';
-import ventasRoutes from './modules/features/ventas/ventas.routes';
+import ventasRoutes from './features/ventas/ventas.routes';
 import ordenProveedorRoutes from './features/ordenProveedor/ordenProveedor.routes';
 
 dotenv.config();

@@ -1,6 +1,6 @@
-import prisma from '../../../database/prisma';
 import { OrdenCompra, Prisma } from '../../../generated/prisma';
-import * as ocService from '../../ordenCompra/ordenCompra.service';
+import prisma from '../../database/prisma';
+import * as ocService from '../../modules/ordenCompra/ordenCompra.service';
 
 export const getAllVentas = async (
   page: number,

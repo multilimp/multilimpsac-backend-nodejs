@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { handleError } from '../../../shared/middleware/handleError';
+import { handleError } from '../../shared/middleware/handleError';
 import * as ventasService from './ventas.service';
 
 export const listVentas = async (req: Request, res: Response) => {
