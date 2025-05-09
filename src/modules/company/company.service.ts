@@ -1,5 +1,5 @@
 
-import { Empresa } from '../../../generated/prisma';
+import { Empresa } from '@prisma/client';
 import prisma from '../../database/prisma';
 
 type CreateCompanyData = Omit<Empresa, 'id' | 'createdAt' | 'updatedAt'>;

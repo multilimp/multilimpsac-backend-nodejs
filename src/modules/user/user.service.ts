@@ -1,4 +1,4 @@
-import { Usuario } from '../../../generated/prisma';
+import { Usuario } from '@prisma/client';
 import prisma from '../../database/prisma';
 
 // Tipos para los datos de entrada (pueden moverse a un archivo de tipos)

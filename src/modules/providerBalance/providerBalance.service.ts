@@ -1,8 +1,8 @@
-import { SaldoProveedor } from '../../../generated/prisma';
+import { SaldoProveedor } from '@prisma/client';
 import prisma from '../../database/prisma';
 
 
-// import { SaldoProveedor } from '../../../generated/prisma'; // Comentar o eliminar la línea anterior
+// import { SaldoProveedor } from '@prisma/client'; // Comentar o eliminar la línea anterior
 
 type CreateProviderBalanceData = Omit<SaldoProveedor, 'id' | 'createdAt' | 'updatedAt'>;
 type UpdateProviderBalanceData = Partial<CreateProviderBalanceData>;

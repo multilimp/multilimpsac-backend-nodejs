@@ -1,4 +1,4 @@
-import { TransporteAsignado } from '../../../generated/prisma';
+import { TransporteAsignado } from '@prisma/client';
 import prisma from '../../database/prisma';
 type CreateTransporteAsignadoData = Omit<TransporteAsignado, 'id' | 'createdAt' | 'updatedAt'>;
 type UpdateTransporteAsignadoData = Partial<CreateTransporteAsignadoData>;

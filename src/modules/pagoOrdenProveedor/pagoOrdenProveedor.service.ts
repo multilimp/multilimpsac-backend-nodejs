@@ -1,4 +1,4 @@
-import { PagoOrdenProveedor } from '../../../generated/prisma';
+import { PagoOrdenProveedor } from '@prisma/client';
 import prisma from '../../database/prisma';
 type CreatePagoOrdenProveedorData = Omit<PagoOrdenProveedor, 'id' | 'createdAt' | 'updatedAt'>;
 type UpdatePagoOrdenProveedorData = Partial<CreatePagoOrdenProveedorData>;

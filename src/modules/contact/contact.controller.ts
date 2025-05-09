@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { handleError } from '../../shared/middleware/handleError';
 import * as contactService from './contact.service';// Importar el enum
-import { ContactoTipo } from '../../../generated/prisma';
+import { ContactoTipo } from '@prisma/client';
 
 export const listContacts = async (req: Request, res: Response) => {
   try {

@@ -1,4 +1,4 @@
-import { Almacen, Prisma } from '../../../generated/prisma';
+import { Almacen, Prisma } from '@prisma/client';
 import prisma from '../../database/prisma';
 
 type CreateAlmacenData = Omit<Almacen, 'id' | 'createdAt' | 'updatedAt'>;

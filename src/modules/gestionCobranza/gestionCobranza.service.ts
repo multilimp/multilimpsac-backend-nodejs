@@ -1,4 +1,4 @@
-import { GestionCobranza } from '../../../generated/prisma';
+import { GestionCobranza } from '@prisma/client';
 import prisma from '../../database/prisma';
 type CreateGestionCobranzaData = Omit<GestionCobranza, 'id' | 'createdAt' | 'updatedAt'>;
 type UpdateGestionCobranzaData = Partial<CreateGestionCobranzaData>;

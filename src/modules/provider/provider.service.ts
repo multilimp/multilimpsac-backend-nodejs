@@ -1,8 +1,8 @@
-import { Proveedor } from '../../../generated/prisma';
+import { Proveedor } from '@prisma/client';
 import prisma from '../../database/prisma';
 // Cambiar la importación para usar el alias @prisma/client
 
-// import { Proveedor } from '../../../generated/prisma'; // Comentar o eliminar la línea anterior
+// import { Proveedor } from '@prisma/client'; // Comentar o eliminar la línea anterior
 
 type CreateProviderData = Omit<Proveedor, 'id' | 'createdAt' | 'updatedAt'>;
 type UpdateProviderData = Partial<CreateProviderData>;

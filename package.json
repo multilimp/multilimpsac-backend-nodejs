@@ -4,11 +4,11 @@
   "version": "1.0.0",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "ts-node-dev -r tsconfig-paths/register --respawn --transpile-only index.ts",
-    "build": "tsc && npm run copy-prisma",
+    "dev": "ts-node-dev -r tsconfig-paths/register --respawn index.ts",
+    "build": "prisma generate && tsc",
     "generate": "prisma generate",
     "start": "node dist/index.js",
-    "copy-prisma": "cp -r generated dist/generated",
+    "copy-prisma": "echo \"copy-prisma no es necesario con la importación estándar\"",
     "prisma:refresh": "prisma generate && prisma db push"
   },
   "author": "Name",
