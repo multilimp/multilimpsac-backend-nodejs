@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
 import { handleError } from '../../shared/middleware/handleError';
 import * as ventasService from './ventas.service';
-import { AnalyzePdfResult, GeminiService, GeminiServiceException } from '@/shared/services/gemini.service';
-import logger from '@/shared/config/logger';
+import { AnalyzePdfResult, GeminiService, GeminiServiceException } from '../../shared/services/gemini.service';
 import formidable from 'formidable';
+import logger from '../../shared/config/logger';
 
 export const listVentas = async (req: Request, res: Response) => {
   try {
@@ -36,6 +36,44 @@ export const getVenta = async (req: Request, res: Response) => {
     res.status(200).json(venta);
   } catch (error) {
     handleError({ res, statusCode: 404, error });
+  }
+};
+
+
+export const createVenta = async (req: Request, res: Response) => {
+  try {
+    const data = req.body;
+
+    const nuevaVenta = await ventasService.createVenta(data);
+    res.status(201).json(nuevaVenta);
+  } catch (error) {
+    handleError({ res, error, msg: 'Error al crear la venta' });
+  }
+};
+
+
+export const updateVenta = async (req: Request, res: Response) => {
+  try {
+    const id   = parseInt(req.params.ventaId, 10);
+    const data = req.body;
+    if (isNaN(id)) throw new Error('NOT_FOUND');
+
+    const updated = await ventasService.updateVenta(id, data);
+    res.status(200).json(updated);
+  } catch (error) {
+    handleError({ res, error, msg: 'Error al actualizar la venta' });
+  }
+};
+
+export const deleteVenta = async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.ventaId, 10);
+    if (isNaN(id)) throw new Error('NOT_FOUND');
+
+    const inactivated = await ventasService.deleteVenta(id);
+    res.status(200).json(inactivated);
+  } catch (error) {
+    handleError({ res, error, msg: 'Error al eliminar la venta' });
   }
 };
 
