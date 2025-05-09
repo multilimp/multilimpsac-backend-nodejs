@@ -7,7 +7,7 @@ import bankAccountRoutes from './modules/bankAccount/bankAccount.routes';
 import companyRoutes from './modules/company/company.routes';
 import transportRoutes from './modules/transport/transport.routes';
 import fileRoutes from './modules/file/file.routes';
-import contactRoutes from './modules/contact/contact.routes';
+import contactRoutes from './entities/contact/contact.routes';
 import catalogRoutes from './modules/catalog/catalog.routes';
 import userRoutes from './modules/user/user.routes';
 import authRoutes from './modules/auth/auth.routes';

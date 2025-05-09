@@ -254,5 +254,5 @@
 (Empresa / Clientes / Proveedor / Transporte)
 
 - [ ] Usuario y contraseña de mesa de parte
-- [ ] 2 cuentas de banco
-- [ ] 2 CCI
+- [x] 2 cuentas de banco
+- [x] 2 CCI

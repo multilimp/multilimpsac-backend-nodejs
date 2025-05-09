@@ -62,6 +62,11 @@ Debes devolver la respuesta ÚNICAMENTE en formato JSON válido, sin ningún tex
 La estructura del JSON debe ser la siguiente:
 {
     "ventaPrivada": false,
+    "empresaRuc": "EXTRAER_VALOR_O_NULL", --> datos del proveedor
+    "empresaRazonSocial": "EXTRAER_VALOR_O_NULL",
+    "clienteRuc": "EXTRAER_VALOR_O_NULL", --> datos de la entidad
+    "clienteRazonSocial": "EXTRAER_VALOR_O_NULL",
+    "codigoUnidadEjecutora" : "EXTRAER_VALOR_O_NULL", --> clienteRazonSocial [codigoUnidadEjecutora]
     "provinciaEntrega": "EXTRAER_VALOR_O_NULL",
     "distritoEntrega": "EXTRAER_VALOR_O_NULL",
     "departamentoEntrega": "EXTRAER_VALOR_O_NULL",
@@ -70,13 +75,13 @@ La estructura del JSON debe ser la siguiente:
     "fechaEntrega": "EXTRAER_FECHA_ISO_O_NULL",
     "montoVenta": "EXTRAER_NUMERO_O_NULL",
     "fechaForm": "EXTRAER_FECHA_ISO_O_NULL",
-    "fechaMaxForm": "EXTRAER_FECHA_ISO_O_NULL",
+    "fechaMaxForm": "EXTRAER DE FECHA MAX ENTREGA",
+    "fechaMaxEntrega": "EXTRAER_FECHA_ISO_O_NULL",
     "productos": [
         "EXTRAER_PRODUCTO_1_COMO_STRING",
         "EXTRAER_PRODUCTO_2_COMO_STRING"
     ],
     "siaf": "EXTRAER_NUMERO_O_NULL",
-    "etapaSiaf": "EXTRAER_VALOR_O_NULL",
     "fechaSiaf": "EXTRAER_FECHA_ISO_O_NULL"
 }
 

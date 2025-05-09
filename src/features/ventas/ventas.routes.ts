@@ -9,5 +9,5 @@ router.get('/:ventaId', getVenta);
 router.post('/analyze-pdf', analyzePdfForVenta);
 router.post('', createVenta);
 router.put('/:ventaId', updateVenta);
-router.delete('/:ventaId', deleteVenta);
+// router.delete('/:ventaId', deleteVenta);
 export default router;

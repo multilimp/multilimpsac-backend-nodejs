@@ -1,22 +1,91 @@
 import { Response } from 'express';
-import logger from '../config/logger';
+import logger from '../config/logger'; // Ajusta la ruta a tu logger
+import { ZodError } from 'zod';
+import { Prisma } from '@prisma/client';
 
 interface HandleErrorParams {
   res: Response;
-  error?: any; // O un tipo de error más específico si lo tienes
+  error: any;
+  statusCode?: number;
   msg?: string;
-  statusCode?: number; // Añadir opción para código de estado personalizado
 }
 
-export const handleError = ({ res, error, msg, statusCode = 500 }: HandleErrorParams): Response => {
-  // Usar el logger para registrar el error
-  logger.error(msg || error?.message || 'Error desconocido', { error });
+export const handleError = ({ res, error, statusCode = 500, msg = 'Ocurrió un error inesperado.' }: HandleErrorParams): void => {
+  logger.error(msg, error);
 
-  // Devolver una respuesta JSON estandarizada
-  return res.status(statusCode).json({
+  if (error instanceof ZodError) {
+    res.status(400).json({
+      success: false,
+      message: 'Error de validación.',
+      errors: error.errors,
+    });
+    return;
+  }
+// ...existing code...
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    let responseMessage = msg;
+    let responseStatusCode = statusCode;
+    let responseFields;
+    let details;
+
+    switch (error.code) {
+      case 'P2002':
+        responseStatusCode = 409;
+        const target = error.meta?.target as string[] | undefined;
+        const fields = target ? target.join(', ') : 'un campo';
+        responseMessage = `Error de restricción de unicidad: Ya existe un registro con el mismo valor para ${fields}.`;
+        responseFields = target;
+        break;
+      case 'P2003':
+        responseStatusCode = 400;
+        const fieldName = error.meta?.field_name as string | undefined;
+        // Mensaje más directo, similar al error de la base de datos
+        responseMessage = `Falló la restricción de clave foránea en el campo: ${fieldName || 'desconocido'}.`;
+        details = `El valor proporcionado para '${fieldName || 'desconocido'}' no existe en la tabla referenciada o una operación relacionada viola la integridad referencial.`;
+        break;
+      case 'P2025':
+        responseStatusCode = 404;
+        responseMessage = 'Error: El registro solicitado para la operación no fue encontrado.';
+        break;
+
+      default:
+        responseStatusCode = 400;
+        responseMessage = `Error de base de datos Prisma (Código: ${error.code}).`;
+        break;
+    }
+    res.status(responseStatusCode).json({
+      success: false,
+      message: responseMessage,
+      code: error.code,
+      fields: responseFields, // Puede ser undefined si no aplica
+      details: details, // Puede ser undefined si no aplica
+    });
+    return;
+  }
+
+  if (error instanceof Prisma.PrismaClientValidationError) {
+    res.status(400).json({
+        success: false,
+        message: 'Error de validación de datos de la base de datos. Verifique los tipos y campos requeridos.',
+        details: error.message,
+    });
+    return;
+  }
+
+
+  // Para errores personalizados que tengan una propiedad statusCode y message
+  if (error.statusCode && error.message) {
+    res.status(error.statusCode).json({
+      success: false,
+      message: error.message,
+    });
+    return;
+  }
+
+  // Fallback para errores genéricos
+  res.status(statusCode).json({
     success: false,
-    message: msg ?? error?.message ?? 'Ocurrió un error inesperado',
-    // Opcional: No exponer detalles del error en producción
-    // error: process.env.NODE_ENV === 'development' ? error : undefined,
+    message: msg,
+    error: process.env.NODE_ENV === 'development' ? error.message : undefined, // Solo mostrar error.message en desarrollo
   });
 };
