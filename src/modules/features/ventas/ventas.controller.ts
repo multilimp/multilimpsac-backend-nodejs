@@ -35,3 +35,41 @@ export const getVenta = async (req: Request, res: Response) => {
     handleError({ res, statusCode: 404, error });
   }
 };
+
+
+export const createVenta = async (req: Request, res: Response) => {
+  try {
+    const data = req.body;
+
+    const nuevaVenta = await ventasService.createVenta(data);
+    res.status(201).json(nuevaVenta);
+  } catch (error) {
+    handleError({ res, error, msg: 'Error al crear la venta' });
+  }
+};
+
+
+export const updateVenta = async (req: Request, res: Response) => {
+  try {
+    const id   = parseInt(req.params.ventaId, 10);
+    const data = req.body;
+    if (isNaN(id)) throw new Error('NOT_FOUND');
+
+    const updated = await ventasService.updateVenta(id, data);
+    res.status(200).json(updated);
+  } catch (error) {
+    handleError({ res, error, msg: 'Error al actualizar la venta' });
+  }
+};
+
+export const deleteVenta = async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.ventaId, 10);
+    if (isNaN(id)) throw new Error('NOT_FOUND');
+
+    const inactivated = await ventasService.deleteVenta(id);
+    res.status(200).json(inactivated);
+  } catch (error) {
+    handleError({ res, error, msg: 'Error al eliminar la venta' });
+  }
+};

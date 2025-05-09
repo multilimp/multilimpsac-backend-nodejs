@@ -24,8 +24,9 @@ export const updateOrdenCompra = (id: number, data: Prisma.OrdenCompraUpdateInpu
 };
 
 export const deleteOrdenCompra = (id: number): Promise<OrdenCompra> => {
-  return prisma.ordenCompra.delete({
+  return prisma.ordenCompra.update({
     where: { id },
+    data: { estadoActivo: false }
   });
 };
 
