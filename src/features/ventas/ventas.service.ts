@@ -35,7 +35,7 @@ export const getAllVentas = async (
       { cliente: { razonSocial: { contains: filters.search, mode: 'insensitive' } } }
     ];
   }
-
+  where.estadoActivo = true;
   const total = await ocService.getAllOrdenesCompra({ where }).then(list => list.length);
 
   const args: Prisma.OrdenCompraFindManyArgs = {
@@ -75,4 +75,28 @@ export const getVentaById = (
       OrdenCompraAgrupada: true
     }
   });
+};
+
+export const createVenta = async (
+  data: Prisma.OrdenCompraCreateInput
+): Promise<OrdenCompra> => {
+  return ocService.createOrdenCompra({
+    ...data,
+    etapaActual: data.etapaActual ?? 'creacion',
+    estadoActivo: data.estadoActivo ?? true
+  });
+};
+
+
+export const updateVenta = (
+  id: number,
+  data: Prisma.OrdenCompraUpdateInput
+): Promise<OrdenCompra> => {
+  return ocService.updateOrdenCompra(id, data);
+};
+
+export const deleteVenta = (
+  id: number
+): Promise<OrdenCompra> => {
+  return ocService.updateOrdenCompra(id, { estadoActivo: false });
 };
