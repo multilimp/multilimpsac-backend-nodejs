@@ -45,5 +45,6 @@ export const deleteCatalog = (id: number): Promise<Catalogo> => {
 export const getCatalogsByCompanyId = (companyId: number): Promise<Catalogo[]> => {
   return prisma.catalogo.findMany({
     where: { empresaId: companyId },
+    include: { empresa: true }
   });
 };

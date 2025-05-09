@@ -8,5 +8,5 @@ router.get('', listVentas);
 router.get('/:ventaId', getVenta);
 router.post('', createVenta);
 router.put('/:ventaId', updateVenta);
-router.delete('/:ventaId', deleteVenta);
+// router.delete('/:ventaId', deleteVenta);
 export default router;

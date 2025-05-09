@@ -7,12 +7,19 @@ type CreateCompanyData = Omit<Empresa, 'id' | 'createdAt' | 'updatedAt'>;
 type UpdateCompanyData = Partial<CreateCompanyData & { logoUrl: string | null }>;
 
 export const getAllCompanies = (): Promise<Empresa[]> => {
-  return prisma.empresa.findMany();
+  return prisma.empresa.findMany({
+    include: {
+      catalogos: true,
+    },
+  });
 };
 
 export const getCompanyById = (id: number): Promise<Empresa | null> => {
   return prisma.empresa.findUnique({
     where: { id },
+    include: {
+      catalogos: true,
+    },
   });
 };
 
