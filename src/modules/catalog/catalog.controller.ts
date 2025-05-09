@@ -75,3 +75,15 @@ export const deleteCatalog = async (req: Request, res: Response) => {
     handleError({ res, error, msg: 'Error al eliminar catálogo' });
   }
 };
+
+export const listCatalogsByCompany = async (req: Request, res: Response) => {
+  try {
+    const companyId = parseInt(req.params.companyId, 10);
+    if (isNaN(companyId)) throw new Error('NOT_FOUND');
+
+    const catalogs = await catalogService.getCatalogsByCompanyId(companyId);
+    res.status(200).json(catalogs);
+  } catch (error) {
+    handleError({ res, error, msg: 'Error al listar catálogos por empresa' });
+  }
+};
