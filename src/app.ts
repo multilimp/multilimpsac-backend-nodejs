@@ -22,6 +22,7 @@ import ordenCompraRoutes from './modules/ordenCompra/ordenCompra.routes';
 import productoRoutes from './modules/producto/producto.routes';
 import agrupacionOrdenCompraRoutes from './modules/agrupacionOrdenCompra/agrupacionOrdenCompra.routes';
 import { authenticateToken } from './shared/middleware/auth.middleware';
+import ventasRoutes from './modules/features/ventas/ventas.routes';
 import ordenProveedorRoutes from './features/ordenProveedor/ordenProveedor.routes';
 
 dotenv.config();
@@ -86,6 +87,7 @@ class Server {
     this.app.use('/api/ordenes-proveedor', ordenProveedorRoutes);
     this.app.use('/api/productos', productoRoutes);
     this.app.use('/api/agrupaciones-oc', agrupacionOrdenCompraRoutes);
+    this.app.use('/api/ventas', ventasRoutes);
 
     // archivos
     this.app.use('/api/files', fileRoutes);
