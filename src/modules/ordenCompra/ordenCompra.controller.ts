@@ -60,7 +60,7 @@ export const deleteOrdenCompra = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'ID de orden de compra inválido' });
     }
     const ordenInactiva = await ordenCompraService.deleteOrdenCompra(id);
-    res.status(200).json(ordenInactiva); 
+    res.status(200).json(ordenInactiva);
   } catch (error) {
     handleError({ res, error, msg: 'Error al eliminar orden de compra' });
   }

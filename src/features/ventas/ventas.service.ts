@@ -77,16 +77,64 @@ export const getVentaById = (
   });
 };
 
-export const createVenta = async (
-  data: Prisma.OrdenCompraCreateInput
-): Promise<OrdenCompra> => {
-  return ocService.createOrdenCompra({
-    ...data,
-    etapaActual: data.etapaActual ?? 'creacion',
-    estadoActivo: data.estadoActivo ?? true
-  });
-};
+export const createVenta = async (data: Prisma.OrdenCompraCreateInput): Promise<OrdenCompra> => {
+  try {
+    // 1. Validar que exista empresa
+    const empresaId = data.empresa?.connect?.id;
+    if (!empresaId) {
+      throw new Error('Se requiere el ID de la empresa');
+    }
 
+    // 2. Generar código único de venta
+    const codigoVenta = await ocService.generateUniqueOrdenCompraCode(empresaId);
+
+    // 3. Preparar los datos para la creación
+    const ventaData: Prisma.OrdenCompraCreateInput = {
+      empresa: { connect: { id: empresaId } },
+      cliente: data.cliente,
+      contactoCliente: data.contactoCliente,
+      catalogoEmpresa: data.catalogoEmpresa,
+
+      // Datos básicos
+      codigoVenta,
+      ventaPrivada: data.ventaPrivada ?? false,
+
+      // Datos de entrega
+      departamentoEntrega: data.departamentoEntrega,
+      provinciaEntrega: data.provinciaEntrega,
+      distritoEntrega: data.distritoEntrega,
+      direccionEntrega: data.direccionEntrega,
+      referenciaEntrega: data.referenciaEntrega,
+      fechaEntrega: data.fechaEntrega ? new Date(data.fechaEntrega as any) : undefined,
+
+      // Datos de formulario y SIAF
+      fechaForm: data.fechaForm ? new Date(data.fechaForm as any) : undefined,
+      fechaMaxForm: data.fechaMaxForm ? new Date(data.fechaMaxForm as any) : undefined,
+      montoVenta: typeof data.montoVenta === 'string' ? parseFloat(data.montoVenta) : data.montoVenta,
+      siaf: data.siaf,
+      etapaSiaf: data.etapaSiaf,
+      fechaSiaf: data.fechaSiaf ? new Date(data.fechaSiaf as any) : undefined,
+
+      // Documentos
+      documentoOce: data.documentoOce,
+      documentoOcf: data.documentoOcf,
+
+      // Productos y estado
+      productos: data.productos ? JSON.stringify(data.productos) : undefined,
+      etapaActual: 'creacion',
+      estadoActivo: true,
+      fechaEmision: new Date()
+    };
+
+    // 4. Crear la venta
+    return ocService.createOrdenCompra(ventaData);
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(`Error al crear la venta: ${error.message}`);
+    }
+    throw new Error('Error desconocido al crear la venta');
+  }
+};
 
 export const updateVenta = (
   id: number,
