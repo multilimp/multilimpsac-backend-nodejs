@@ -120,7 +120,7 @@ export const createVenta = async (data: Prisma.OrdenCompraCreateInput): Promise<
       documentoOcf: data.documentoOcf,
 
       // Productos y estado
-      productos: data.productos ? JSON.stringify(data.productos) : undefined,
+      productos: data.productos ,
       etapaActual: 'creacion',
       estadoActivo: true,
       fechaEmision: new Date()
