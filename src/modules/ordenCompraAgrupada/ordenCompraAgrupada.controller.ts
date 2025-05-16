@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
-import * as service from './ordenCompraAgrupada.service';
 import { handleError } from '../../shared/middleware/handleError';
+import * as service from './ordenCompraAgrupada.service';
+
 export const listOrdenCompraAgrupada = async (req: Request, res: Response) => {
   try {
     const items = await service.getAllOrdenCompraAgrupada();
@@ -9,6 +10,7 @@ export const listOrdenCompraAgrupada = async (req: Request, res: Response) => {
     handleError({ res, error, msg: 'Error al listar ordenes compra agrupadas' });
   }
 };
+
 export const getOrdenCompraAgrupada = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id, 10);
@@ -20,6 +22,7 @@ export const getOrdenCompraAgrupada = async (req: Request, res: Response) => {
     handleError({ res, error, msg: 'Error al obtener orden compra agrupada' });
   }
 };
+
 export const createOrdenCompraAgrupada = async (req: Request, res: Response) => {
   try {
     const item = await service.createOrdenCompraAgrupada(req.body);
@@ -28,6 +31,7 @@ export const createOrdenCompraAgrupada = async (req: Request, res: Response) => 
     handleError({ res, error, msg: 'Error al crear orden compra agrupada' });
   }
 };
+
 export const updateOrdenCompraAgrupada = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id, 10);
@@ -38,6 +42,7 @@ export const updateOrdenCompraAgrupada = async (req: Request, res: Response) => 
     handleError({ res, error, msg: 'Error al actualizar orden compra agrupada' });
   }
 };
+
 export const deleteOrdenCompraAgrupada = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id, 10);
