@@ -102,22 +102,7 @@ input OrdenCompraFiltersInput {
   # ... puedes añadir más filtros según necesites
 }
 
-type OrdenCompraPaginated {
-    data: [OrdenCompra!]!
-    total: Int!
-    totalPages: Int!
-    page: Int!
-    pageSize: Int!
-}
-
-# Renombramos este tipo para mantener consistencia con el nombre usado en schema.graphql
-type ResultadoPaginadoOrdenCompra {
-  data: [OrdenCompra!]!
-  total: Int!
-  totalPages: Int!
-  page: Int!
-  pageSize: Int!
-}
+# Se eliminaron los tipos de paginación ya que no se utilizarán
 
 # Input para crear/actualizar órdenes de compra
 input OrdenCompraInput {

@@ -14,7 +14,23 @@ import { manejarErrorGraphQL } from './errorHandling';
 export function getFields(info: GraphQLResolveInfo): any {
   try {
     // Usar graphqlFields para extraer la estructura de campos solicitados
-    return graphqlFields(info);
+    const fields = graphqlFields(info);
+    
+    // Anotar en el log para diagnóstico
+    logger.debug(`Campos solicitados en GraphQL: ${JSON.stringify(fields)}`);
+    
+    // Análisis de relaciones para depuración
+    if (fields && typeof fields === 'object') {
+      const relaciones = Object.keys(fields).filter(key => 
+        typeof fields[key] === 'object' && Object.keys(fields[key]).length > 0
+      );
+      
+      if (relaciones.length > 0) {
+        logger.debug(`Relaciones detectadas: ${relaciones.join(', ')}`);
+      }
+    }
+    
+    return fields;
   } catch (error) {
     logger.error(`Error extrayendo campos de GraphQL: ${(error as Error).message}`);
     // En caso de error, devolvemos un objeto vacío

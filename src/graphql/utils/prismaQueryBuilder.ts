@@ -54,14 +54,34 @@ export function buildPrismaSelectObject(fields: string[], entityName?: string): 
   
   // Obtener mapeos para la entidad especificada
   const relationMappings = getEntityMappings(entityName);
-    fields.forEach(field => {
+  
+  // Asegurarnos de incluir campos críticos para entidades específicas
+  if (entityName === 'OrdenCompra') {
+    // Siempre incluir campos críticos para OrdenCompra
+    result.select.id = true;
+    result.select.clienteId = true;
+    result.select.empresaId = true;
+  }
+  
+  fields.forEach(field => {
     // Manejar campos simples vs relaciones
     if (!field.includes('.')) {
       // Campo simple (no es relación anidada)
       if (relationMappings[field] && !isJsonField(entityName, field)) {
         // Este es un campo de relación conocido (y no es un campo JSON)
         result.include = result.include || {};
-        result.include[relationMappings[field]] = true;
+        
+        // Si es cliente o empresa en OrdenCompra, manejo especial
+        if (entityName === 'OrdenCompra' && (field === 'cliente' || field === 'empresa')) {
+          // Usar true para indicar que queremos toda la relación
+          result.include[relationMappings[field]] = true;
+          
+          // Registrar que estamos haciendo un tratamiento especial para estas relaciones
+          logger.debug(`Detectada relación importante para OrdenCompra: ${field}`);
+        } else {
+          // Para otras relaciones, comportamiento normal
+          result.include[relationMappings[field]] = true;
+        }
       } else {
         // Campo regular o campo JSON
         result.select[field] = true;
@@ -76,26 +96,34 @@ export function buildPrismaSelectObject(fields: string[], entityName?: string): 
       
       // Asegurar que incluimos la relación
       result.include = result.include || {};
-      result.include[relationName] = result.include[relationName] || { select: {} };
       
-      // Si tiene múltiples niveles de anidamiento
-      if (parts.length > 2) {
-        let current = result.include[relationName];
+      // Si es una relación crítica como cliente o empresa, usar true directamente
+      if (entityName === 'OrdenCompra' && (topLevelField === 'cliente' || topLevelField === 'empresa')) {
+        result.include[relationName] = true;
+        logger.debug(`Usando include completo para relación crítica: ${topLevelField}`);
+      } else {
+        // Para otras relaciones, usar select anidado
+        result.include[relationName] = result.include[relationName] || { select: {} };
         
-        // Navegar por la jerarquía de relaciones
-        for (let i = 1; i < parts.length - 1; i++) {
-          const part = parts[i];
-          current.include = current.include || {};
-          current.include[part] = current.include[part] || { select: {} };
-          current = current.include[part];
+        // Si tiene múltiples niveles de anidamiento
+        if (parts.length > 2) {
+          let current = result.include[relationName];
+          
+          // Navegar por la jerarquía de relaciones
+          for (let i = 1; i < parts.length - 1; i++) {
+            const part = parts[i];
+            current.include = current.include || {};
+            current.include[part] = current.include[part] || { select: {} };
+            current = current.include[part];
+          }
+          
+          // Añadir el campo de nivel más bajo
+          const lastPart = parts[parts.length - 1];
+          current.select[lastPart] = true;
+        } else if (parts.length === 2) {
+          // Caso simple de un nivel de anidamiento
+          result.include[relationName].select[parts[1]] = true;
         }
-        
-        // Añadir el campo de nivel más bajo
-        const lastPart = parts[parts.length - 1];
-        current.select[lastPart] = true;
-      } else if (parts.length === 2) {
-        // Caso simple de un nivel de anidamiento
-        result.include[relationName].select[parts[1]] = true;
       }
     }
   });
@@ -132,31 +160,40 @@ export function generatePrismaSelect(info: GraphQLResolveInfo, entityName?: stri
 export function createOptimizedQueryParams(info: GraphQLResolveInfo, entityName?: string): any {
   const selection = generatePrismaSelect(info, entityName);
   
+  // Log para diagnóstico
+  logger.debug(`Selección generada para ${entityName || 'entidad desconocida'}: 
+    Select: ${JSON.stringify(selection.select || {})}
+    Include: ${JSON.stringify(selection.include || {})}`);
+    
   // Si hay tanto select como include, debemos consolidar todo en un solo tipo
   // Para evitar el error "Please either use `include` or `select`, but not both at the same time."
   if (selection.select && selection.include) {
     logger.debug('Se detectaron campos y relaciones - consolidando en un solo tipo de consulta');
     
-    // Decidir si usar select o include como base
-    // Si hay más campos simples que relaciones, usamos select y movemos las relaciones allí
-    if (Object.keys(selection.select).length >= Object.keys(selection.include).length) {
-      // Usar select como base
-      const consolidatedSelect = { ...selection.select };
-      
-      // Mover las relaciones a select
-      Object.entries(selection.include).forEach(([key, value]) => {
-        consolidatedSelect[key] = value;
+    // Mejorado: Combinar los campos del select dentro del include para asegurar que se carguen todos
+    const include = { ...selection.include };
+    
+    // Incluir los campos básicos necesarios
+    include._count = true; // Asegura que los contadores estén disponibles
+    
+    // Asegurar que los IDs de relación estén incluidos
+    if (entityName === 'OrdenCompra') {
+      include.id = true;
+      include.clienteId = true;
+      include.empresaId = true;
+      // Incluir cualquier otro campo básico importante
+      Object.keys(selection.select || {}).forEach(field => {
+        include[field] = true;
       });
-      
-      return { select: consolidatedSelect };
     } else {
-      // Usar include como base
-      // Añadir todos los campos simples en la raíz del select
-      return {
-        include: selection.include,
-        select: selection.select
-      };
+      // Para otras entidades, simplemente usar el include
+      Object.keys(selection.select || {}).forEach(field => {
+        include[field] = true;
+      });
     }
+    
+    logger.debug(`Include optimizado: ${JSON.stringify(include)}`);
+    return { include };
   }
   
   return {

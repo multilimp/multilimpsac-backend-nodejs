@@ -44,11 +44,9 @@ query GetOrdenCompraConProductosJSON {
   }
 }
 
-# 4. CONSULTA PAGINADA CON FILTROS - Obtener una lista paginada
-query GetOrdenesCompraPaginadas {
+# 4. CONSULTA CON FILTROS - Obtener una lista filtrada
+query GetOrdenesCompraConFiltros {
   ordenesCompra(
-    page: 1,
-    pageSize: 10,
     filters: {
       fechaFrom: "2024-01-01",
       fechaTo: "2024-03-31",
@@ -56,18 +54,12 @@ query GetOrdenesCompraPaginadas {
     },
     orderBy: "fechaEmision:DESC"
   ) {
-    data {
-      id
-      codigoVenta
-      fechaEmision
-      cliente {
-        razonSocial
-      }
+    id
+    codigoVenta
+    fechaEmision
+    cliente {
+      razonSocial
     }
-    total
-    page
-    pageSize
-    totalPages
   }
 }
 
@@ -75,23 +67,19 @@ query GetOrdenesCompraPaginadas {
 # Variables (en formato JSON):
 # {
 #   "ordenId": "123",
-#   "page": 1,
-#   "pageSize": 10
+#   "searchTerm": "Cliente"
 # }
-query GetOrdenCompraParametrizada($ordenId: ID!, $page: Int, $pageSize: Int) {
+query GetOrdenCompraParametrizada($ordenId: ID!, $searchTerm: String) {
   # Consulta individual
   ordenCompra(id: $ordenId) {
     id
     codigoVenta
     fechaEmision
   }
-  # Consulta paginada
-  ordenesCompra(page: $page, pageSize: $pageSize) {
-    data {
-      id
-      codigoVenta
-    }
-    total
+  # Consulta con filtro de búsqueda
+  ordenesCompra(filters: { search: $searchTerm }) {
+    id
+    codigoVenta
   }
 }
 

@@ -18,15 +18,12 @@ interface Activable {
 type Query {
   # Punto de entrada para health check
   healthCheck: String
-  
-  # Consultas de OrdenCompra
+    # Consultas de OrdenCompra
   ordenCompra(id: ID!): OrdenCompra
   ordenesCompra(
-    page: Int, 
-    pageSize: Int, 
     filters: OrdenCompraFiltersInput, 
     orderBy: String
-  ): ResultadoPaginadoOrdenCompra
+  ): [OrdenCompra!]!
 }
 
 # Base para mutations
