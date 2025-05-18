@@ -1,0 +1,55 @@
+# IMPORTANTE: Solo usar comentarios con # en archivos GraphQL.
+# Esquema GraphQL principal
+# Define los tipos comunes y básicos compartidos por múltiples entidades
+
+# Interfaces comunes
+interface Timestamped {
+  createdAt: String
+  updatedAt: String
+}
+
+interface Activable {
+  activo: Boolean
+}
+
+# Tipos base del sistema
+
+# Base para queries
+type Query {
+  # Punto de entrada para health check
+  healthCheck: String
+  
+  # Consultas de OrdenCompra
+  ordenCompra(id: ID!): OrdenCompra
+  ordenesCompra(
+    page: Int, 
+    pageSize: Int, 
+    filters: OrdenCompraFiltersInput, 
+    orderBy: String
+  ): ResultadoPaginadoOrdenCompra
+}
+
+# Base para mutations
+type Mutation {
+  # Mutaciones de OrdenCompra
+  crearOrdenCompra(input: OrdenCompraInput!): OrdenCompra
+  actualizarOrdenCompra(id: ID!, input: OrdenCompraInput!): OrdenCompra
+  cambiarEstadoOrdenCompra(id: ID!, activo: Boolean!): OrdenCompra
+}
+
+# Nota: Las mutaciones han sido reemplazadas por servicios REST existentes
+# Las consultas optimizadas proveen acceso a datos de manera eficiente
+
+# Enumeraciones comunes
+enum OrderDirection {
+  ASC
+  DESC
+}
+
+enum PaymentMethod {
+  EFECTIVO
+  TRANSFERENCIA
+  CHEQUE
+  TARJETA
+  OTRO
+}

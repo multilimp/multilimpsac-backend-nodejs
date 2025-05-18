@@ -1,4 +1,5 @@
-import { Application, Request, Response } from 'express';
+import { Application, Request, Response, NextFunction } from 'express';
+import express from 'express';
 import ubigeoRoutes from './modules/ubigeo/ubigeo.routes';
 import clientRoutes from './modules/client/client.routes';
 import providerRoutes from './modules/provider/provider.routes';
@@ -19,11 +20,17 @@ import agrupacionOrdenCompraRoutes from './modules/agrupacionOrdenCompra/agrupac
 import ventasRoutes from './features/ventas/ventas.routes';
 import ordenProveedorRoutes from './features/ordenProveedor/ordenProveedor.routes';
 import { authenticateToken } from './shared/middleware/auth.middleware';
+import { setupGraphQLRoutes } from './graphql/graphql.routes';
 
-export const configureRoutes = (app: Application): void => {
+export const configureRoutes = async (app: Application): Promise<void> => {
   app.get('/api', (req: Request, res: Response) => res.json({ message: 'BACKEND MULTILIMP SAC' }));
 
   app.use('/api/auth', authRoutes);
+  
+  // Configurar GraphQL como una ruta más
+  const graphqlMiddleware = await setupGraphQLRoutes();
+  app.use('/graphql', express.json(), graphqlMiddleware);
+  
 
   app.use(authenticateToken);
 
@@ -44,8 +51,7 @@ export const configureRoutes = (app: Application): void => {
   app.use('/api/productos', productoRoutes);
   app.use('/api/agrupaciones-oc', agrupacionOrdenCompraRoutes);
   app.use('/api/ventas', ventasRoutes);
-  app.use('/api/files', fileRoutes);
-
+  app.use('/api/files', fileRoutes);  // Middleware para rutas no encontradas
   app.use((req: Request, res: Response) => {
     res.status(404).json({ message: 'Ruta no encontrada' });
   });

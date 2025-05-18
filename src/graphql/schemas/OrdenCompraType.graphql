@@ -1,12 +1,12 @@
+# IMPORTANTE: Solo usar comentarios con # en archivos GraphQL.
 # En un archivo .graphql o construido con graphql-js
 type OrdenCompra {
   id: ID!
   codigoVenta: String!
   fechaEmision: String # Usar String para fechas ISO, o un Scalar de Fecha personalizado
-  montoVenta: Float
-  etapaActual: String
+  montoVenta: Float  etapaActual: String
   estadoActivo: Boolean
-  productos: String # Para campos JSON, puedes usar String o un tipo JSON Scalar personalizado
+  productos: JSON # Campo JSON que contiene un array de productos
   # Campos adicionales de OrdenCompra que podrías necesitar:
   archivoOc: String
   ventaPrivada: Boolean
@@ -84,8 +84,8 @@ type OrdenProveedor {
     fechaProgramada: String
     fechaRecepcion: String
     tipoPago: String
-    estadoOp: String // Asumiendo que tienes un campo así
-    proveedor: Proveedor // Relación con Proveedor
+    estadoOp: String # Asumiendo que tienes un campo así
+    proveedor: Proveedor # Relación con Proveedor
     # ... otros campos relevantes de tu modelo Prisma OrdenProveedor
 }
 
@@ -110,12 +110,23 @@ type OrdenCompraPaginated {
     pageSize: Int!
 }
 
-type Query {
-  ordenCompra(id: ID!): OrdenCompra
-  ordenesCompra(
-      page: Int,
-      pageSize: Int,
-      filters: OrdenCompraFiltersInput,
-      orderBy: String # ej: "createdAt_ASC" o "montoVenta_DESC"
-  ): OrdenCompraPaginated
+# Renombramos este tipo para mantener consistencia con el nombre usado en schema.graphql
+type ResultadoPaginadoOrdenCompra {
+  data: [OrdenCompra!]!
+  total: Int!
+  totalPages: Int!
+  page: Int!
+  pageSize: Int!
+}
+
+# Input para crear/actualizar órdenes de compra
+input OrdenCompraInput {
+  codigoVenta: String
+  fechaEmision: String
+  montoVenta: Float
+  etapaActual: String
+  estadoActivo: Boolean
+  productos: JSON # Campo JSON para array de productos
+  archivoOc: String
+  # Agregar otros campos necesarios según tu modelo
 }

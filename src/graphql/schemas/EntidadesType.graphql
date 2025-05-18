@@ -1,0 +1,48 @@
+# IMPORTANTE: Solo usar comentarios con # en archivos GraphQL.
+# Definiciones de tipos básicos para entidades del sistema
+type Contacto {
+  id: ID!
+  nombre: String
+  cargo: String
+  telefono: String
+  email: String
+  clienteId: Int
+}
+
+type OrdenProveedor {
+  id: ID!
+  codigoOp: String
+  totalProveedor: Float
+  fechaProgramada: String
+  fechaDespacho: String
+  fechaRecepcion: String
+  tipoPago: String
+  estadoOp: String
+  proveedor: Proveedor
+  productos: [OpProducto]
+}
+
+type Proveedor {
+  id: ID!
+  razonSocial: String
+  ruc: String
+  direccion: String
+  telefono: String
+  email: String
+}
+
+type OpProducto {
+  id: ID!
+  cantidad: Int
+  precioUnitario: Float
+  producto: Producto
+}
+
+type Producto {
+  id: ID!
+  codigo: String
+  nombre: String
+  descripcion: String
+  unidad: String
+  precio: Float
+}
