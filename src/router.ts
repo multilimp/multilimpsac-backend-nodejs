@@ -19,6 +19,7 @@ import agrupacionOrdenCompraRoutes from './modules/agrupacionOrdenCompra/agrupac
 import ventasRoutes from './features/ventas/ventas.routes';
 import ordenProveedorRoutes from './features/ordenProveedor/ordenProveedor.routes';
 import { authenticateToken } from './shared/middleware/auth.middleware';
+import ordenCompraPrivadaRoutes from './features/ventas/ordenCompraPrivada.routes';
 
 export const configureRoutes = (app: Application): void => {
   app.get('/api', (req: Request, res: Response) => res.json({ message: 'BACKEND MULTILIMP SAC' }));
@@ -44,6 +45,7 @@ export const configureRoutes = (app: Application): void => {
   app.use('/api/productos', productoRoutes);
   app.use('/api/agrupaciones-oc', agrupacionOrdenCompraRoutes);
   app.use('/api/ventas', ventasRoutes);
+  app.use('/api/ventas-privadas', ordenCompraPrivadaRoutes);
   app.use('/api/files', fileRoutes);
 
   app.use((req: Request, res: Response) => {

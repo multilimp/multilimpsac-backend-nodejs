@@ -1,6 +1,13 @@
 import { OrdenCompra, Prisma } from '@prisma/client';
 import prisma from '../../database/prisma';
 import * as ocService from '../../modules/ordenCompra/ordenCompra.service';
+import { BaseVentaService } from '../../shared/services/baseVenta.service';
+
+class VentaService extends BaseVentaService<OrdenCompra, Prisma.OrdenCompraCreateInput, Prisma.OrdenCompraUpdateInput> {
+  protected model = prisma.ordenCompra;
+}
+
+export const ventaService = new VentaService();
 
 export const getAllVentas = async (
   page: number,
