@@ -21,7 +21,7 @@ export const handleError = ({ res, error, statusCode = 500, msg = 'Ocurrió un e
     });
     return;
   }
-// ...existing code...
+
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     let responseMessage = msg;
     let responseStatusCode = statusCode;
@@ -67,7 +67,7 @@ export const handleError = ({ res, error, statusCode = 500, msg = 'Ocurrió un e
     res.status(400).json({
         success: false,
         message: 'Error de validación de datos de la base de datos. Verifique los tipos y campos requeridos.',
-        details: error.message,
+        details: error.message.replace('\n', ''),
     });
     return;
   }
@@ -78,6 +78,8 @@ export const handleError = ({ res, error, statusCode = 500, msg = 'Ocurrió un e
     res.status(error.statusCode).json({
       success: false,
       message: error.message,
+      error: process.env.NODE_ENV === 'development' ? error : undefined,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
     return;
   }
@@ -86,6 +88,7 @@ export const handleError = ({ res, error, statusCode = 500, msg = 'Ocurrió un e
   res.status(statusCode).json({
     success: false,
     message: msg,
-    error: process.env.NODE_ENV === 'development' ? error.message : undefined, // Solo mostrar error.message en desarrollo
+    error: process.env.NODE_ENV === 'development' ? error : undefined,
+    stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
   });
 };

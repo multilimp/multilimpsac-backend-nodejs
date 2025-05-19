@@ -4,6 +4,7 @@ import * as ventasService from './ventas.service';
 import { AnalyzePdfResult, GeminiService, GeminiServiceException } from '../../shared/services/gemini.service';
 import formidable from 'formidable';
 import logger from '../../shared/config/logger';
+import * as ordenCompraPrivadaService from './ordenCompraPrivada.service';
 
 export const listVentas = async (req: Request, res: Response) => {
   try {
@@ -43,9 +44,20 @@ export const getVenta = async (req: Request, res: Response) => {
 export const createVenta = async (req: Request, res: Response) => {
   try {
     const data = req.body;
-
-    const nuevaVenta = await ventasService.createVenta(data);
-    res.status(201).json(nuevaVenta);
+    if (data.ventaPrivada === true) {
+      const ordenCompraData = { ...data, ventaPrivada: true };
+      const ordenCompraPrivadaData = data.ordenCompraPrivada || {};
+      const pagos = data.pagos || [];
+      const nuevaOrdenPrivada = await ordenCompraPrivadaService.createOrdenCompraPrivada({
+        ordenCompra: ordenCompraData,
+        ordenCompraPrivada: ordenCompraPrivadaData,
+        pagos
+      });
+      res.status(201).json(nuevaOrdenPrivada);
+    } else {
+      const nuevaVenta = await ventasService.createVenta(data);
+      res.status(201).json(nuevaVenta);
+    }
   } catch (error) {
     handleError({ res, error, msg: 'Error al crear la venta' });
   }
