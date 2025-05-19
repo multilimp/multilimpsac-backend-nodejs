@@ -1,117 +1,185 @@
 # IMPORTANTE: Solo usar comentarios con # en archivos GraphQL.
-# En un archivo .graphql o construido con graphql-js
+# Definiciones de tipos para el módulo de Órdenes de Compra y entidades relacionadas
+
+#-----------------------------------------------------
+# TIPO PRINCIPAL: ORDEN DE COMPRA
+#-----------------------------------------------------
 type OrdenCompra {
+  # Campos de identificación
   id: ID!
   codigoVenta: String!
-  fechaEmision: String # Usar String para fechas ISO, o un Scalar de Fecha personalizado
-  montoVenta: Float  etapaActual: String
+  
+  # Campos de fechas
+  fechaEmision: String # Usar String para fechas ISO
+  fechaEntrega: String
+  
+  # Campos de valores
+  montoVenta: Float
+  etapaActual: String
   estadoActivo: Boolean
   productos: JSON # Campo JSON que contiene un array de productos
-  # Campos adicionales de OrdenCompra que podrías necesitar:
-  archivoOc: String
-  ventaPrivada: Boolean
+  
+  # Campos de ubicación de entrega
   direccionEntrega: String
   distritoEntrega: String
   provinciaEntrega: String
   departamentoEntrega: String
   referenciaEntrega: String
-  fechaEntrega: String
-  # ...otros campos relevantes de tu modelo Prisma OrdenCompra
-
+  
+  # Campos adicionales
+  archivoOc: String
+  ventaPrivada: Boolean
+  
+  # Campos de relaciones
   cliente: Cliente
   empresa: Empresa
-  contactoCliente: Contacto
+  contactoCliente: ContactoCliente
   ordenesProveedor: [OrdenProveedor]
-  # ... otras relaciones que quieras exponer
+  
+  # NOTA: Para agregar nuevos campos escalares, añadirlos en la sección correspondiente arriba
+  # NOTA: Para agregar nuevas relaciones, añadirlas al final de la sección "Campos de relaciones"
 }
 
+#-----------------------------------------------------
+# ENTIDADES RELACIONADAS CON ORDEN DE COMPRA
+#-----------------------------------------------------
+
+# Cliente que realiza la orden de compra
 type Cliente {
+  # Campos de identificación
   id: ID!
   razonSocial: String!
   ruc: String!
+  
+  # Campos de contacto
   email: String
-  # Campos adicionales de Cliente:
   telefono: String
+  
+  # Campos de ubicación
   direccion: String
   departamento: String
   provincia: String
   distrito: String
+  
+  # Campos adicionales
   estado: Boolean
   codigoUnidadEjecutora: String
-  # ... otros campos relevantes
+  
+  # NOTA: Para agregar nuevos campos, añadirlos a la sección correspondiente
 }
 
+# Empresa que emite la orden de compra
 type Empresa {
+  # Campos de identificación
   id: ID!
   razonSocial: String!
   ruc: String!
-  # Campos adicionales de Empresa:
+  
+  # Campos de contacto
   telefono: String
   email: String
+  
+  # Campos de ubicación y presencia
   direccion: String
   logo: String
   web: String
-  # ... otros campos relevantes
+  
+  # NOTA: Para agregar nuevos campos, añadirlos a la sección correspondiente
 }
 
-type Contacto {
+# Contacto asociado al cliente
+type ContactoCliente {
+  # Campos de identificación
   id: ID!
+  clienteId: ID!
   nombre: String!
+  
+  # Campos de contacto
   email: String
   telefono: String
-  # Campos adicionales de Contacto:
+  
+  # Campos adicionales
   cargo: String
-  # tipo: String # Si necesitas el tipo de contacto (CLIENTE, PROVEEDOR, etc.)
-  # ... otros campos relevantes
+  
+  # NOTA: Para agregar nuevos campos, añadirlos a la sección correspondiente
 }
 
-# Definición del tipo Proveedor si aún no existe
+# Proveedor asociado a las órdenes de proveedor
 type Proveedor {
+  # Campos de identificación
   id: ID!
   razonSocial: String!
   ruc: String!
+  
+  # Campos de contacto
   email: String
   telefono: String
-  # ... otros campos relevantes de tu modelo Prisma Proveedor
+  
+  # NOTA: Para agregar nuevos campos, añadirlos a la sección correspondiente
 }
 
+# Orden de proveedor asociada a la orden de compra
 type OrdenProveedor {
-    id: ID!
-    codigoOp: String!
-    totalProveedor: Float
-    # Campos adicionales de OrdenProveedor:
-    fechaDespacho: String
-    fechaProgramada: String
-    fechaRecepcion: String
-    tipoPago: String
-    estadoOp: String # Asumiendo que tienes un campo así
-    proveedor: Proveedor # Relación con Proveedor
-    # ... otros campos relevantes de tu modelo Prisma OrdenProveedor
+  # Campos de identificación
+  id: ID!
+  codigoOp: String!
+  
+  # Campos de valores
+  totalProveedor: Float
+  
+  # Campos de fechas
+  fechaDespacho: String
+  fechaProgramada: String
+  fechaRecepcion: String
+  
+  # Campos adicionales
+  tipoPago: String
+  estadoOp: String
+  
+  # Campos de relaciones
+  proveedor: Proveedor
+  
+  # NOTA: Para agregar nuevos campos, añadirlos a la sección correspondiente
 }
 
-# Podrías necesitar un tipo para los filtros
+#-----------------------------------------------------
+# TIPOS DE ENTRADA (INPUTS)
+#-----------------------------------------------------
+
+# Filtros para consultar órdenes de compra
 input OrdenCompraFiltersInput {
+  # Filtros por entidades relacionadas
   clienteId: Int
   empresaId: Int
-  # ... otros filtros que quieras soportar
+  
+  # Filtros por texto
   search: String
+  
+  # Filtros por fecha
   fechaFrom: String # Formato YYYY-MM-DD
   fechaTo: String   # Formato YYYY-MM-DD
+  
+  # Filtros por estado
   etapaActual: String
   estadoActivo: Boolean
-  # ... puedes añadir más filtros según necesites
+  
+  # NOTA: Para agregar nuevos filtros, añadirlos a la sección correspondiente
 }
-
-# Se eliminaron los tipos de paginación ya que no se utilizarán
 
 # Input para crear/actualizar órdenes de compra
 input OrdenCompraInput {
+  # Campos básicos
   codigoVenta: String
   fechaEmision: String
   montoVenta: Float
+  
+  # Campos de estado
   etapaActual: String
   estadoActivo: Boolean
+  
+  # Campos de contenido
   productos: JSON # Campo JSON para array de productos
   archivoOc: String
-  # Agregar otros campos necesarios según tu modelo
+  
+  # NOTA: Para agregar nuevos campos de entrada, añadirlos a la sección correspondiente
 }

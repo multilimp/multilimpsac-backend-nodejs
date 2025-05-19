@@ -11,15 +11,13 @@ const cargarEsquemas = () => {
   try {    // Rutas de los archivos GraphQL
     const schemaBase = path.join(__dirname, 'schemas', 'schema.graphql');
     const ordenCompraTypes = path.join(__dirname, 'schemas', 'OrdenCompraType.graphql');
-    const entidadesTypes = path.join(__dirname, 'schemas', 'EntidadesType.graphql');
     const scalarTypes = path.join(__dirname, 'schemas', 'ScalarTypes.graphql');
     
     // Validar cada archivo individualmente para mejorar el manejo de errores
     const archivos = [
       { nombre: 'ScalarTypes.graphql', ruta: scalarTypes },
       { nombre: 'schema.graphql', ruta: schemaBase },
-      { nombre: 'OrdenCompraType.graphql', ruta: ordenCompraTypes },
-      { nombre: 'EntidadesType.graphql', ruta: entidadesTypes }
+      { nombre: 'OrdenCompraType.graphql', ruta: ordenCompraTypes }
     ];
     
     let contenidoCombinado = '';

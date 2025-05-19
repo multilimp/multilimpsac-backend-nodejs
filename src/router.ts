@@ -1,5 +1,6 @@
 import { Application, Request, Response, NextFunction } from 'express';
 import express from 'express';
+import cors from 'cors';
 import ubigeoRoutes from './modules/ubigeo/ubigeo.routes';
 import clientRoutes from './modules/client/client.routes';
 import providerRoutes from './modules/provider/provider.routes';
@@ -21,15 +22,16 @@ import ventasRoutes from './features/ventas/ventas.routes';
 import ordenProveedorRoutes from './features/ordenProveedor/ordenProveedor.routes';
 import { authenticateToken } from './shared/middleware/auth.middleware';
 import { setupGraphQLRoutes } from './graphql/graphql.routes';
+import { simplifyResponseMiddleware } from './graphql/utils/simplifyResponseMiddleware';
 
 export const configureRoutes = async (app: Application): Promise<void> => {
   app.get('/api', (req: Request, res: Response) => res.json({ message: 'BACKEND MULTILIMP SAC' }));
 
   app.use('/api/auth', authRoutes);
-  
   // Configurar GraphQL como una ruta más
   const graphqlMiddleware = await setupGraphQLRoutes();
-  app.use('/graphql', express.json(), graphqlMiddleware);
+  // Aplicar middleware personalizado para simplificar respuestas GraphQL
+  app.use('/graphql', express.json(), cors(), simplifyResponseMiddleware, graphqlMiddleware);
   
 
   app.use(authenticateToken);

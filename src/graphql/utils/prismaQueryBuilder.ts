@@ -1,8 +1,12 @@
 // src/graphql/utils/prismaQueryBuilder.ts
 import { GraphQLResolveInfo } from 'graphql';
 import { getFields } from './resolverUtils';
-import { getEntityMappings } from './fieldMapping';
-import { isJsonField } from './fieldTypes';
+import { 
+  getEntityMappings, 
+  isJsonField, 
+  isCriticalRelation,
+  getCriticalFields
+} from './schemaConfig';
 import logger from '../../shared/config/logger';
 
 /**
@@ -25,12 +29,11 @@ export function getRequestedFields(info: GraphQLResolveInfo): string[] {
     Object.keys(fieldsObj).forEach(key => {
       const currentPath = prefix ? `${prefix}.${key}` : key;
       
-      if (Object.keys(fieldsObj[key]).length === 0) {
-        // Campo simple
-        result.push(currentPath);
-      } else {
-        // Campo con sub-campos (relación)
-        result.push(currentPath); // Añadir la relación misma
+      // Añadir el campo actual
+      result.push(currentPath);
+      
+      // Procesar subcampos si existen
+      if (Object.keys(fieldsObj[key]).length > 0) {
         processFields(fieldsObj[key], currentPath);
       }
     });
@@ -40,164 +43,130 @@ export function getRequestedFields(info: GraphQLResolveInfo): string[] {
   return result;
 }
 
-/**
- * Construye un objeto de selección para Prisma basado en los campos solicitados
- * @param fields Lista de campos solicitados con notación de puntos
- * @param entityName Nombre de la entidad (opcional) para mapeos específicos
- * @returns Objeto de selección para Prisma con estructura anidada
- */
-export function buildPrismaSelectObject(fields: string[], entityName?: string): any {
-  // Este enfoque crea un objeto select/include anidado compatible con Prisma
-  const result: any = {
-    select: {}
-  };
-  
-  // Obtener mapeos para la entidad especificada
-  const relationMappings = getEntityMappings(entityName);
-  
-  // Asegurarnos de incluir campos críticos para entidades específicas
-  if (entityName === 'OrdenCompra') {
-    // Siempre incluir campos críticos para OrdenCompra
-    result.select.id = true;
-    result.select.clienteId = true;
-    result.select.empresaId = true;
-  }
-  
-  fields.forEach(field => {
-    // Manejar campos simples vs relaciones
-    if (!field.includes('.')) {
-      // Campo simple (no es relación anidada)
-      if (relationMappings[field] && !isJsonField(entityName, field)) {
-        // Este es un campo de relación conocido (y no es un campo JSON)
-        result.include = result.include || {};
-        
-        // Si es cliente o empresa en OrdenCompra, manejo especial
-        if (entityName === 'OrdenCompra' && (field === 'cliente' || field === 'empresa')) {
-          // Usar true para indicar que queremos toda la relación
-          result.include[relationMappings[field]] = true;
-          
-          // Registrar que estamos haciendo un tratamiento especial para estas relaciones
-          logger.debug(`Detectada relación importante para OrdenCompra: ${field}`);
-        } else {
-          // Para otras relaciones, comportamiento normal
-          result.include[relationMappings[field]] = true;
-        }
-      } else {
-        // Campo regular o campo JSON
-        result.select[field] = true;
-      }
-    } else {
-      // Campo anidado (relación)
-      const parts = field.split('.');
-      const topLevelField = parts[0];
-      
-      // Verificar si la parte superior es una relación conocida
-      const relationName = relationMappings[topLevelField] || topLevelField;
-      
-      // Asegurar que incluimos la relación
-      result.include = result.include || {};
-      
-      // Si es una relación crítica como cliente o empresa, usar true directamente
-      if (entityName === 'OrdenCompra' && (topLevelField === 'cliente' || topLevelField === 'empresa')) {
-        result.include[relationName] = true;
-        logger.debug(`Usando include completo para relación crítica: ${topLevelField}`);
-      } else {
-        // Para otras relaciones, usar select anidado
-        result.include[relationName] = result.include[relationName] || { select: {} };
-        
-        // Si tiene múltiples niveles de anidamiento
-        if (parts.length > 2) {
-          let current = result.include[relationName];
-          
-          // Navegar por la jerarquía de relaciones
-          for (let i = 1; i < parts.length - 1; i++) {
-            const part = parts[i];
-            current.include = current.include || {};
-            current.include[part] = current.include[part] || { select: {} };
-            current = current.include[part];
-          }
-          
-          // Añadir el campo de nivel más bajo
-          const lastPart = parts[parts.length - 1];
-          current.select[lastPart] = true;
-        } else if (parts.length === 2) {
-          // Caso simple de un nivel de anidamiento
-          result.include[relationName].select[parts[1]] = true;
-        }
-      }
-    }
-  });
-  
-  return result;
-}
+// La función buildPrismaSelectObject ya no es necesaria, ha sido reemplazada
+// por una lógica mejorada directamente en createOptimizedQueryParams
 
 /**
- * Genera dinámicamente un objeto de selección de campos para Prisma
- * @param info Información de la consulta GraphQL
- * @param entityName Nombre de la entidad para mapeos específicos
- * @returns Objeto con configuración de select/include para Prisma
+ * Construye parámetros optimizados para consultas Prisma
+ * @param info Información del resolver GraphQL
+ * @param entityName Nombre de la entidad principal
+ * @returns Un objeto con parámetros para consulta Prisma optimizada
  */
-export function generatePrismaSelect(info: GraphQLResolveInfo, entityName?: string): any {
+export function createOptimizedQueryParams(info: GraphQLResolveInfo, entityName?: string): any {
   try {
     // Obtener los campos solicitados a través de GraphQL
     const requestedFields = getRequestedFields(info);
+    logger.debug(`Campos solicitados: ${requestedFields.join(', ')}`);
     
-    // Convertir la estructura plana a un objeto anidado para Prisma
-    return buildPrismaSelectObject(requestedFields, entityName);
+    // Analizar si la consulta contiene relaciones
+    const hasRelations = requestedFields.some(field => field.includes('.'));
+    
+    // Inicializar objeto de consulta con el enfoque apropiado
+    const result: any = {};
+    
+    // Mapa para rastrear qué relaciones ya se han incluido
+    const includedRelations = new Set<string>();
+    
+    // Obtener mapeos para esta entidad
+    const mappings = getEntityMappings(entityName);
+    
+    // Obtener campos críticos que siempre deben incluirse
+    const criticalFields = getCriticalFields(entityName);
+    
+    // Añadir campos críticos a la selección
+    if (criticalFields.length > 0) {
+      result.select = {};
+      criticalFields.forEach(field => {
+        result.select[field] = true;
+      });
+    }
+    
+    // Procesar campos solicitados
+    for (const field of requestedFields) {
+      // Analizar si es un campo directo o parte de una relación
+      const parts = field.split('.');
+      
+      if (parts.length === 1) {
+        // Campo directo de la entidad principal
+        const fieldName = parts[0];
+        
+        // Inicializar select si no existe
+        result.select = result.select || {};
+        
+        // Si es una relación conocida
+        if (mappings[fieldName]) {
+          // Si es una relación crítica (como cliente o empresa en OrdenCompra),
+          // la incluimos completa en lugar de seleccionar campos
+          if (isCriticalRelation(entityName, fieldName)) {
+            result.include = result.include || {};
+            result.include[fieldName] = true;
+            includedRelations.add(fieldName);
+            
+            logger.debug(`Incluyendo relación crítica completa: ${fieldName}`);
+          } 
+          // Para otras relaciones, las incluiremos si tienen subcampos
+          else if (!includedRelations.has(fieldName)) {
+            result.include = result.include || {};
+            result.include[fieldName] = true;
+            includedRelations.add(fieldName);
+          }
+        } 
+        // Si es un campo normal (no relación)
+        else {
+          result.select[fieldName] = true;
+        }
+      } 
+      // Campo de una relación anidada
+      else {
+        const relationName = parts[0];
+        
+        // Si aún no hemos incluido esta relación
+        if (!includedRelations.has(relationName)) {
+          // Si es una relación crítica, la incluimos completa
+          if (isCriticalRelation(entityName, relationName)) {
+            result.include = result.include || {};
+            result.include[relationName] = true;
+            includedRelations.add(relationName);
+            
+            logger.debug(`Incluyendo relación crítica anidada: ${relationName}`);
+          }
+          // Si no es crítica pero tiene subcampos específicos
+          else {
+            result.include = result.include || {};
+            
+            // Para simplicidad y compatibilidad con Prisma, incluimos la relación completa
+            // en lugar de seleccionar campos específicos (evita problemas comunes)
+            result.include[relationName] = true;
+            includedRelations.add(relationName);
+            
+            logger.debug(`Incluyendo relación: ${relationName}`);
+          }
+        }
+      }
+    }      // Si tenemos tanto select como include, debemos consolidar en un solo tipo
+    // ya que Prisma no permite usar ambos en findUnique() y otras operaciones
+    if (result.select && result.include) {
+      logger.debug('Se detectaron campos y relaciones - consolidando en un tipo único');
+      
+      // Estrategia: Convertir todo a select (más específico)
+      const select = { ...result.select };
+      
+      // Añadir relaciones al select
+      Object.keys(result.include).forEach(relationName => {
+        select[relationName] = true;
+      });
+      
+      // Devolver solo select
+      return { select };
+    }
+    
+    return result;
   } catch (error) {
-    logger.error(`Error generando selección de campos Prisma: ${(error as Error).message}`);
-    // En caso de error, retornar objeto vacío para seleccionar solo los campos por defecto
+    logger.error(`Error creando parámetros de consulta: ${(error as Error).message}`);
+    // En caso de error, devolver un objeto vacío 
     return {};
   }
 }
 
-/**
- * Utilidad para convertir consultas GraphQL a parámetros optimizados de Prisma
- * @param info El objeto GraphQLResolveInfo de la consulta
- * @param entityName Nombre de la entidad para mapeos específicos
- * @returns Un objeto con parámetros para consulta Prisma optimizada
- */
-export function createOptimizedQueryParams(info: GraphQLResolveInfo, entityName?: string): any {
-  const selection = generatePrismaSelect(info, entityName);
-  
-  // Log para diagnóstico
-  logger.debug(`Selección generada para ${entityName || 'entidad desconocida'}: 
-    Select: ${JSON.stringify(selection.select || {})}
-    Include: ${JSON.stringify(selection.include || {})}`);
-    
-  // Si hay tanto select como include, debemos consolidar todo en un solo tipo
-  // Para evitar el error "Please either use `include` or `select`, but not both at the same time."
-  if (selection.select && selection.include) {
-    logger.debug('Se detectaron campos y relaciones - consolidando en un solo tipo de consulta');
-    
-    // Mejorado: Combinar los campos del select dentro del include para asegurar que se carguen todos
-    const include = { ...selection.include };
-    
-    // Incluir los campos básicos necesarios
-    include._count = true; // Asegura que los contadores estén disponibles
-    
-    // Asegurar que los IDs de relación estén incluidos
-    if (entityName === 'OrdenCompra') {
-      include.id = true;
-      include.clienteId = true;
-      include.empresaId = true;
-      // Incluir cualquier otro campo básico importante
-      Object.keys(selection.select || {}).forEach(field => {
-        include[field] = true;
-      });
-    } else {
-      // Para otras entidades, simplemente usar el include
-      Object.keys(selection.select || {}).forEach(field => {
-        include[field] = true;
-      });
-    }
-    
-    logger.debug(`Include optimizado: ${JSON.stringify(include)}`);
-    return { include };
-  }
-  
-  return {
-    ...selection.select && { select: selection.select },
-    ...selection.include && { include: selection.include }
-  };
-}
+// Para compatibilidad con código existente
+export const generatePrismaSelect = createOptimizedQueryParams;

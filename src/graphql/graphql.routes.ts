@@ -3,12 +3,13 @@ import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@apollo/server/express4';
 import { typeDefs, resolvers } from './schema';
 import cors from 'cors';
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { config } from '../shared/config/env';
 import logger from '../shared/config/logger';
 import path from 'path';
 import prisma from '../database/prisma';
+import { simplifyResponseMiddleware } from './utils/simplifyResponseMiddleware';
 
 const router = Router();
 
@@ -35,21 +36,20 @@ export const setupGraphQLRoutes = async () => {  // Crear un nuevo servidor Apol
         };
       }
       
-      return formattedError;
-    }
+      return formattedError;    }
   });
 
   // Iniciar el servidor Apollo
   await apolloServer.start();
-    // Configurar el middleware de Apollo Server
+  // Configurar el middleware de Apollo Server
   return expressMiddleware(apolloServer, {
     context: async ({ req }) => {
+      // Mantener la referencia a req para acceder a los headers en los plugins
       // Usar el mismo esquema de autenticación que el resto de la aplicación
       const authHeader = req.headers.authorization;
       const token = authHeader?.split(' ')[1] || '';
-      
-      if (!token) {
-        return { user: null };
+        if (!token) {
+        return { user: null, req };
       }
       
       try {
@@ -82,11 +82,12 @@ export const setupGraphQLRoutes = async () => {  // Crear un nuevo servidor Apol
         
         return { 
           user: userData || decoded,
-          token 
+          token,
+          req 
         };
       } catch (error) {
         logger.debug(`Token inválido en GraphQL: ${(error as Error).message}`);
-        return { user: null };
+        return { user: null, req };
         // No lanzamos error para permitir operaciones públicas
       }
     },

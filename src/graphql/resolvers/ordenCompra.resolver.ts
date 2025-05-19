@@ -3,7 +3,9 @@ import prisma from '../../database/prisma';
 import { Prisma } from '@prisma/client';
 import { GraphQLResolveInfo } from 'graphql';
 import logger from '../../shared/config/logger';
-import { optimizarConsultaPrisma, procesarError, getFields } from '../utils/resolverUtils';
+import { getFields } from '../utils/resolverUtils';
+import { createOptimizedQueryParams } from '../utils/prismaQueryBuilder';
+import { manejarErrorGraphQL } from '../utils/errorHandling';
 
 
 export const ordenCompraResolvers = {
@@ -11,58 +13,28 @@ export const ordenCompraResolvers = {
     ordenCompra: async (_parent: any, args: { id: string }, context: any, info: GraphQLResolveInfo) => {
       logger.info(`GraphQL Resolver: ordenCompra - Solicitando orden con ID: ${args.id}`);
       
-      // Comentamos temporalmente la verificación de autenticación para pruebas
-      // Si context.user no está disponible, usamos un mock para desarrollo
-      /* 
+      /* Comentamos temporalmente la verificación de autenticación para pruebas
       if (!context.user) {
         logger.warn('GraphQL: Intento de acceso a ordenCompra sin autenticación');
         throw new Error('No autenticado');
       }
-      */        try {
+      */
+      
+      try {
         // Obtener los campos solicitados primero para analizar la consulta
         const fields = getFields(info);
         
         // Detectar si se solicitan relaciones específicas
         const includeCliente = fields?.cliente !== undefined;
         const includeEmpresa = fields?.empresa !== undefined;
-        const includeRelaciones = includeCliente || includeEmpresa;
         
         // Log para diagnóstico
         logger.debug(`Campos solicitados: ${JSON.stringify(fields)}`);
         logger.debug(`Se solicitan relaciones: Cliente=${includeCliente}, Empresa=${includeEmpresa}`);
         
-        // Obtener parámetros optimizados para consulta
-        const queryParams = optimizarConsultaPrisma(info, 'OrdenCompra');
-        logger.debug(`Parámetros de consulta generados: ${JSON.stringify(queryParams)}`);
-        
-        // Preparar opciones de consulta
-        let queryOptions: any;
-        
-        // Nueva lógica mejorada para manejar las relaciones
-        if (includeRelaciones) {
-          // Si se solicitan relaciones, usamos una estrategia específica para asegurar que se carguen
-          queryOptions = { 
-            include: {
-              ...(includeCliente && { cliente: true }),
-              ...(includeEmpresa && { empresa: true }),
-            }
-          };
-          
-          // Si hay campos específicos en el nivel principal, también los incluimos
-          if (queryParams.select) {
-            Object.keys(queryParams.select).forEach(field => {
-              // Asegurar que los campos básicos también se incluyan
-              if (!['cliente', 'empresa'].includes(field)) {
-                queryOptions.include[field] = true;
-              }
-            });
-          }
-          
-          logger.debug(`Opciones de consulta optimizadas para relaciones: ${JSON.stringify(queryOptions)}`);
-        } else {
-          // Si no se solicitan relaciones específicas, usamos los parámetros generados
-          queryOptions = queryParams;
-        }
+        // Obtener parámetros optimizados para consulta usando la nueva función
+        const queryOptions = createOptimizedQueryParams(info, 'OrdenCompra');
+        logger.debug(`Parámetros de consulta optimizados: ${JSON.stringify(queryOptions)}`);
         
         // Consultar la orden de compra con selección optimizada de campos
         const ordenCompra = await prisma.ordenCompra.findUnique({
@@ -74,7 +46,8 @@ export const ordenCompraResolvers = {
           logger.warn(`GraphQL: Orden de compra con ID ${args.id} no encontrada`);
           throw new Error(`Orden de compra con ID ${args.id} no encontrada`);
         }
-          // Log para diagnóstico
+        
+        // Log para diagnóstico
         // Usamos sintaxis de acceso de índice para evitar errores de TypeScript con propiedades dinámicas
         const tieneCliente = 'cliente' in ordenCompra ? !!ordenCompra['cliente'] : 'N/A';
         const tieneEmpresa = 'empresa' in ordenCompra ? !!ordenCompra['empresa'] : 'N/A';
@@ -82,10 +55,9 @@ export const ordenCompraResolvers = {
         
         return ordenCompra;
       } catch (error) {
-        return procesarError(error, 'ordenCompra');
+        return manejarErrorGraphQL(error, 'ordenCompra.query');
       }
-    },
-      ordenesCompra: async (_parent: any, args: { filters?: any, orderBy?: string }, context: any, info: GraphQLResolveInfo) => {
+    },    ordenesCompra: async (_parent: any, args: { filters?: any, orderBy?: string }, context: any, info: GraphQLResolveInfo) => {
       logger.info(`GraphQL Resolver: ordenesCompra - Solicitando listado de órdenes`);
       
       try {
@@ -128,53 +100,25 @@ export const ordenCompraResolvers = {
           if (campo && direccion) {
             orderBy = { [campo]: direccion.toLowerCase() };
           }
-        }
-          // Obtener los campos solicitados primero para analizar la consulta
+        }        // Obtener los campos solicitados primero para analizar la consulta
         const fields = getFields(info);
-        
-        // Detectar si se solicitan relaciones específicas
-        const includeCliente = fields?.cliente !== undefined;
-        const includeEmpresa = fields?.empresa !== undefined;
-        const includeRelaciones = includeCliente || includeEmpresa;
-        
-        // Log para diagnóstico
+          // Log para diagnóstico
         logger.debug(`Campos solicitados (listado): ${JSON.stringify(fields)}`);
-        logger.debug(`Se solicitan relaciones (listado): Cliente=${includeCliente}, Empresa=${includeEmpresa}`);
         
-        // Obtener parámetros optimizados para consulta
-        const queryParams = optimizarConsultaPrisma(info, 'OrdenCompra');
-        logger.debug(`Parámetros de consulta generados (listado): ${JSON.stringify(queryParams)}`);
-        
-        // Preparar opciones de consulta
-        let queryOptions: any;
-        
-        // Nueva lógica mejorada para manejar las relaciones
-        if (includeRelaciones) {
-          // Si se solicitan relaciones, usamos una estrategia específica para asegurar que se carguen
-          queryOptions = { 
-            include: {
-              ...(includeCliente && { cliente: true }),
-              ...(includeEmpresa && { empresa: true }),
-            }
-          };
+        // Obtener parámetros optimizados para consulta usando la nueva función
+        const queryOptions = createOptimizedQueryParams(info, 'OrdenCompra');
+        logger.debug(`Parámetros de consulta optimizados (listado): ${JSON.stringify(queryOptions)}`);
           
           // Si hay campos específicos en el nivel principal, también los incluimos
-          if (queryParams.select) {
-            Object.keys(queryParams.select).forEach(field => {
+          if (queryOptions.select) {
+            Object.keys(queryOptions.select).forEach(field => {
               // Asegurar que los campos básicos también se incluyan
               if (!['cliente', 'empresa'].includes(field)) {
+                queryOptions.include = queryOptions.include || {};
                 queryOptions.include[field] = true;
               }
             });
-          }
-          
-          logger.debug(`Opciones de consulta optimizadas para relaciones (listado): ${JSON.stringify(queryOptions)}`);
-        } else {
-          // Si no se solicitan relaciones específicas, usamos los parámetros generados
-          queryOptions = queryParams;
-        }
-        
-        // Ejecutar consulta
+          }// Ejecutar consulta con opciones optimizadas
         const ordenes = await prisma.ordenCompra.findMany({
           where,
           ...queryOptions,
@@ -184,7 +128,7 @@ export const ordenCompraResolvers = {
         // Devolver resultados directamente como array
         return ordenes;
       } catch (error) {
-        return procesarError(error, 'ordenesCompra');
+        return manejarErrorGraphQL(error, 'ordenesCompra.query');
       }
     }
     
