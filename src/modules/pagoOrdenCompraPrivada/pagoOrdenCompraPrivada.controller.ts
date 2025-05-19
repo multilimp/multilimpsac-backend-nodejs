@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
-import * as service from './pagoOrdenCompraPrivada.service';
 import { handleError } from '../../shared/middleware/handleError';
+import * as service from './pagoOrdenCompraPrivada.service';
+
 export const listPagoOrdenCompraPrivada = async (req: Request, res: Response) => {
   try {
     const items = await service.getAllPagoOrdenCompraPrivada();
@@ -9,6 +10,7 @@ export const listPagoOrdenCompraPrivada = async (req: Request, res: Response) =>
     handleError({ res, error, msg: 'Error al listar pagos orden compra privada' });
   }
 };
+
 export const getPagoOrdenCompraPrivada = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id, 10);
@@ -20,6 +22,7 @@ export const getPagoOrdenCompraPrivada = async (req: Request, res: Response) => 
     handleError({ res, error, msg: 'Error al obtener pago orden compra privada' });
   }
 };
+
 export const createPagoOrdenCompraPrivada = async (req: Request, res: Response) => {
   try {
     const item = await service.createPagoOrdenCompraPrivada(req.body);
@@ -28,6 +31,7 @@ export const createPagoOrdenCompraPrivada = async (req: Request, res: Response) 
     handleError({ res, error, msg: 'Error al crear pago orden compra privada' });
   }
 };
+
 export const updatePagoOrdenCompraPrivada = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id, 10);
@@ -38,6 +42,7 @@ export const updatePagoOrdenCompraPrivada = async (req: Request, res: Response) 
     handleError({ res, error, msg: 'Error al actualizar pago orden compra privada' });
   }
 };
+
 export const deletePagoOrdenCompraPrivada = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id, 10);
