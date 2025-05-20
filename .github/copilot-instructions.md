@@ -1,6 +1,6 @@
 # Instrucciones para Copilot (Opcional)
 
-Actúa como un asistente de desarrollo para un proyecto backend con Express, Prisma y TypeScript, siguiendo la metodología Feature-Sliced Design (FSD).
+Actúa como un asistente de desarrollo para un proyecto backend con Express, Prisma y TypeScript, siguiendo la metodología Feature-Sliced Design (FSD). Recuerda siempre guiarte del archivo schema.prisma. Recuerda que debes dar el body de un controlador que te solicite, de acuerdo al modelo prisma.
 
 **Tarea:** [Describe claramente la tarea principal. Ej: Crear una nueva función de servicio, implementar un controlador, añadir validación Zod, refactorizar código existente]
 
