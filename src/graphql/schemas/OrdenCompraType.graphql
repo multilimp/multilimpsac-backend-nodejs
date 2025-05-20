@@ -1,0 +1,185 @@
+# IMPORTANTE: Solo usar comentarios con # en archivos GraphQL.
+# Definiciones de tipos para el módulo de Órdenes de Compra y entidades relacionadas
+
+#-----------------------------------------------------
+# TIPO PRINCIPAL: ORDEN DE COMPRA
+#-----------------------------------------------------
+type OrdenCompra {
+  # Campos de identificación
+  id: ID!
+  codigoVenta: String!
+  
+  # Campos de fechas
+  fechaEmision: String # Usar String para fechas ISO
+  fechaEntrega: String
+  
+  # Campos de valores
+  montoVenta: Float
+  etapaActual: String
+  estadoActivo: Boolean
+  productos: JSON # Campo JSON que contiene un array de productos
+  
+  # Campos de ubicación de entrega
+  direccionEntrega: String
+  distritoEntrega: String
+  provinciaEntrega: String
+  departamentoEntrega: String
+  referenciaEntrega: String
+  
+  # Campos adicionales
+  archivoOc: String
+  ventaPrivada: Boolean
+  
+  # Campos de relaciones
+  cliente: Cliente
+  empresa: Empresa
+  contactoCliente: ContactoCliente
+  ordenesProveedor: [OrdenProveedor]
+  
+  # NOTA: Para agregar nuevos campos escalares, añadirlos en la sección correspondiente arriba
+  # NOTA: Para agregar nuevas relaciones, añadirlas al final de la sección "Campos de relaciones"
+}
+
+#-----------------------------------------------------
+# ENTIDADES RELACIONADAS CON ORDEN DE COMPRA
+#-----------------------------------------------------
+
+# Cliente que realiza la orden de compra
+type Cliente {
+  # Campos de identificación
+  id: ID!
+  razonSocial: String!
+  ruc: String!
+  
+  # Campos de contacto
+  email: String
+  telefono: String
+  
+  # Campos de ubicación
+  direccion: String
+  departamento: String
+  provincia: String
+  distrito: String
+  
+  # Campos adicionales
+  estado: Boolean
+  codigoUnidadEjecutora: String
+  
+  # NOTA: Para agregar nuevos campos, añadirlos a la sección correspondiente
+}
+
+# Empresa que emite la orden de compra
+type Empresa {
+  # Campos de identificación
+  id: ID!
+  razonSocial: String!
+  ruc: String!
+  
+  # Campos de contacto
+  telefono: String
+  email: String
+  
+  # Campos de ubicación y presencia
+  direccion: String
+  logo: String
+  web: String
+  
+  # NOTA: Para agregar nuevos campos, añadirlos a la sección correspondiente
+}
+
+# Contacto asociado al cliente
+type ContactoCliente {
+  # Campos de identificación
+  id: ID!
+  clienteId: ID!
+  nombre: String!
+  
+  # Campos de contacto
+  email: String
+  telefono: String
+  
+  # Campos adicionales
+  cargo: String
+  
+  # NOTA: Para agregar nuevos campos, añadirlos a la sección correspondiente
+}
+
+# Proveedor asociado a las órdenes de proveedor
+type Proveedor {
+  # Campos de identificación
+  id: ID!
+  razonSocial: String!
+  ruc: String!
+  
+  # Campos de contacto
+  email: String
+  telefono: String
+  
+  # NOTA: Para agregar nuevos campos, añadirlos a la sección correspondiente
+}
+
+# Orden de proveedor asociada a la orden de compra
+type OrdenProveedor {
+  # Campos de identificación
+  id: ID!
+  codigoOp: String!
+  
+  # Campos de valores
+  totalProveedor: Float
+  
+  # Campos de fechas
+  fechaDespacho: String
+  fechaProgramada: String
+  fechaRecepcion: String
+  
+  # Campos adicionales
+  tipoPago: String
+  estadoOp: String
+  
+  # Campos de relaciones
+  proveedor: Proveedor
+  
+  # NOTA: Para agregar nuevos campos, añadirlos a la sección correspondiente
+}
+
+#-----------------------------------------------------
+# TIPOS DE ENTRADA (INPUTS)
+#-----------------------------------------------------
+
+# Filtros para consultar órdenes de compra
+input OrdenCompraFiltersInput {
+  # Filtros por entidades relacionadas
+  clienteId: Int
+  empresaId: Int
+  
+  # Filtros por texto
+  search: String
+  
+  # Filtros por fecha
+  fechaFrom: String # Formato YYYY-MM-DD
+  fechaTo: String   # Formato YYYY-MM-DD
+  
+  # Filtros por estado
+  etapaActual: String
+  estadoActivo: Boolean
+  
+  # NOTA: Para agregar nuevos filtros, añadirlos a la sección correspondiente
+}
+
+# Input para crear/actualizar órdenes de compra
+input OrdenCompraInput {
+  # Campos básicos
+  codigoVenta: String
+  fechaEmision: String
+  montoVenta: Float
+  
+  # Campos de estado
+  etapaActual: String
+  estadoActivo: Boolean
+  
+  # Campos de contenido
+  productos: JSON # Campo JSON para array de productos
+  archivoOc: String
+  
+  # NOTA: Para agregar nuevos campos de entrada, añadirlos a la sección correspondiente
+}
