@@ -10,23 +10,24 @@ dotenv.config();
 class Server {
   public app: Application;
   private readonly puerto: string | number;
-  private readonly url: string;
-
-  constructor() {
+  private readonly url: string;  constructor() {
     this.puerto = process.env.PORT ?? 5000;
     this.url = process.env.URL ?? 'http://localhost';
     this.app = express();
 
     this.middlewares();
-    this.rutas();
-    // this.setupGraphQL(); // Añadir la configuración de GraphQL
+    this.inicializarRutas();
     this.manejoErroresGlobal();
   }
-
-  iniciarServidor() {
-    this.app.listen(this.puerto, () => {
-      logger.info(`Servidor escuchando en ${this.url}:${this.puerto}`);
-    });
+  async iniciarServidor() {
+    try {
+      this.app.listen(this.puerto, () => {
+        logger.info(`Servidor escuchando en ${this.url}:${this.puerto}`);
+      });
+    } catch (error) {
+      logger.error(`Error al iniciar el servidor: ${(error as Error).message}`);
+      process.exit(1);
+    }
   }
 
   middlewares() {
@@ -40,9 +41,13 @@ class Server {
       next();
     });
   }
-
-  rutas() {
-    configureRoutes(this.app);
+  async inicializarRutas() {
+    try {
+      await configureRoutes(this.app);
+      logger.info('Todas las rutas configuradas correctamente');
+    } catch (error) {
+      logger.error(`Error al configurar las rutas: ${(error as Error).message}`);
+    }
   }
 
   manejoErroresGlobal() {

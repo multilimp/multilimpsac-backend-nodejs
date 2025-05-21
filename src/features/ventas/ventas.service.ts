@@ -1,7 +1,8 @@
-import { OrdenCompra, Prisma } from '@prisma/client';
+import { OrdenCompra, OrdenCompraPrivada, Prisma } from '@prisma/client';
 import prisma from '../../database/prisma';
 import * as ocService from '../../modules/ordenCompra/ordenCompra.service';
 import { BaseVentaService } from '../../shared/services/baseVenta.service';
+import logger from '../../shared/config/logger';
 
 class VentaService extends BaseVentaService<OrdenCompra, Prisma.OrdenCompraCreateInput, Prisma.OrdenCompraUpdateInput> {
   protected model = prisma.ordenCompra;
@@ -88,12 +89,14 @@ export const createVenta = async (data: Prisma.OrdenCompraCreateInput): Promise<
   try {
     // 1. Validar que exista empresa
     const empresaId = data.empresa?.connect?.id;
+    logger.info('EmpresaId recibido:', empresaId);
     if (!empresaId) {
       throw new Error('Se requiere el ID de la empresa');
     }
 
     // 2. Generar código único de venta
     const codigoVenta = await ocService.generateUniqueOrdenCompraCode(empresaId);
+    logger.info('Código de venta generado:', codigoVenta);
 
     // 3. Preparar los datos para la creación
     const ventaData: Prisma.OrdenCompraCreateInput = {
@@ -133,9 +136,12 @@ export const createVenta = async (data: Prisma.OrdenCompraCreateInput): Promise<
       fechaEmision: new Date()
     };
 
+    logger.info('Datos finales para crear venta:', ventaData);
+
     // 4. Crear la venta
     return ocService.createOrdenCompra(ventaData);
   } catch (error) {
+    logger.error('Error en createVenta:', error);
     if (error instanceof Error) {
       throw new Error(`Error al crear la venta: ${error.message}`);
     }
@@ -154,4 +160,22 @@ export const deleteVenta = (
   id: number
 ): Promise<OrdenCompra> => {
   return ocService.updateOrdenCompra(id, { estadoActivo: false });
+};
+
+export const createOrdenCompraPrivada = async (
+  data: Omit<Prisma.OrdenCompraPrivadaCreateInput, 'id' | 'createdAt' | 'updatedAt'> & { pagos?: Omit<Prisma.PagoOrdenCompraPrivadaCreateInput, 'id' | 'createdAt' | 'updatedAt' | 'ordenCompraPrivada'>[] }
+): Promise<OrdenCompraPrivada> => {
+  const { pagos, ...ordenData } = data;
+  const orden = await prisma.ordenCompraPrivada.create({ data: ordenData });
+  if (pagos && Array.isArray(pagos) && pagos.length > 0) {
+    for (const pago of pagos) {
+      await prisma.pagoOrdenCompraPrivada.create({
+        data: {
+          ...pago,
+          ordenCompraPrivada: { connect: { id: orden.id } }
+        }
+      });
+    }
+  }
+  return orden;
 };

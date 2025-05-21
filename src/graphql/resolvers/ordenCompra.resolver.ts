@@ -1,107 +1,136 @@
 // src/graphql/resolvers/ordenCompra.resolver.ts
-import prisma from '../../database/prisma'; // Ajusta la ruta a tu cliente Prisma
+import prisma from '../../database/prisma';
 import { Prisma } from '@prisma/client';
 import { GraphQLResolveInfo } from 'graphql';
-
-// Función para parsear campos solicitados y construir el 'include' de Prisma
-// Esta es una parte crucial para la selección dinámica de datos.
-// Puedes usar una librería como 'graphql-fields' o implementarlo manualmente.
-// Ejemplo conceptual de cómo podrías obtener los campos (simplificado):
-const getIncludes = (info: GraphQLResolveInfo) => {
-    // Aquí analizarías info.fieldNodes para determinar qué campos y relaciones se pidieron.
-    // Por simplicidad, este ejemplo no implementa el parseo completo.
-    // En una implementación real, esto construiría un objeto Prisma.OrdenCompraInclude.
-    // Por ejemplo, si se pide 'cliente', el include sería { cliente: true }
-    // Si se pide 'cliente { razonSocial }', sería { cliente: { select: { razonSocial: true } } }
-    // Librerías como graphql-fields pueden ayudar mucho aquí.
-    // O puedes usar getPrismaIncludeFromGraphQLResolveInfo si usas @prisma/graphql-platform (aunque es más para autogeneración)
-
-    // Ejemplo básico (deberías hacerlo dinámico):
-    const requestedFields = Object.keys(require('graphql-fields')(info)); // Ejemplo usando graphql-fields
-    const include: Prisma.OrdenCompraInclude = {};
-
-    if (requestedFields.includes('cliente')) include.cliente = true;
-    if (requestedFields.includes('empresa')) include.empresa = true;
-    if (requestedFields.includes('contactoCliente')) include.contactoCliente = true;
-    if (requestedFields.includes('ordenesProveedor')) include.ordenesProveedor = true;
-    // ... y así para otras relaciones
-
-    return include;
-};
+import logger from '../../shared/config/logger';
+import { getFields } from '../utils/resolverUtils';
+import { createOptimizedQueryParams } from '../utils/prismaQueryBuilder';
+import { manejarErrorGraphQL } from '../utils/errorHandling';
 
 
 export const ordenCompraResolvers = {
   Query: {
-    ordenCompra: async (_parent: any, args: { id: string }, _context: any, info: GraphQLResolveInfo) => {
-      const include = getIncludes(info); // Construir 'include' dinámicamente
-      return prisma.ordenCompra.findUnique({
-        where: { id: parseInt(args.id) },
-        include,
-      });
-    },
-    ordenesCompra: async (_parent: any, args: { page?: number, pageSize?: number, filters?: any, orderBy?: string }, _context: any, info: GraphQLResolveInfo) => {
-      const page = args.page || 1;
-      const pageSize = args.pageSize || 10;
-      const skip = (page - 1) * pageSize;
+    ordenCompra: async (_parent: any, args: { id: string }, context: any, info: GraphQLResolveInfo) => {
+      logger.info(`GraphQL Resolver: ordenCompra - Solicitando orden con ID: ${args.id}`);
+      
+      /* Comentamos temporalmente la verificación de autenticación para pruebas
+      if (!context.user) {
+        logger.warn('GraphQL: Intento de acceso a ordenCompra sin autenticación');
+        throw new Error('No autenticado');
+      }
+      */
+      
+      try {
+        // Obtener los campos solicitados primero para analizar la consulta
+        const fields = getFields(info);
+        
+        // Detectar si se solicitan relaciones específicas
+        const includeCliente = fields?.cliente !== undefined;
+        const includeEmpresa = fields?.empresa !== undefined;
+        
+        // Log para diagnóstico
+        logger.debug(`Campos solicitados: ${JSON.stringify(fields)}`);
+        logger.debug(`Se solicitan relaciones: Cliente=${includeCliente}, Empresa=${includeEmpresa}`);
+        
+        // Obtener parámetros optimizados para consulta usando la nueva función
+        const queryOptions = createOptimizedQueryParams(info, 'OrdenCompra');
+        logger.debug(`Parámetros de consulta optimizados: ${JSON.stringify(queryOptions)}`);
+        
+        // Consultar la orden de compra con selección optimizada de campos
+        const ordenCompra = await prisma.ordenCompra.findUnique({
+          where: { id: parseInt(args.id) },
+          ...queryOptions,
+        });
+        
+        if (!ordenCompra) {
+          logger.warn(`GraphQL: Orden de compra con ID ${args.id} no encontrada`);
+          throw new Error(`Orden de compra con ID ${args.id} no encontrada`);
+        }
+        
+        // Log para diagnóstico
+        // Usamos sintaxis de acceso de índice para evitar errores de TypeScript con propiedades dinámicas
+        const tieneCliente = 'cliente' in ordenCompra ? !!ordenCompra['cliente'] : 'N/A';
+        const tieneEmpresa = 'empresa' in ordenCompra ? !!ordenCompra['empresa'] : 'N/A';
+        logger.debug(`GraphQL: Orden encontrada - ID: ${ordenCompra.id}, tiene cliente: ${tieneCliente}, tiene empresa: ${tieneEmpresa}`);
+        
+        return ordenCompra;
+      } catch (error) {
+        return manejarErrorGraphQL(error, 'ordenCompra.query');
+      }
+    },    ordenesCompra: async (_parent: any, args: { filters?: any, orderBy?: string }, context: any, info: GraphQLResolveInfo) => {
+      logger.info(`GraphQL Resolver: ordenesCompra - Solicitando listado de órdenes`);
+      
+      try {
+        // Comentamos temporalmente la verificación de autenticación para pruebas
+        /*
+        if (!context.user) {
+          logger.warn('GraphQL: Intento de acceso a ordenesCompra sin autenticación');
+          throw new Error('No autenticado');
+        }
+        */
 
-      const where: Prisma.OrdenCompraWhereInput = {};
-      if (args.filters) {
-        if (args.filters.clienteId) where.clienteId = args.filters.clienteId;
-        if (args.filters.empresaId) where.empresaId = args.filters.empresaId;
-        if (args.filters.search) {
+        // Configurar filtros
+        const where: any = { estadoActivo: true }; // Por defecto solo ordenes activas
+        
+        if (args.filters) {
+          // Filtros básicos
+          if (args.filters.clienteId) where.clienteId = parseInt(args.filters.clienteId);
+          if (args.filters.empresaId) where.empresaId = parseInt(args.filters.empresaId);
+          
+          // Búsqueda por texto
+          if (args.filters.search) {
             where.OR = [
-                { codigoVenta: { contains: args.filters.search, mode: 'insensitive' } },
-                { cliente: { razonSocial: { contains: args.filters.search, mode: 'insensitive' } } },
-                { empresa: { razonSocial: { contains: args.filters.search, mode: 'insensitive' } } },
+              { codigoVenta: { contains: args.filters.search, mode: 'insensitive' } },
+              { cliente: { razonSocial: { contains: args.filters.search, mode: 'insensitive' } } },
+              { empresa: { razonSocial: { contains: args.filters.search, mode: 'insensitive' } } },
             ];
+          }
+            // Filtros por fecha
+          if (args.filters.fechaFrom || args.filters.fechaTo) {
+            where.fechaEmision = {};
+            if (args.filters.fechaFrom) where.fechaEmision.gte = new Date(args.filters.fechaFrom);
+            if (args.filters.fechaTo) where.fechaEmision.lte = new Date(args.filters.fechaTo);
+          }
         }
-        // if (args.filters.fechaFrom) where.fechaEmision = { ...where.fechaEmision, gte: new Date(args.filters.fechaFrom) };
-        // if (args.filters.fechaTo) where.fechaEmision = { ...where.fechaEmision, lte: new Date(args.filters.fechaTo) };
-        // Añadir más filtros según tu `OrdenCompraFiltersInput`
-      }
-      where.estadoActivo = true; // Asumiendo que siempre quieres activas
 
-      let orderByClause: Prisma.OrdenCompraOrderByWithRelationInput | Prisma.OrdenCompraOrderByWithRelationInput[] = { createdAt: 'desc' };
-      if (args.orderBy) {
-        const [field, direction] = args.orderBy.split('_');
-        if (field && direction) {
-            orderByClause = { [field]: direction.toLowerCase() as Prisma.SortOrder };
-        }
-      }
-
-      const include = getIncludes(info); // Construir 'include' dinámicamente para los items
-
-      const [ordenes, total] = await prisma.$transaction([
-        prisma.ordenCompra.findMany({
+        // Configurar ordenamiento
+        let orderBy: any = { createdAt: 'desc' };
+        if (args.orderBy) {
+          const [campo, direccion] = args.orderBy.split('_');
+          if (campo && direccion) {
+            orderBy = { [campo]: direccion.toLowerCase() };
+          }
+        }        // Obtener los campos solicitados primero para analizar la consulta
+        const fields = getFields(info);
+          // Log para diagnóstico
+        logger.debug(`Campos solicitados (listado): ${JSON.stringify(fields)}`);
+        
+        // Obtener parámetros optimizados para consulta usando la nueva función
+        const queryOptions = createOptimizedQueryParams(info, 'OrdenCompra');
+        logger.debug(`Parámetros de consulta optimizados (listado): ${JSON.stringify(queryOptions)}`);
+          
+          // Si hay campos específicos en el nivel principal, también los incluimos
+          if (queryOptions.select) {
+            Object.keys(queryOptions.select).forEach(field => {
+              // Asegurar que los campos básicos también se incluyan
+              if (!['cliente', 'empresa'].includes(field)) {
+                queryOptions.include = queryOptions.include || {};
+                queryOptions.include[field] = true;
+              }
+            });
+          }// Ejecutar consulta con opciones optimizadas
+        const ordenes = await prisma.ordenCompra.findMany({
           where,
-          skip,
-          take: pageSize,
-          include,
-          orderBy: orderByClause,
-        }),
-        prisma.ordenCompra.count({ where }),
-      ]);
-
-      return {
-        data: ordenes,
-        total,
-        totalPages: Math.ceil(total / pageSize),
-        page,
-        pageSize
-      };
-    },
-  },
-  // Si tienes campos complejos o relaciones que no se resuelven directamente con el include principal,
-  // puedes añadir resolvers a nivel de campo aquí.
-  // Ejemplo:
-  // OrdenCompra: {
-  //   cliente: async (parent: OrdenCompra, _args: any, _context: any, info: GraphQLResolveInfo) => {
-  //     // Si 'cliente' no fue incluido por getIncludes, puedes cargarlo aquí.
-  //     // Esto es útil para el problema N+1 si usas DataLoader.
-  //     if (parent.clienteId && !parent.cliente) {
-  //       return prisma.cliente.findUnique({ where: { id: parent.clienteId } });
-  //     }
-  //     return parent.cliente;
-  //   },
-  // },
+          ...queryOptions,
+          orderBy,
+        });
+        
+        // Devolver resultados directamente como array
+        return ordenes;
+      } catch (error) {
+        return manejarErrorGraphQL(error, 'ordenesCompra.query');
+      }
+    }
+    
+  }
 };
