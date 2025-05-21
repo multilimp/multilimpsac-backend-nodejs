@@ -4,8 +4,8 @@ import prisma from '../../database/prisma';
 type CreateOrdenProveedorData = Omit<OrdenProveedor, 'id' | 'createdAt' | 'updatedAt'> & {
   productos?: Prisma.OpProductoCreateNestedManyWithoutOrdenProveedorInput;
   transportesAsignados?: Prisma.TransporteAsignadoCreateNestedManyWithoutOrdenProveedorInput;
-  pagos?: Prisma.PagoOrdenProveedorCreateNestedManyWithoutOrdenProveedorInput;
 };
+
 type UpdateOrdenProveedorData = Partial<Omit<OrdenProveedor, 'id' | 'createdAt' | 'updatedAt'>> & {
   productos?: Prisma.OpProductoUpdateManyWithoutOrdenProveedorNestedInput;
   transportesAsignados?: Prisma.TransporteAsignadoUpdateManyWithoutOrdenProveedorNestedInput;
@@ -77,19 +77,68 @@ export const getOrdenProveedorById = (id: number): Promise<OrdenProveedor | null
   });
 };
 
-export const createOrdenProveedor = (data: CreateOrdenProveedorData): Promise<OrdenProveedor> => {
-   if (!data.codigoOp) {
-    throw new Error('Falta el campo requerido: codigoOp.');
+export const generateUniqueOrdenProveedorCode = async (proveedorId: number): Promise<string> => {
+  const proveedor = await prisma.proveedor.findUnique({ where: { id: proveedorId } });
+  if (!proveedor) throw new Error('Proveedor no encontrado');
+  
+  const proveedorPrefix = proveedor.razonSocial
+    .replace(/\s+/g, '')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toUpperCase()
+    .substring(0, 3);
+    
+  const prefix = `OP${proveedorId}-${proveedorPrefix}-`;
+  let nextNumber = 1;
+  let codigo: string = '';
+  let exists = true;
+  
+  while (exists) {
+    codigo = `${prefix}${nextNumber}`;
+    const existing = await prisma.ordenProveedor.findFirst({ where: { codigoOp: codigo } });
+    if (!existing) {
+      exists = false;
+    } else {
+      nextNumber++;
     }
-  const processedData = processOrdenProveedorData(data);
+  }
+  return codigo;
+};
+
+export const createOrdenProveedor = async (data: CreateOrdenProveedorData): Promise<OrdenProveedor> => {
+  if (!data.proveedorId) {
+    throw new Error('Se requiere el ID del proveedor');
+  }
+  
+  if (!data.ordenCompraId) {
+    throw new Error('Se requiere el ID de la orden de compra');
+  }
+
+  // Obtener la orden de compra para extraer la empresaId
+  const ordenCompra = await prisma.ordenCompra.findUnique({
+    where: { id: data.ordenCompraId },
+    select: { empresaId: true }
+  });
+
+  if (!ordenCompra) {
+    throw new Error(`Orden de compra con ID ${data.ordenCompraId} no encontrada`);
+  }
+
+  // Generar código único
+  const codigoOp = await generateUniqueOrdenProveedorCode(data.proveedorId);
+  
+  const processedData = processOrdenProveedorData({
+    ...data,
+    empresaId: ordenCompra.empresaId,
+    codigoOp
+  });
+
   return prisma.ordenProveedor.create({
     data: processedData as any,
-    include: { // Incluir relaciones al crear si se desea devolverlas
+    include: {
       productos: true,
-      pagos: true,
       transportesAsignados: true,
     }
-   });
+  });
 };
 
 export const updateOrdenProveedor = (id: number, data: UpdateOrdenProveedorData): Promise<OrdenProveedor> => {

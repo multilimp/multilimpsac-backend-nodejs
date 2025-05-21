@@ -12,7 +12,7 @@ const router = Router();
 router.get('/', listOrdenesProveedor);
 router.get('/list-op', listOrdenesProveedor);
 router.get('/ordenCompraId', getOrdenesProveedorByOrdenCompraId);
-router.post('/', createOrdenProveedor);
+router.post('/:ordenCompraId', createOrdenProveedor);
 router.get('/:ordenProveedorId', getOrdenProveedor);
 router.put('/:ordenProveedorId', updateOrdenProveedor);
 
