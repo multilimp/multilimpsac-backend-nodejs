@@ -26,13 +26,67 @@ const processOrdenProveedorData = (data: any) => {
   // No convertir fechaEntrega si es string por definición en schema
 
   if (data.totalProveedor && typeof data.totalProveedor !== 'object') {
-     data.totalProveedor = new Prisma.Decimal(data.totalProveedor);
+    data.totalProveedor = new Prisma.Decimal(data.totalProveedor);
   }
 
   return data;
 }
 
-export const getOrdenesProveedorByOrdenCompraId = (ordenCompraId: number): Promise<OrdenProveedor[]> => {
+const generateCodigoOp = async (id: number): Promise<string> => {
+  const oc = await prisma.ordenCompra.findUnique({
+    where: { id },
+    select: { codigoVenta: true },
+  });
+
+  if (!oc) throw new Error('Orden de compra no encontrada');
+
+  const match = oc.codigoVenta.match(/OC(\w+)/);
+  if (!match) throw new Error('Formato de OC inválido');
+
+  const base = match[1];
+
+  const existingOps = await prisma.ordenProveedor.findMany({
+    where: {
+      codigoOp: {
+        startsWith: `OP${base}-`,
+      },
+    },
+    select: { codigoOp: true },
+  });
+
+  // Extrae los números al final de cada OP, y encuentra el máximo
+  let maxSuffix = 0;
+  for (const op of existingOps) {
+    const match = op.codigoOp.match(new RegExp(`^OP${base}-(\\d+)$`));
+    if (match) {
+      const num = parseInt(match[1], 10);
+      if (num > maxSuffix) maxSuffix = num;
+    }
+  }
+
+  // Genera nuevo código con número incrementado
+  const newSuffix = maxSuffix + 1;
+  return `OP${base}-${newSuffix}`;
+};
+
+const generateCodigoTransporte = async (ordenProveedorId: number): Promise<string> => {
+  const existing = await prisma.transporteAsignado.findMany({
+    where: { ordenProveedorId: ordenProveedorId },
+    select: { codigoTransporte: true },
+  });
+  let maxSuffix = 0;
+  for (const t of existing) {
+    const match = t.codigoTransporte.match(new RegExp(`^TR${ordenProveedorId}-(\\d+)$`));
+    if (match) {
+      const num = parseInt(match[1], 10);
+      if (num > maxSuffix) maxSuffix = num;
+    }
+  }
+  const newSuffix = maxSuffix + 1;
+  return `TR${ordenProveedorId}-${newSuffix}`;
+};
+
+export const getOrdenesProveedorByOrdenCompraId = async (ordenCompraId: number): Promise<OrdenProveedor[]> => {
   return prisma.ordenProveedor.findMany({
     where: { ordenCompraId },
     include: {
@@ -46,7 +100,7 @@ export const getOrdenesProveedorByOrdenCompraId = (ordenCompraId: number): Promi
     },
     orderBy: { createdAt: 'desc' },
   });
-}
+};
 
 export const getAllOrdenesProveedor = (): Promise<OrdenProveedor[]> => {
   return prisma.ordenProveedor.findMany({
@@ -65,7 +119,7 @@ export const getAllOrdenesProveedor = (): Promise<OrdenProveedor[]> => {
 export const getOrdenProveedorById = (id: number): Promise<OrdenProveedor | null> => {
   return prisma.ordenProveedor.findUnique({
     where: { id },
-     include: {
+    include: {
       empresa: true,
       proveedor: true,
       contactoProveedor: true,
@@ -77,19 +131,22 @@ export const getOrdenProveedorById = (id: number): Promise<OrdenProveedor | null
   });
 };
 
-export const createOrdenProveedor = (data: CreateOrdenProveedorData): Promise<OrdenProveedor> => {
-   if (!data.codigoOp) {
-    throw new Error('Falta el campo requerido: codigoOp.');
+export const createOrdenProveedor = async (id: number, data: CreateOrdenProveedorData): Promise<OrdenProveedor> => {
+  const codigoOp = await generateCodigoOp(id);
+  const processedData = processOrdenProveedorData({ ...data, codigoOp });
+  if (processedData.transportesAsignados && Array.isArray(processedData.transportesAsignados.create)) {
+    for (let i = 0; i < processedData.transportesAsignados.create.length; i++) {
+      processedData.transportesAsignados.create[i].codigoTransporte = await generateCodigoTransporte(id);
     }
-  const processedData = processOrdenProveedorData(data);
+  }
   return prisma.ordenProveedor.create({
-    data: processedData as any,
-    include: { // Incluir relaciones al crear si se desea devolverlas
+    data: processedData as CreateOrdenProveedorData,
+    include: {
       productos: true,
       pagos: true,
       transportesAsignados: true,
-    }
-   });
+    },
+  });
 };
 
 export const updateOrdenProveedor = (id: number, data: UpdateOrdenProveedorData): Promise<OrdenProveedor> => {
@@ -97,7 +154,7 @@ export const updateOrdenProveedor = (id: number, data: UpdateOrdenProveedorData)
   return prisma.ordenProveedor.update({
     where: { id },
     data: processedData as any,
-     include: {
+    include: {
       productos: true,
       pagos: true,
       transportesAsignados: true,
@@ -105,3 +162,13 @@ export const updateOrdenProveedor = (id: number, data: UpdateOrdenProveedorData)
   });
 };
 
+export const deleteOrdenProveedor = (id: number): Promise<OrdenProveedor> => {
+  return prisma.ordenProveedor.delete({
+    where: { id },
+    include: {
+      productos: true,
+      pagos: true,
+      transportesAsignados: true,
+    }
+  });
+}

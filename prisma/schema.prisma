@@ -453,20 +453,20 @@ model OpProducto {
 }
 
 model TransporteAsignado {
-  id                   Int      @id @default(autoincrement())
-  codigoTransporte     String   @map("codigo_transporte")
-  transporteId         Int      @map("transporte_id")
-  ordenProveedorId     Int      @map("orden_proveedor_id")
-  contactoTransporteId Int?     @map("contacto_transporte_id")
-  destino              String?
+  id                   Int         @id @default(autoincrement())
+  codigoTransporte     String      @map("codigo_transporte")
+  transporteId         Int         @map("transporte_id")
+  ordenProveedorId     Int         @map("orden_proveedor_id")
+  contactoTransporteId Int?        @map("contacto_transporte_id")
+  tipoDestino          TipoDestino @map("tipo_destino")
   region               String?
   provincia            String?
   distrito             String?
   direccion            String?
-  notaTransporte       String?  @map("nota_transporte")
-  cotizacionTransporte String?  @map("cotizacion_transporte")
-  estadoPago           String?  @map("estado_pago")
-  montoFlete           Decimal? @map("monto_flete") @db.Decimal(10, 2)
+  notaTransporte       String?     @map("nota_transporte")
+  cotizacionTransporte String?     @map("cotizacion_transporte")
+  estadoPago           String?     @map("estado_pago")
+  montoFlete           Decimal?    @map("monto_flete") @db.Decimal(10, 2)
   grt                  String?
 
   createdAt DateTime @default(now()) @map("created_at")
@@ -479,6 +479,11 @@ model TransporteAsignado {
   pagos PagoTransporteAsignado[]
 
   @@map("transportes_asignados")
+}
+
+enum TipoDestino {
+  ALMACEN
+  CLIENTE
 }
 
 model PagoTransporteAsignado {

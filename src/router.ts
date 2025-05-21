@@ -40,7 +40,7 @@ export const configureRoutes = (app: Application): void => {
   app.use('/api/almacenes', almacenRoutes);
   app.use('/api/cotizaciones', cotizacionRoutes);
   app.use('/api/ordenes-compra', ordenCompraRoutes);
-  app.use('/api/ordenes-proveedor', ordenProveedorRoutes);
+  app.use('/api', ordenProveedorRoutes);
   app.use('/api/productos', productoRoutes);
   app.use('/api/agrupaciones-oc', agrupacionOrdenCompraRoutes);
   app.use('/api/ventas', ventasRoutes);
