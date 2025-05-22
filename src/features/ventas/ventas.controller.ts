@@ -7,18 +7,7 @@ import logger from '../../shared/config/logger';
 
 export const listVentas = async (req: Request, res: Response) => {
   try {
-    const page     = Number(req.query.page)     || 1;
-    const pageSize = Number(req.query.pageSize) || 10;
-    const filters  = {
-      clienteId: req.query.clienteId ? Number(req.query.clienteId) : undefined,
-      minPrice:  req.query.minPrice  ? Number(req.query.minPrice)  : undefined,
-      maxPrice:  req.query.maxPrice  ? Number(req.query.maxPrice)  : undefined,
-      fechaFrom: req.query.fechaFrom as string,
-      fechaTo:   req.query.fechaTo   as string,
-      search:    req.query.search    as string
-    };
-
-    const result = await ventasService.getAllVentas(page, pageSize, filters);
+    const result = await ventasService.getAllVentas();
     res.status(200).json(result);
   } catch (error) {
     handleError({ res, error, msg: 'Error al listar las ventas' });
@@ -46,7 +35,7 @@ export const createVenta = async (req: Request, res: Response) => {
 
       const nuevaVenta = await ventasService.createVenta(data);
       res.status(201).json(nuevaVenta);
-    
+
   } catch (error) {
     handleError({ res, error, msg: 'Error al crear la venta' });
   }
