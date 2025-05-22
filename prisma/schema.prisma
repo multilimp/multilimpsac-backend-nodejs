@@ -400,8 +400,8 @@ model OrdenProveedor {
   totalProveedor Decimal? @map("total_proveedor")
   tipoPago       String?  @map("tipo_pago")
   notaPago       String?  @map("nota_pago")
-  notaGestionOp  String?  @map("nota_gestion_op")
 
+  notaGestionOp  String?  @map("nota_gestion_op")
   tipoEntrega       String? @map("tipo_entrega")
   retornoMercaderia String? @map("retorno_mercaderia")
   estadoOp          String? @map("estado_op")
