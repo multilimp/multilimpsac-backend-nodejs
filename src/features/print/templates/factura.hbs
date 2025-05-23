@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Factura {{ facturacion.factura }}</title>
+    <style>
+        {{{ css }}}
+    </style>
+</head>
+<body>
+    <div class="contenedor">
+        <div class="encabezado">
+            <div class="empresa-info">
+                <strong>{{ empresa.razonSocial }}</strong><br>
+                RUC: {{ empresa.ruc }}<br>
+                {{ empresa.direccion }}<br>
+                Teléfono: {{ empresa.telefono }}
+            </div>
+            <div class="ruc-box">
+                R.U.C: {{ empresa.ruc }}
+                <div class="orden">FACTURA</div>
+                <div>Nº {{ facturacion.factura }}</div>
+            </div>
+        </div>
+
+        <div class="seccion">
+            <strong>Cliente:</strong><br>
+            Razón Social: {{ cliente.razonSocial }}<br>
+            RUC: {{ cliente.ruc }}<br>
+            {{#if cliente.direccion}}
+                Dirección: {{ cliente.direccion }} 
+                {{#if cliente.distrito}}{{cliente.distrito}}{{/if}}
+                {{#if cliente.provincia}} / {{cliente.provincia}}{{/if}}
+                {{#if cliente.departamento}} / {{cliente.departamento}}{{/if}}
+                <br>
+            {{/if}}
+            Fecha de Emisión: {{#if facturacion.fechaFactura}}{{ facturacion.fechaFactura }}{{else}}N/A{{/if}}<br>
+            {{#if facturacion.ordenCompra.codigoVenta}}
+              Orden de Compra: {{ facturacion.ordenCompra.codigoVenta }} <br>
+            {{/if}}
+            {{#if facturacion.grr}}
+              Guía de Remisión Remitente (GRR): {{ facturacion.grr }}
+            {{/if}}
+        </div>
+
+        {{#if productos.length}}
+        <table class="tabla-productos">
+            <thead>
+                <tr>
+                    <th>CÓDIGO</th>
+                    <th>CANTIDAD</th>
+                    <th>UNIDAD</th>
+                    <th>DESCRIPCIÓN</th>
+                    <th>PRECIO S/</th>
+                    <th>IMPORTE S/</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each productos}}
+                <tr>
+                    <td>{{ this.codigo }}</td>
+                    <td>{{ this.cantidad }}</td>
+                    <td>{{ this.unidad_medida }}</td>
+                    <td>{{ this.descripcion }}</td>
+                    <td>{{formatCurrency this.precio_unitario }}</td>
+                    <td>{{formatCurrency this.total }}</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+        {{else}}
+        <div class="seccion">
+            <p>No hay productos detallados en esta factura.</p>
+        </div>
+        {{/if}}
+
+        <div class="totales">
+            {{#if facturacion.ordenCompra.montoVenta}}
+                SUBTOTAL: {{ formatCurrency facturacion.ordenCompra.montoVenta }} <br> 
+                <!-- Asumiendo que montoVenta es el subtotal. Ajustar si es necesario para IGV, etc. -->
+                <!-- IGV (18%): S/ XX.XX -->
+                <strong>TOTAL A PAGAR: {{ formatCurrency facturacion.ordenCompra.montoVenta }}</strong>
+            {{else}}
+                <strong>TOTAL A PAGAR: (No especificado)</strong>
+            {{/if}}
+        </div>
+        
+        {{#or facturacion.retencion facturacion.detraccion}}
+        <div class="seccion">
+            {{#if facturacion.retencion}}
+            Retención: {{ formatCurrency facturacion.retencion }} <br>
+            {{/if}}
+            {{#if facturacion.detraccion}}
+            Detracción: {{ formatCurrency facturacion.detraccion }}
+            {{/if}}
+        </div>
+        {{/or}}
+
+        <div class="seccion">
+            Forma de Envío Factura: {{ facturacion.formaEnvioFactura }}
+        </div>
+
+        <div class="footer">
+            Representación impresa de la Factura Electrónica.
+            <br>
+            Fecha de generación: {{ fechaActual }}
+        </div>
+    </div>
+</body>
+</html>
