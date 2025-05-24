@@ -33,7 +33,7 @@ export const configureRoutes = async (app: Application): Promise<void> => {
   // Configurar GraphQL como una ruta más
   const graphqlMiddleware = await setupGraphQLRoutes();
   // Aplicar middleware personalizado para simplificar respuestas GraphQL
-  app.use('/graphql', express.json(), cors(), simplifyResponseMiddleware, graphqlMiddleware);
+  //app.use('/graphqlk', express.json(), cors(), simplifyResponseMiddleware, graphqlMiddleware);
   
 
   app.use(authenticateToken);
