@@ -1,0 +1,16 @@
+{
+    "ordenCompraId": 123,
+    "documentoPeruCompras" : "doc_general_oc.pdf",
+    "fechaPeruCompras" : "2025-05-20T00:00:00.000Z",
+    "fechaEntregaOc" : "2025-06-15T00:00:00.000Z",
+    "op": [
+        {
+            "id": 1,
+            "notaGestionOp": "Entrega programada, pendiente confirmación de etiquetado.",
+            "estadoOp": "pendiente",
+            "fechaEntrega": "2025-06-10T00:00:00.000Z",
+            "retornoMercaderia": "No aplica",
+            "cargoOea": "Incluido en costos"
+        }
+    ]
+}

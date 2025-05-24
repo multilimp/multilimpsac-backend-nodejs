@@ -1,0 +1,36 @@
+{
+    "ordenCompraId": 123, // ID de la OC a la que se aplica el seguimiento
+    "documentoPeruCompras" : "doc_general_oc.pdf",
+    "fechaPeruCompras" : "2025-05-20T00:00:00.000Z",
+    "fechaEntregaOc" : "2025-06-15T00:00:00.000Z",
+    "documentoExtensionPlazoUrl": "extension_plazo.pdf", // Nuevo
+    // ... otros campos a nivel de OC ...
+    "op": [ // Asumiendo que 'op' se refiere a Órdenes de Proveedor o ítems de la OC
+        {
+            "id": 1, // ID de la OrdenProveedor o ítem
+            "notaGestionOp": "Entrega programada, pendiente confirmación de etiquetado.",
+            "estadoOp": "pendiente", // conforme, rechazado, observado, pendiente
+            "fechaEntrega": "2025-06-10T00:00:00.000Z",
+            "retornoMercaderia": "No aplica",
+            "cargoOea": "Incluido en costos",
+            // Nuevos campos para la OP:
+            "documentoEntregaOpUrl": "entrega_op1.pdf",
+            "etiquetadoVisualizacionUrl": "etiquetas_op1.pdf",
+            "costosAdicionales": [
+                {
+                    "concepto": "Transporte urgente",
+                    "descripcion": "Envío express por retraso proveedor",
+                    "comprobanteUrl": "comprobante_transporte_urgente.pdf",
+                    "monto": 75.50
+                }
+            ],
+            "transporteInfo": {
+                "guiaUrl": "guia_transporte_op1.pdf",
+                "facturaUrl": "factura_transporte_op1.pdf",
+                "montoPago": 200.00,
+                "pagoAprobado": false
+            }
+        }
+        // ... más objetos "op"
+    ]
+}
