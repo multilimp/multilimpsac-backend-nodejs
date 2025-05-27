@@ -52,7 +52,7 @@ export const configureRoutes = async (app: Application): Promise<void> => {
   app.use('/api/almacenes', almacenRoutes);
   app.use('/api/cotizaciones', cotizacionRoutes);
   app.use('/api/ordenes-compra', ordenCompraRoutes);
-  app.use('/api', ordenProveedorRoutes);
+  app.use('/api/ordenes-proveedores', ordenProveedorRoutes);
   app.use('/api/productos', productoRoutes);
   app.use('/api/agrupaciones-oc', agrupacionOrdenCompraRoutes);  app.use('/api/ventas', ventasRoutes);
   app.use('/api/facturacion', facturacionRoutes);
