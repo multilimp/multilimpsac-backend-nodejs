@@ -1,0 +1,45 @@
+POST /api/tesoreria/op
+
+{
+  "ordenProveedorId": 123,
+  "updatesForOrdenProveedor": {
+    "estadoPago": "PAGADO", // ENUM: URGENTE / PENDIENTE / PAGADO
+    "notaPago": "Pago realizado por Tesorería el 2024-07-30."
+  },
+  "pagos": [
+    {
+    "id" : "2",
+    "fechaPago": "2024-07-30T10:00:00.000Z",
+    "bancoPago": "BCP",
+    "descripcionPago": "Pago de factura F123-456",
+    "archivoPago": "path/to/comprobante.pdf",
+    "montoPago": 1500.75
+  }, 
+  {
+    "fechaPago": "2024-07-30T10:00:00.000Z",
+    "bancoPago": "BCP",
+    "descripcionPago": "Pago de factura F123-456",
+    "archivoPago": "path/to/comprobante.pdf",
+    "montoPago": 1500.75
+  }
+  ]
+}
+
+POST /api/tesoreria/transporte
+
+{
+  "transporteAsignadoId": 123,
+  "updatesForTransporteAsignado": {
+    "estadoPago": "PAGADO", // URGENTE / PENDIENTE / PAGADO 
+    "notaPago": "Pago realizado por Tesorería el 2024-07-30."
+  },
+  "pagos": [
+    {
+      "fechaPago": "2024-07-30T10:00:00.000Z",
+      "bancoPago": "BCP",
+      "descripcionPago": "Pago de factura F123-456",
+      "archivoPago": "path/to/comprobante.pdf",
+      "montoPago": 1500.75
+    }
+  ]
+}
