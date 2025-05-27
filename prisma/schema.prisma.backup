@@ -310,10 +310,17 @@ model OrdenCompra {
   siaf                String?
   etapaSiaf           String?   @map("etapa_siaf")
   fechaSiaf           DateTime? @map("fecha_siaf") @db.Date
+
   // Seguimiento
   documentoPeruCompras String?   @map("documento_peru_compras")
   fechaPeruCompras     DateTime? @map("fecha_peru_compras") @db.Date
   fechaEntregaOc       DateTime? @map("fecha_entrega_oc") @db.Date // Campo duplicado? Revisar si es necesario
+  // Cobranzas
+  penalidad           Decimal?  @db.Decimal(10, 2)
+  netoCobrado         Decimal?  @map("neto_cobrado") @db.Decimal(10, 2)
+  estadoCobranza      String?   @map("estado_cobranza")
+  fechaEstadoCobranza DateTime? @map("fecha_estado_cobranza") @db.Date
+  fechaProximaGestion DateTime? @map("fecha_proxima_gestion") @db.Date
 
   // Documentación y seguimiento
   documentoExtensionPlazoUrl        String?  @map("documento_extension_plazo_url")
@@ -334,13 +341,6 @@ model OrdenCompra {
   numeroEnvioMesaPartes             String?  @map("numero_envio_mesa_partes")
   pdfEnvioMesaPartesUrl             String?  @map("pdf_envio_mesa_partes_url")
 
-  // Cobranzas
-  penalidad           Decimal?  @db.Decimal(10, 2)
-  netoCobrado         Decimal?  @map("neto_cobrado") @db.Decimal(10, 2)
-  estadoCobranza      String?   @map("estado_cobranza")
-  fechaEstadoCobranza DateTime? @map("fecha_estado_cobranza") @db.Date
-  fechaProximaGestion DateTime? @map("fecha_proxima_gestion") @db.Date
-
   etapaActual  String  @default("creacion") @map("etapa_actual")
   estadoActivo Boolean @default(true) @map("estado_activo")
 
@@ -353,9 +353,9 @@ model OrdenCompra {
   contactoCliente    Contacto?           @relation(fields: [contactoClienteId], references: [id])
   catalogoEmpresa    Catalogo?           @relation(fields: [catalogoEmpresaId], references: [id])
   ordenesProveedor   OrdenProveedor[]
-  ordenCompraPrivada OrdenCompraPrivada? // Relación uno a uno
-  facturaciones      Facturacion[] // Relación inversa añadida
-  gestionCobranzas   GestionCobranza[] // Relación inversa añadida
+  ordenCompraPrivada OrdenCompraPrivada?
+  facturaciones      Facturacion[]
+  gestionCobranzas   GestionCobranza[]
   programacionesEntrega ProgramacionEntrega[]
 
   // Relaciones con modelos aún no definidos (añadir estos modelos después)
@@ -406,12 +406,12 @@ model OrdenCompraPrivada {
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+
   // Relaciones
-  ordenCompra      OrdenCompra              @relation(fields: [ordenCompraId], references: [id])
-  cliente          Cliente?                 @relation(fields: [clienteId], references: [id])
-  contactoCliente  Contacto?                @relation(fields: [contactoClienteId], references: [id])
-  pagos            PagoOrdenCompraPrivada[] // Relación inversa
-  gestionCobranzas GestionCobranza[]        // Relación inversa añadida
+  ordenCompra     OrdenCompra              @relation(fields: [ordenCompraId], references: [id])
+  cliente         Cliente?                 @relation(fields: [clienteId], references: [id])
+  contactoCliente Contacto?                @relation(fields: [contactoClienteId], references: [id])
+  pagos           PagoOrdenCompraPrivada[] // Relación inversa
 
   @@map("ordenes_compra_privadas")
 }
@@ -450,12 +450,17 @@ model OrdenProveedor {
   totalProveedor Decimal? @map("total_proveedor")
   tipoPago       String?  @map("tipo_pago")
   notaPago       String?  @map("nota_pago")
+
   notaGestionOp  String?  @map("nota_gestion_op")
   tipoEntrega       String? @map("tipo_entrega")
   retornoMercaderia String? @map("retorno_mercaderia")
-  estadoOp          EstadoOpSeguimiento? @map("estado_op_seguimiento")
+  estadoOp          String? @map("estado_op")
   fechaEntrega      String? @map("fecha_entrega")
   cargoOea          String? @map("cargo_oea")
+  etiquetado    String?
+  embalaje      String?
+  observaciones String?
+  notaAdicional String? @map("nota_adicional")
 
   // Estado y anulación
   ventaAnulada                      Boolean?  @default(false) @map("venta_anulada_op")
@@ -467,42 +472,22 @@ model OrdenProveedor {
   
   // Estado de completado
   opCompletadoSeguimiento           Boolean?  @default(false) @map("op_completado_seguimiento")
-  
-  // Transporte y pagos
-  guiaTransportePagoUrl             String?   @map("guia_transporte_pago_url")
-  facturaTransportePagoUrl          String?   @map("factura_transporte_pago_url")
-  montoPagoTransporteOp             Decimal?  @map("monto_pago_transporte_op")
-  aprobacionPagoTransporteOp        Boolean?  @default(false) @map("aprobacion_pago_transporte_op")
-  
-  // Forma de pago específica
-  formaPago                         String?   @map("forma_pago_op")
-  porcentajePago                    Decimal?  @map("porcentaje_pago_op")
-  estadoPagoOp                      EstadoPagoOpProveedor? @map("estado_pago_op")
-  
-  // Seguimiento específico
-  fechaEntregaReal                  DateTime? @map("fecha_entrega_real")
-
-  etiquetado    String?
-  embalaje      String?
-  observaciones String?
-  notaAdicional String? @map("nota_adicional")
 
   activo        Boolean @default(true)
   ordenCompraId Int?    @map("orden_compra_id")
 
   createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
   updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamp(6)
-
   empresa           Empresa?     @relation(fields: [empresaId], references: [id])
   proveedor         Proveedor?   @relation(fields: [proveedorId], references: [id])
   contactoProveedor Contacto?    @relation(fields: [contactoProveedorId], references: [id])
   ordenCompra       OrdenCompra? @relation(fields: [ordenCompraId], references: [id])
+
   productos                 OpProducto[]
   pagos                     PagoOrdenProveedor[]
   transportesAsignados      TransporteAsignado[]
   historialModificaciones   HistorialModificacionesOp[]
   programacionesEntrega     ProgramacionEntrega[]
-  costosAdicionales         CostoAdicionalOp[]
 
   @@map("ordenes_proveedor")
 }
@@ -687,37 +672,25 @@ model Facturacion {
 
 // Nuevo modelo GestionCobranza
 model GestionCobranza {
-  id                           Int       @id @default(autoincrement())
-  ordenCompraId                Int?      @map("orden_compra_id")
-  ordenCompraPrivadaId         Int?      @map("orden_compra_privada_id")
-  usuarioId                    Int       @map("usuario_id")
-  fechaGestion                 DateTime  @map("fecha_gestion")
-  notaGestion                  String?   @map("nota_gestion")
-  estadoCobranza               String?   @map("estado_cobranza")
-  
-  // Campos específicos de cobranza
-  tipoCobranza                 TipoCobranza? @map("tipo_cobranza")
-  voucherPagoUrl               String?    @map("voucher_pago_url")
-  pagoConformeTesoreria        Boolean?   @default(false) @map("pago_conforme_tesoreria")
-  cartaAmpliacionUrl           String?    @map("carta_ampliacion_url")
-  capturaEnvioDocumentoUrl     String?    @map("captura_envio_documento_url")
-  archivosAdjuntosNotasGestion String[]   @map("archivos_adjuntos_notas_gestion")
-  documentosRegistrados        String[]   @map("documentos_registrados")
-  notaEspecialEntrega          String?    @map("nota_especial_entrega")
-  
+  id            Int       @id @default(autoincrement())
+  ordenCompraId Int       @map("orden_compra_id")
+  historial     String?   @db.Text // Asumiendo que puede ser largo
+  descripcion   String?   @db.Text // Asumiendo que puede ser largo
+  fechaGestion  DateTime? @map("fecha_gestion") @db.Date
+  documentoUrl  String?   @map("documento_url")
+  estado        Int?      @default(1)
+
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
-  
-  ordenCompra        OrdenCompra?        @relation(fields: [ordenCompraId], references: [id])
-  ordenCompraPrivada OrdenCompraPrivada? @relation(fields: [ordenCompraPrivadaId], references: [id])
-  usuario            Usuario             @relation(fields: [usuarioId], references: [id])
-  
+
+  // Relación
+  ordenCompra OrdenCompra @relation(fields: [ordenCompraId], references: [id])
+
   @@map("gestion_cobranzas")
 }
 
 model Usuario {
-  id       Int     @id @default(autoincrement())
-  nombre   String
+  id       Int     @id @default(autoincrement())  nombre   String
   email    String  @unique
   password String
   role     Role    @default(USER)
@@ -729,7 +702,6 @@ model Usuario {
 
   historialModificaciones     HistorialModificacionesOp[]
   programacionesResponsable   ProgramacionEntrega[] @relation("ResponsableProgramacion")
-  gestionesCobranza           GestionCobranza[]
 
   @@map("usuarios")
 }
@@ -891,20 +863,4 @@ model ProgramacionEntrega {
   responsableEntrega Usuario?        @relation("ResponsableProgramacion", fields: [responsableEntregaId], references: [id])
   
   @@map("programaciones_entrega")
-}
-
-model CostoAdicionalOp {
-  id                Int      @id @default(autoincrement())
-  ordenProveedorId  Int      @map("orden_proveedor_id")
-  concepto          String
-  descripcion       String?
-  comprobanteUrl    String?  @map("comprobante_url")
-  monto             Decimal
-  
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  
-  ordenProveedor OrdenProveedor @relation(fields: [ordenProveedorId], references: [id])
-  
-  @@map("costos_adicionales_op")
 }

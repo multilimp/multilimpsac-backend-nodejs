@@ -22,6 +22,7 @@ import ventasRoutes from './features/ventas/ventas.routes';
 import ordenProveedorRoutes from './features/ordenProveedor/ordenProveedor.routes';
 import facturacionRoutes from './features/facturacion/facturacion.routes';
 import printRoutes from './features/print/print.routes';
+import seguimientoRoutes from './features/seguimiento/routes/seguimiento.routes';
 import { authenticateToken } from './shared/middleware/auth.middleware';
 import { setupGraphQLRoutes } from './graphql/graphql.routes';
 import { simplifyResponseMiddleware } from './graphql/utils/simplifyResponseMiddleware';
@@ -53,11 +54,12 @@ export const configureRoutes = async (app: Application): Promise<void> => {
   app.use('/api/ordenes-compra', ordenCompraRoutes);
   app.use('/api', ordenProveedorRoutes);
   app.use('/api/productos', productoRoutes);
-  app.use('/api/agrupaciones-oc', agrupacionOrdenCompraRoutes);
-  app.use('/api/ventas', ventasRoutes);
+  app.use('/api/agrupaciones-oc', agrupacionOrdenCompraRoutes);  app.use('/api/ventas', ventasRoutes);
   app.use('/api/facturacion', facturacionRoutes);
   app.use('/api/print', printRoutes);
-  app.use('/api/files', fileRoutes);  // Middleware para rutas no encontradas
+  app.use('/api/seguimiento', seguimientoRoutes);
+  // app.use('/api/tesoreria', tesoreriaRoutes);
+  app.use('/api/files', fileRoutes);// Middleware para rutas no encontradas
   app.use((req: Request, res: Response) => {
     res.status(404).json({ message: 'Ruta no encontrada' });
   });
