@@ -18,14 +18,12 @@ export const getAllVentas = async (): Promise<OrdenCompra[]> => {
       contactoCliente: true,
       catalogoEmpresa: true,
       ordenesProveedor: true,
-      ordenCompraPrivada: true
-    }
+      ordenCompraPrivada: true,
+    },
   });
 };
 
-export const getVentaById = (
-  id: number
-): Promise<OrdenCompra | null> => {
+export const getVentaById = (id: number): Promise<OrdenCompra | null> => {
   return prisma.ordenCompra.findUnique({
     where: { id },
     include: {
@@ -37,66 +35,94 @@ export const getVentaById = (
       ordenCompraPrivada: true,
       facturaciones: true,
       gestionCobranzas: true,
-      OrdenCompraAgrupada: true
-    }
+      OrdenCompraAgrupada: true,
+    },
   });
 };
 
-export const createVenta = async (data: Prisma.OrdenCompraCreateInput): Promise<OrdenCompra> => {
+type CreateVentaType = Prisma.OrdenCompraCreateInput & {
+  ventaPrivada: Omit<Prisma.OrdenCompraPrivadaCreateInput, 'id' | 'createdAt' | 'updatedAt'> & {
+    pagos: Omit<Prisma.PagoOrdenCompraPrivadaCreateInput, 'id' | 'createdAt' | 'updatedAt' | 'ordenCompraPrivada'>[];
+  };
+};
+
+export const createVenta = async (data: CreateVentaType): Promise<OrdenCompra> => {
   try {
+    const { ventaPrivada, ...directSaleBody } = data;
+
     // 1. Validar que exista empresa
-    const empresaId = data.empresa?.connect?.id;
-    logger.info('EmpresaId recibido:', empresaId);
-    if (!empresaId) {
-      throw new Error('Se requiere el ID de la empresa');
-    }
+    const empresaId = directSaleBody.empresa?.connect?.id;
+    if (!empresaId) throw new Error('Se requiere el ID de la empresa');
 
     // 2. Generar código único de venta
     const codigoVenta = await ocService.generateUniqueOrdenCompraCode(empresaId);
     logger.info('Código de venta generado:', codigoVenta);
 
     // 3. Preparar los datos para la creación
-    const ventaData: Prisma.OrdenCompraCreateInput = {
-      empresa: { connect: { id: empresaId } },
-      cliente: data.cliente,
-      contactoCliente: data.contactoCliente,
-      catalogoEmpresa: data.catalogoEmpresa,
+    const ventaBody: Prisma.OrdenCompraCreateInput = {
+      // Relaciones
+      empresa: directSaleBody.empresa,
+      cliente: directSaleBody.cliente,
+      contactoCliente: directSaleBody.contactoCliente,
+      catalogoEmpresa: directSaleBody.catalogoEmpresa,
 
       // Datos básicos
       codigoVenta,
-      ventaPrivada: data.ventaPrivada ?? false,
+      ventaPrivada: !!ventaPrivada,
 
       // Datos de entrega
-      departamentoEntrega: data.departamentoEntrega,
-      provinciaEntrega: data.provinciaEntrega,
-      distritoEntrega: data.distritoEntrega,
-      direccionEntrega: data.direccionEntrega,
-      referenciaEntrega: data.referenciaEntrega,
-      fechaEntrega: data.fechaEntrega ? new Date(data.fechaEntrega as any) : undefined,
+      departamentoEntrega: directSaleBody.departamentoEntrega,
+      provinciaEntrega: directSaleBody.provinciaEntrega,
+      distritoEntrega: directSaleBody.distritoEntrega,
+      direccionEntrega: directSaleBody.direccionEntrega,
+      referenciaEntrega: directSaleBody.referenciaEntrega,
+      fechaEntrega: new Date(directSaleBody.fechaEntrega!),
 
       // Datos de formulario y SIAF
-      fechaForm: data.fechaForm ? new Date(data.fechaForm as any) : undefined,
-      fechaMaxForm: data.fechaMaxForm ? new Date(data.fechaMaxForm as any) : undefined,
-      montoVenta: typeof data.montoVenta === 'string' ? parseFloat(data.montoVenta) : data.montoVenta,
-      siaf: data.siaf,
-      etapaSiaf: data.etapaSiaf,
-      fechaSiaf: data.fechaSiaf ? new Date(data.fechaSiaf as any) : undefined,
+      fechaForm: new Date(directSaleBody.fechaForm!),
+      fechaMaxForm: new Date(directSaleBody.fechaMaxForm!),
+      montoVenta: directSaleBody.montoVenta,
+      siaf: directSaleBody.siaf,
+      etapaSiaf: directSaleBody.etapaSiaf,
+      fechaSiaf: new Date(directSaleBody.fechaSiaf!),
 
       // Documentos
-      documentoOce: data.documentoOce,
-      documentoOcf: data.documentoOcf,
+      documentoOce: directSaleBody.documentoOce,
+      documentoOcf: directSaleBody.documentoOcf,
 
       // Productos y estado
-      productos: data.productos ,
+      productos: JSON.stringify(directSaleBody.productos),
       etapaActual: 'creacion',
       estadoActivo: true,
-      fechaEmision: new Date()
+      fechaEmision: new Date(),
     };
 
-    logger.info('Datos finales para crear venta:', ventaData);
+    logger.info('Datos finales para crear venta:', ventaBody);
 
     // 4. Crear la venta
-    return ocService.createOrdenCompra(ventaData);
+    const createResponse = await ocService.createOrdenCompra(ventaBody);
+
+    if (!ventaPrivada) return createResponse;
+
+    // @ts-expect-error 5. Objeto de venta privada
+    const { pagos, ...privateOrderData } = ventaPrivada;
+    const privateOrderBody = {
+      ordenCompraId: createResponse.id,
+      ...privateOrderData,
+    };
+
+    // 6. Creación venta privada
+    const privateOrderResponse = await prisma.ordenCompraPrivada.create({ data: privateOrderBody });
+
+    // 7. Generar array para el create many
+    const formatBodyPayments = pagos.map((pago) => ({
+      ...pago,
+      ordenCompraPrivada: { connect: { id: privateOrderResponse.id } },
+    }));
+    // @ts-expect-error 8. Crear todos los pagos a la vez
+    prisma.pagoOrdenCompraPrivada.createMany({ data: formatBodyPayments });
+
+    return createResponse;
   } catch (error) {
     logger.error('Error en createVenta:', error);
     if (error instanceof Error) {
@@ -106,21 +132,18 @@ export const createVenta = async (data: Prisma.OrdenCompraCreateInput): Promise<
   }
 };
 
-export const updateVenta = (
-  id: number,
-  data: Prisma.OrdenCompraUpdateInput
-): Promise<OrdenCompra> => {
+export const updateVenta = (id: number, data: Prisma.OrdenCompraUpdateInput): Promise<OrdenCompra> => {
   return ocService.updateOrdenCompra(id, data);
 };
 
-export const deleteVenta = (
-  id: number
-): Promise<OrdenCompra> => {
+export const deleteVenta = (id: number): Promise<OrdenCompra> => {
   return ocService.updateOrdenCompra(id, { estadoActivo: false });
 };
 
 export const createOrdenCompraPrivada = async (
-  data: Omit<Prisma.OrdenCompraPrivadaCreateInput, 'id' | 'createdAt' | 'updatedAt'> & { pagos?: Omit<Prisma.PagoOrdenCompraPrivadaCreateInput, 'id' | 'createdAt' | 'updatedAt' | 'ordenCompraPrivada'>[] }
+  data: Omit<Prisma.OrdenCompraPrivadaCreateInput, 'id' | 'createdAt' | 'updatedAt'> & {
+    pagos?: Omit<Prisma.PagoOrdenCompraPrivadaCreateInput, 'id' | 'createdAt' | 'updatedAt' | 'ordenCompraPrivada'>[];
+  }
 ): Promise<OrdenCompraPrivada> => {
   const { pagos, ...ordenData } = data;
   const orden = await prisma.ordenCompraPrivada.create({ data: ordenData });
@@ -129,8 +152,8 @@ export const createOrdenCompraPrivada = async (
       await prisma.pagoOrdenCompraPrivada.create({
         data: {
           ...pago,
-          ordenCompraPrivada: { connect: { id: orden.id } }
-        }
+          ordenCompraPrivada: { connect: { id: orden.id } },
+        },
       });
     }
   }
