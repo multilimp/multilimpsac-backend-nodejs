@@ -80,8 +80,7 @@ const processGestionData = (gestion: CreateGestionData | (UpdateGestionData & { 
   if (processedGestion.estado === undefined && !('id' in gestion && gestion.id)) {
     processedGestion.estado = 1; 
   }
-  
-  const dataToUpsert: Partial<GestionCobranza> = {};
+    const dataToUpsert: any = {};
   
   if (processedGestion.historial !== undefined) dataToUpsert.historial = processedGestion.historial;
   if (processedGestion.descripcion !== undefined) dataToUpsert.descripcion = processedGestion.descripcion;

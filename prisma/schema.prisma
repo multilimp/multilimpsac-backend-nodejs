@@ -400,7 +400,7 @@ model OrdenCompraPrivada {
   ordenCompraId     Int       @unique @map("orden_compra_id") // Clave foránea y única para relación 1-1
   clienteId         Int?      @map("cliente_id")
   contactoClienteId Int?      @map("contacto_cliente_id")
-  estadoPago        String?   @map("estado_pago")
+  estadoPago        EstadoPago? @map("estado_pago")
   fechaPago         DateTime? @map("fecha_pago") @db.Date
   documentoPago     String?   @map("documento_pago")
 
@@ -541,7 +541,7 @@ model TransporteAsignado {
   direccion            String?
   notaTransporte       String?     @map("nota_transporte")
   cotizacionTransporte String?     @map("cotizacion_transporte")
-  estadoPago           String?     @map("estado_pago")
+  estadoPago           EstadoPago? @map("estado_pago")
   montoFlete           Decimal?    @map("monto_flete") @db.Decimal(10, 2)
   grt                  String?
 
@@ -845,6 +845,13 @@ enum EstadoDocumentacionOc {
 enum TipoCobranza {
   ESPECIAL
   NORMAL
+}
+
+// Estados de pago para tesorería
+enum EstadoPago {
+  PAGADO
+  URGENTE
+  PENDIENTE
 }
 
 model HistorialModificacionesOp {
