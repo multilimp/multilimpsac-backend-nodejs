@@ -76,18 +76,24 @@ const processGestionData = (gestion: CreateGestionData | (UpdateGestionData & { 
   } else {
       processedGestion.fechaGestion = null;
   }
-
-  if (processedGestion.estado === undefined && !('id' in gestion && gestion.id)) {
-    processedGestion.estado = 1; 
+  if (processedGestion.estadoCobranza === undefined && !('id' in gestion && gestion.id)) {
+    processedGestion.estadoCobranza = "PENDIENTE"; 
   }
   
   const dataToUpsert: Partial<GestionCobranza> = {};
   
-  if (processedGestion.historial !== undefined) dataToUpsert.historial = processedGestion.historial;
-  if (processedGestion.descripcion !== undefined) dataToUpsert.descripcion = processedGestion.descripcion;
+  if (processedGestion.notaGestion !== undefined) dataToUpsert.notaGestion = processedGestion.notaGestion;
+  if (processedGestion.estadoCobranza !== undefined) dataToUpsert.estadoCobranza = processedGestion.estadoCobranza;
   if (processedGestion.fechaGestion !== undefined) dataToUpsert.fechaGestion = processedGestion.fechaGestion;
-  if (processedGestion.documentoUrl !== undefined) dataToUpsert.documentoUrl = processedGestion.documentoUrl;
-  if (processedGestion.estado !== undefined) dataToUpsert.estado = processedGestion.estado;
+  if (processedGestion.tipoCobranza !== undefined) dataToUpsert.tipoCobranza = processedGestion.tipoCobranza;
+  if (processedGestion.voucherPagoUrl !== undefined) dataToUpsert.voucherPagoUrl = processedGestion.voucherPagoUrl;
+  if (processedGestion.pagoConformeTesoreria !== undefined) dataToUpsert.pagoConformeTesoreria = processedGestion.pagoConformeTesoreria;
+  if (processedGestion.cartaAmpliacionUrl !== undefined) dataToUpsert.cartaAmpliacionUrl = processedGestion.cartaAmpliacionUrl;
+  if (processedGestion.capturaEnvioDocumentoUrl !== undefined) dataToUpsert.capturaEnvioDocumentoUrl = processedGestion.capturaEnvioDocumentoUrl;
+  if (processedGestion.archivosAdjuntosNotasGestion !== undefined) dataToUpsert.archivosAdjuntosNotasGestion = processedGestion.archivosAdjuntosNotasGestion;
+  if (processedGestion.documentosRegistrados !== undefined) dataToUpsert.documentosRegistrados = processedGestion.documentosRegistrados;
+  if (processedGestion.notaEspecialEntrega !== undefined) dataToUpsert.notaEspecialEntrega = processedGestion.notaEspecialEntrega;
+  if (processedGestion.usuarioId !== undefined) dataToUpsert.usuarioId = processedGestion.usuarioId;
 
   return dataToUpsert;
 };

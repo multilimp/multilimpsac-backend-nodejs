@@ -4,15 +4,28 @@
 
 # Prisma files
 # Ignore the database file
-
 generated
-
 
 # Environment variables
 .env
 .env.development.local
 .env.test.local
 .env.production.local
+
+# Terminal and command history
+#terminalLastCommand
+.terminal_history
+.command_history
+
+# Build output
+/dist
+/build
+/out
+dist/
+
+# TypeScript cache and build artifacts
+*.tsbuildinfo
+*.d.ts.map
 
 # Logs
 logs
@@ -22,6 +35,7 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+bun-debug.log*
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
@@ -64,6 +78,7 @@ web_modules/
 /dist
 /build
 /out
+dist/
 
 # TypeScript cache
 *.tsbuildinfo
@@ -140,6 +155,21 @@ public/build/
 .idea
 *.iml
 
+# Build output
+dist/
+build/
+
+# TypeScript build artifacts
+*.tsbuildinfo
+
+# Database
+*.db
+*.sqlite
+
+# Prisma
+/prisma/migrations/*.sql.backup
+prisma/schema.prisma.backup*
+
 # OS generated files
 .DS_Store
 .DS_Store?
@@ -148,3 +178,29 @@ public/build/
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Terminal and development artifacts
+#terminalLastCommand
+.terminal_output
+*.terminal.log
+
+# IDE and Editor specific
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.sublime-workspace
+.idea/
+*.iml
+
+# Testing and coverage
+coverage/
+.nyc_output/
+test-results/
+playwright-report/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
