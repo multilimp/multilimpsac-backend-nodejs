@@ -24,7 +24,7 @@ import facturacionRoutes from './features/facturacion/facturacion.routes';
 import printRoutes from './features/print/print.routes';
 import cobranzaRoutes from './features/cobranza/cobranza.routes';
 import { authenticateToken } from './shared/middleware/auth.middleware';
-import { setupGraphQLRoutes } from './graphql/graphql.routes';
+// import { setupGraphQLRoutes } from './graphql/graphql.routes';
 import { simplifyResponseMiddleware } from './graphql/utils/simplifyResponseMiddleware';
 
 export const configureRoutes = async (app: Application): Promise<void> => {
@@ -32,7 +32,7 @@ export const configureRoutes = async (app: Application): Promise<void> => {
 
   app.use('/api/auth', authRoutes);
   // Configurar GraphQL como una ruta más
-  const graphqlMiddleware = await setupGraphQLRoutes();
+  // const graphqlMiddleware = await setupGraphQLRoutes();
   // Aplicar middleware personalizado para simplificar respuestas GraphQL
   //app.use('/graphqlk', express.json(), cors(), simplifyResponseMiddleware, graphqlMiddleware);
   
