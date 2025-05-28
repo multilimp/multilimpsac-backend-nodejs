@@ -30,7 +30,7 @@ const processOrdenProveedorData = (data: any) => {
   }
 
   return data;
-}
+};
 
 const generateCodigoOp = async (id: number): Promise<string> => {
   const oc = await prisma.ordenCompra.findUnique({
@@ -102,6 +102,10 @@ export const getOrdenesProveedorByOrdenCompraId = async (ordenCompraId: number):
   });
 };
 
+export const getCodigosOrdenesProveedor = (): Promise<Array<Pick<OrdenProveedor, 'codigoOp' | 'id'>>> => {
+  return prisma.ordenProveedor.findMany({ select: { codigoOp: true, id: true } });
+};
+
 export const getAllOrdenesProveedor = (): Promise<OrdenProveedor[]> => {
   return prisma.ordenProveedor.findMany({
     include: {
@@ -157,7 +161,7 @@ export const updateOrdenProveedor = (id: number, data: UpdateOrdenProveedorData)
       productos: true,
       pagos: true,
       transportesAsignados: true,
-    }
+    },
   });
 };
 
@@ -168,6 +172,6 @@ export const deleteOrdenProveedor = (id: number): Promise<OrdenProveedor> => {
       productos: true,
       pagos: true,
       transportesAsignados: true,
-    }
+    },
   });
-}
+};

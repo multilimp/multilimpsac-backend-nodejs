@@ -2,6 +2,15 @@ import { Request, Response } from 'express';
 import { handleError } from '../../shared/middleware/handleError';
 import * as ordenProveedorService from './ordenProveedor.service';
 
+export const listCodigosOrdenesProveedor = async (req: Request, res: Response) => {
+  try {
+    const ordenes = await ordenProveedorService.getCodigosOrdenesProveedor();
+    res.status(200).json(ordenes);
+  } catch (error) {
+    handleError({ res, error, msg: 'Error al listar órdenes de proveedor' });
+  }
+};
+
 export const listOrdenesProveedor = async (req: Request, res: Response) => {
   try {
     const ordenes = await ordenProveedorService.getAllOrdenesProveedor();
