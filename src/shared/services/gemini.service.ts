@@ -67,6 +67,7 @@ La estructura del JSON debe ser la siguiente:
     "clienteRuc": "EXTRAER_VALOR_O_NULL", --> datos de la entidad
     "clienteRazonSocial": "EXTRAER_VALOR_O_NULL",
     "codigoUnidadEjecutora" : "EXTRAER_VALOR_O_NULL", --> clienteRazonSocial [codigoUnidadEjecutora]
+    "codigoCatalogo": "EXTRAER_CODIGO_CATALOGO_O_NULL", --> código alfanumérico del catálogo
     "provinciaEntrega": "EXTRAER_VALOR_O_NULL",
     "distritoEntrega": "EXTRAER_VALOR_O_NULL",
     "departamentoEntrega": "EXTRAER_VALOR_O_NULL",
@@ -75,11 +76,21 @@ La estructura del JSON debe ser la siguiente:
     "fechaEntrega": "EXTRAER_FECHA_ISO_O_NULL",
     "montoVenta": "EXTRAER_NUMERO_O_NULL",
     "fechaForm": "EXTRAER_FECHA_ISO_O_NULL",
-    "fechaMaxForm": "EXTRAER DE FECHA MAX ENTREGA",
-    "fechaMaxEntrega": "EXTRAER_FECHA_ISO_O_NULL",
+    "fechaMaxForm": "EXTRAER DE FECHA MAX ENTREGA",    "fechaMaxEntrega": "EXTRAER_FECHA_ISO_O_NULL",
     "productos": [
-        "EXTRAER_PRODUCTO_1_COMO_STRING",
-        "EXTRAER_PRODUCTO_2_COMO_STRING"
+        {
+            "codigo": "EXTRAER_CODIGO_PRODUCTO_O_NULL",
+            "descripcion": "EXTRAER_DESCRIPCION_PRODUCTO_O_NULL",
+            "marca": "EXTRAER_MARCA_PRODUCTO_O_NULL",
+            "cantidad": "EXTRAER_CANTIDAD_NUMERICA_O_NULL"
+        }
+    ],
+    "contactos": [
+        {
+            "cargo": "EXTRAER_CARGO_O_NULL",
+            "nombre": "EXTRAER_NOMBRE_O_NULL",
+            "telefono": "EXTRAER_TELEFONO_COMBINADO_O_NULL"
+        }
     ],
     "siaf": "EXTRAER_NUMERO_O_NULL",
     "fechaSiaf": "EXTRAER_FECHA_ISO_O_NULL"
@@ -88,7 +99,23 @@ La estructura del JSON debe ser la siguiente:
 Instrucciones específicas para la extracción:
 - Para los campos de fecha, si encuentras una fecha, formatéala como una cadena ISO 8601 (YYYY-MM-DDTHH:mm:ss.sssZ). Si no encuentras un valor, usa null.
 - Para "montoVenta" y "siaf", extrae el valor numérico. Si no se encuentra, usa null.
-- Para "productos", extrae cada descripción de producto como una cadena de texto individual dentro del array. Si no hay productos, usa un array vacío [].
+- Para "codigoCatalogo", busca códigos alfanuméricos que aparezcan antes de la descripción de la venta. Busca patrones como:
+  * "MED-FAR-2023-1 MEDICAMENTOS Y FARMACIA..." → código: "MED-FAR-2023-1"
+  * "OFF-SUP-2024-B SUMINISTROS DE OFICINA..." → código: "OFF-SUP-2024-B"
+  * "TEC-INF-2025-X EQUIPOS TECNOLÓGICOS..." → código: "TEC-INF-2025-X"
+  Los códigos generalmente están seguidos de un espacio y luego la descripción de la venta.
+- Para "productos", extrae cada producto como un objeto con la siguiente estructura:
+  * "codigo": código del producto (ej: "EER-11")
+  * "descripcion": descripción completa del producto
+  * "marca": marca del producto si está especificada (ej: "eco", "SERLIMP", etc.)
+  * "cantidad": cantidad numérica del producto
+  Ejemplo de formato: {"codigo": "EER-11", "descripcion": "1824 PAÑOS Y BAYETAS: PAÑO MICROFIBRA...", "marca": "eco", "cantidad": 200}
+  Si hay múltiples productos, incluye cada uno como un objeto separado en el array. Si no encuentras productos, devuelve un objeto con todos los campos en null: [{"codigo": null, "descripcion": null, "marca": null, "cantidad": null}].
+- Para "contactos", busca la sección "DATOS DE RESPONSABLES DE RECEPCIÓN" o similar y extrae:
+  * "cargo": el puesto o función del responsable (ej: "COORDINADOR LOGÍSTICA", "SUPERVISOR DE INVENTARIO")
+  * "nombre": el nombre completo de la persona responsable (ej: "MARÍA GONZÁLEZ PÉREZ")
+  * "telefono": combina teléfono fijo y celular en un solo campo separado por " / " (ej: "(01)2345678 / 987-654-321")
+  Si hay múltiples contactos, incluye cada uno como un objeto separado en el array. Si no encuentras contactos, devuelve un objeto con todos los campos en null: [{"cargo": null, "nombre": null, "telefono": null}].
 - Para los campos de dirección ("provinciaEntrega", "distritoEntrega", etc.), extrae el texto correspondiente. Si no se encuentra, usa null.
 - "ventaPrivada" debe ser un booleano. Asume false si no hay información contraria.
 
