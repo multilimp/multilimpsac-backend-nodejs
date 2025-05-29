@@ -79,8 +79,7 @@ const processGestionData = (gestion: CreateGestionData | (UpdateGestionData & { 
   if (processedGestion.estadoCobranza === undefined && !('id' in gestion && gestion.id)) {
     processedGestion.estadoCobranza = "PENDIENTE"; 
   }
-  
-  const dataToUpsert: Partial<GestionCobranza> = {};
+    const dataToUpsert: any = {};
   
   if (processedGestion.notaGestion !== undefined) dataToUpsert.notaGestion = processedGestion.notaGestion;
   if (processedGestion.estadoCobranza !== undefined) dataToUpsert.estadoCobranza = processedGestion.estadoCobranza;
