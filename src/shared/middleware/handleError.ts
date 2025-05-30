@@ -1,7 +1,7 @@
 import { Response } from 'express';
 import logger from '../config/logger';
 import { ZodError, ZodIssue } from 'zod';
-import { Prisma } from '@prisma/client';
+import { PrismaClientKnownRequestError, PrismaClientValidationError } from '@prisma/client/runtime/library';
 
 interface HandleErrorParams {
   res: Response;
@@ -30,9 +30,7 @@ export const handleError = ({ res, error, statusCode = 500, msg = 'Ocurrió un e
     });
     return;
   }
-
-  // Errores conocidos de Prisma con información detallada
-  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+  if (error instanceof PrismaClientKnownRequestError) {
     let responseMessage = msg;
     let responseStatusCode = statusCode;
     let responseFields;
@@ -90,7 +88,7 @@ export const handleError = ({ res, error, statusCode = 500, msg = 'Ocurrió un e
   }
 
   // Errores de validación de Prisma con formato mejorado
-  if (error instanceof Prisma.PrismaClientValidationError) {
+  if (error instanceof PrismaClientValidationError) {
     // Extraer información más útil del mensaje de error
     const errorMessage = error.message;
     const validationDetails = {

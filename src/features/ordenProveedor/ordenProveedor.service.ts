@@ -88,7 +88,10 @@ const generateCodigoTransporte = async (ordenProveedorId: number): Promise<strin
 
 export const getOrdenesProveedorByOrdenCompraId = async (ordenCompraId: number): Promise<OrdenProveedor[]> => {
   return prisma.ordenProveedor.findMany({
-    where: { ordenCompraId },
+    where: { 
+      ordenCompraId,
+      activo: true 
+    },
     include: {
       empresa: true,
       proveedor: true,
@@ -103,11 +106,15 @@ export const getOrdenesProveedorByOrdenCompraId = async (ordenCompraId: number):
 };
 
 export const getCodigosOrdenesProveedor = (): Promise<Array<Pick<OrdenProveedor, 'codigoOp' | 'id'>>> => {
-  return prisma.ordenProveedor.findMany({ select: { codigoOp: true, id: true } });
+  return prisma.ordenProveedor.findMany({ 
+    where: { activo: true },
+    select: { codigoOp: true, id: true } 
+  });
 };
 
 export const getAllOrdenesProveedor = (): Promise<OrdenProveedor[]> => {
   return prisma.ordenProveedor.findMany({
+    where: { activo: true },
     include: {
       empresa: true,
       proveedor: true,
@@ -121,8 +128,11 @@ export const getAllOrdenesProveedor = (): Promise<OrdenProveedor[]> => {
 };
 
 export const getOrdenProveedorById = (id: number): Promise<OrdenProveedor | null> => {
-  return prisma.ordenProveedor.findUnique({
-    where: { id },
+  return prisma.ordenProveedor.findFirst({
+    where: { 
+      id,
+      activo: true 
+    },
     include: {
       empresa: true,
       proveedor: true,
@@ -152,7 +162,15 @@ export const createOrdenProveedor = async (id: number, data: CreateOrdenProveedo
   });
 };
 
-export const updateOrdenProveedor = (id: number, data: UpdateOrdenProveedorData): Promise<OrdenProveedor> => {
+export const updateOrdenProveedor = async (id: number, data: UpdateOrdenProveedorData): Promise<OrdenProveedor> => {
+  const existing = await prisma.ordenProveedor.findFirst({
+    where: { id, activo: true }
+  });
+  
+  if (!existing) {
+    throw new Error('NOT_FOUND');
+  }
+
   const processedData = processOrdenProveedorData(data);
   return prisma.ordenProveedor.update({
     where: { id },
@@ -166,8 +184,9 @@ export const updateOrdenProveedor = (id: number, data: UpdateOrdenProveedorData)
 };
 
 export const deleteOrdenProveedor = (id: number): Promise<OrdenProveedor> => {
-  return prisma.ordenProveedor.delete({
+  return prisma.ordenProveedor.update({
     where: { id },
+    data: { activo: false },
     include: {
       productos: true,
       pagos: true,
