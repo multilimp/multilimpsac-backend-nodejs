@@ -16,9 +16,7 @@ export const getAllVentas = async (): Promise<OrdenCompra[]> => {
       empresa: true,
       cliente: true,
       contactoCliente: true,
-      catalogoEmpresa: true,
-      ordenesProveedor: true,
-      ordenCompraPrivada: true,
+      catalogoEmpresa: true
     },
   });
 };
