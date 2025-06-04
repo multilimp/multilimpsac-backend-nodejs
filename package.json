@@ -8,8 +8,6 @@
     "build": "prisma generate && tsc",
     "generate": "prisma generate",
     "start": "node dist/index.js",
-    "copy-prisma": "echo \"copy-prisma no es necesario con la importación estándar\"",
-    "prisma:refresh": "prisma generate && prisma db push",
     "seed": "ts-node prisma/seed.ts"
   },
   "author": "multilimp",
