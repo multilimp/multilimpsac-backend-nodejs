@@ -4,7 +4,8 @@ import * as ordenProveedorService from './ordenProveedor.service';
 
 export const listCodigosOrdenesProveedor = async (req: Request, res: Response) => {
   try {
-    const ordenes = await ordenProveedorService.getCodigosOrdenesProveedor();
+    const ordenCompraId = parseInt(String(req.query.ordenCompraId), 10);
+    const ordenes = await ordenProveedorService.getCodigosOrdenesProveedor(ordenCompraId);
     res.status(200).json(ordenes);
   } catch (error) {
     handleError({ res, error, msg: 'Error al listar órdenes de proveedor' });
@@ -22,9 +23,7 @@ export const listOrdenesProveedor = async (req: Request, res: Response) => {
 
 export const getOrdenesProveedorByOrdenCompraId = async (req: Request, res: Response) => {
   try {
-    const ordenes = await ordenProveedorService.getOrdenesProveedorByOrdenCompraId(
-      parseInt(req.query.ordenCompraId as string, 10)
-    );
+    const ordenes = await ordenProveedorService.getOrdenesProveedorByOrdenCompraId(parseInt(req.query.ordenCompraId as string, 10));
     res.status(200).json(ordenes);
   } catch (error) {
     handleError({ res, error, msg: 'Error al listar órdenes de compra' });

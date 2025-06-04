@@ -12,8 +12,7 @@ import {
 const router = Router();
 
 router.get('/', listOrdenesProveedor);
-router.get('/codigos', listCodigosOrdenesProveedor);
-// router.get('/op', listOrdenesProveedor);
+router.get('/:ordenCompraId/codigos', listCodigosOrdenesProveedor);
 
 router.get('/:ordenCompraId/op', getOrdenesProveedorByOrdenCompraId);
 router.post('/:ordenCompraId/op', createOrdenProveedor);

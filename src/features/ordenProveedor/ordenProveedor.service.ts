@@ -88,9 +88,9 @@ const generateCodigoTransporte = async (ordenProveedorId: number): Promise<strin
 
 export const getOrdenesProveedorByOrdenCompraId = async (ordenCompraId: number): Promise<OrdenProveedor[]> => {
   return prisma.ordenProveedor.findMany({
-    where: { 
+    where: {
       ordenCompraId,
-      activo: true 
+      activo: true,
     },
     include: {
       empresa: true,
@@ -105,10 +105,14 @@ export const getOrdenesProveedorByOrdenCompraId = async (ordenCompraId: number):
   });
 };
 
-export const getCodigosOrdenesProveedor = (): Promise<Array<Pick<OrdenProveedor, 'codigoOp' | 'id'>>> => {
-  return prisma.ordenProveedor.findMany({ 
-    where: { activo: true },
-    select: { codigoOp: true, id: true } 
+export const getCodigosOrdenesProveedor = (ordenCompraId: number): Promise<Array<Pick<OrdenProveedor, 'codigoOp' | 'id'>>> => {
+  return prisma.ordenProveedor.findMany({
+    where: {
+      ordenCompraId,
+      activo: true,
+    },
+    select: { codigoOp: true, id: true },
+    orderBy: { createdAt: 'desc' },
   });
 };
 
@@ -129,9 +133,9 @@ export const getAllOrdenesProveedor = (): Promise<OrdenProveedor[]> => {
 
 export const getOrdenProveedorById = (id: number): Promise<OrdenProveedor | null> => {
   return prisma.ordenProveedor.findFirst({
-    where: { 
+    where: {
       id,
-      activo: true 
+      activo: true,
     },
     include: {
       empresa: true,
@@ -164,9 +168,9 @@ export const createOrdenProveedor = async (id: number, data: CreateOrdenProveedo
 
 export const updateOrdenProveedor = async (id: number, data: UpdateOrdenProveedorData): Promise<OrdenProveedor> => {
   const existing = await prisma.ordenProveedor.findFirst({
-    where: { id, activo: true }
+    where: { id, activo: true },
   });
-  
+
   if (!existing) {
     throw new Error('NOT_FOUND');
   }
