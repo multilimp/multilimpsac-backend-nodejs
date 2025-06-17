@@ -74,7 +74,7 @@ export const createVenta = async (data: CreateVentaType): Promise<OrdenCompra> =
       distritoEntrega: directSaleBody.distritoEntrega,
       direccionEntrega: directSaleBody.direccionEntrega,
       referenciaEntrega: directSaleBody.referenciaEntrega,
-      fechaEntrega: new Date(directSaleBody.fechaEntrega!),
+      fechaEntrega: directSaleBody.fechaEntrega ? new Date(directSaleBody.fechaEntrega) : null,
 
       // Datos de formulario y SIAF
       fechaForm: new Date(directSaleBody.fechaForm!),
