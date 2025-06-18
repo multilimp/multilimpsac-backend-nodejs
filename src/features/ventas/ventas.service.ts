@@ -18,6 +18,9 @@ export const getAllVentas = async (): Promise<OrdenCompra[]> => {
       contactoCliente: true,
       catalogoEmpresa: true,
     },
+    orderBy: {
+      createdAt: 'desc'
+    },
   });
 };
 
@@ -30,7 +33,13 @@ export const getVentaById = (id: number): Promise<OrdenCompra | null> => {
       contactoCliente: true,
       catalogoEmpresa: true,
       ordenesProveedor: true,
-      ordenCompraPrivada: true,
+      ordenCompraPrivada: {
+        include: {
+          cliente: true,
+          contactoCliente: true,
+          pagos: true,
+        }
+      },
       facturaciones: true,
       gestionCobranzas: true,
       OrdenCompraAgrupada: true,
@@ -82,7 +91,7 @@ export const createVenta = async (data: CreateVentaType): Promise<OrdenCompra> =
       montoVenta: directSaleBody.montoVenta,
       siaf: directSaleBody.siaf,
       etapaSiaf: directSaleBody.etapaSiaf,
-      fechaSiaf: new Date(directSaleBody.fechaSiaf!),
+      fechaSiaf: directSaleBody.fechaSiaf ? new Date(directSaleBody.fechaSiaf) : null,
 
       // Documentos
       documentoOce: directSaleBody.documentoOce,
@@ -91,6 +100,7 @@ export const createVenta = async (data: CreateVentaType): Promise<OrdenCompra> =
       // Productos y estado
       productos: JSON.stringify(directSaleBody.productos),
       etapaActual: 'creacion',
+      estadoVenta: directSaleBody.estadoVenta || 'incompleto',
       estadoActivo: true,
       fechaEmision: new Date(),
     };
@@ -130,8 +140,123 @@ export const createVenta = async (data: CreateVentaType): Promise<OrdenCompra> =
   }
 };
 
-export const updateVenta = (id: number, data: Prisma.OrdenCompraUpdateInput): Promise<OrdenCompra> => {
-  return ocService.updateOrdenCompra(id, data);
+type UpdateVentaType = Prisma.OrdenCompraUpdateInput & {
+  ventaPrivada?: {
+    clienteId?: number;
+    contactoClienteId?: number;
+    estadoPago?: any;
+    fechaPago?: string | Date;
+    documentoPago?: string;
+    pagos?: Array<{
+      fechaPago: string | Date;
+      bancoPago: string;
+      descripcionPago: string;
+      archivoPago?: string;
+      montoPago: number;
+      estadoPago: boolean;
+    }>;
+  };
+};
+
+export const updateVenta = async (id: number, data: UpdateVentaType): Promise<OrdenCompra> => {
+  try {
+    const { ventaPrivada, ...ventaData } = data;
+
+    // 1. Actualizar orden de compra principal
+    const updatedVenta = await ocService.updateOrdenCompra(id, ventaData);
+
+    // 2. Si existe información de venta privada, manejar esa relación
+    if (ventaPrivada) {
+      const pagos = ventaPrivada.pagos;
+      const privateOrderData = {
+        clienteId: ventaPrivada.clienteId,
+        contactoClienteId: ventaPrivada.contactoClienteId,
+        estadoPago: ventaPrivada.estadoPago,
+        fechaPago: ventaPrivada.fechaPago,
+        documentoPago: ventaPrivada.documentoPago,
+      };
+
+      // Verificar si ya existe una orden privada
+      const existingPrivateOrder = await prisma.ordenCompraPrivada.findUnique({
+        where: { ordenCompraId: id },
+        include: { pagos: true }
+      });
+
+      if (existingPrivateOrder) {
+        // Actualizar orden privada existente
+        await prisma.ordenCompraPrivada.update({
+          where: { id: existingPrivateOrder.id },
+          data: {
+            clienteId: privateOrderData.clienteId,
+            contactoClienteId: privateOrderData.contactoClienteId,
+            estadoPago: privateOrderData.estadoPago,
+            fechaPago: privateOrderData.fechaPago ? new Date(privateOrderData.fechaPago) : null,
+            documentoPago: privateOrderData.documentoPago,
+          }
+        });
+
+        // Eliminar pagos existentes y crear nuevos si se proporcionan
+        if (pagos && Array.isArray(pagos) && pagos.length > 0) {
+          await prisma.pagoOrdenCompraPrivada.deleteMany({
+            where: { ordenCompraPrivadaId: existingPrivateOrder.id }
+          });
+
+          for (const pago of pagos) {
+            await prisma.pagoOrdenCompraPrivada.create({
+              data: {
+                fechaPago: new Date(pago.fechaPago),
+                bancoPago: pago.bancoPago,
+                descripcionPago: pago.descripcionPago,
+                archivoPago: pago.archivoPago,
+                montoPago: pago.montoPago,
+                estadoPago: pago.estadoPago,
+                ordenCompraPrivadaId: existingPrivateOrder.id,
+              },
+            });
+          }
+        }
+      } else if (updatedVenta.ventaPrivada) {
+        // Crear nueva orden privada si no existe pero la venta es privada
+        const privateOrderBody = {
+          ordenCompraId: id,
+          clienteId: privateOrderData.clienteId,
+          contactoClienteId: privateOrderData.contactoClienteId,
+          estadoPago: privateOrderData.estadoPago,
+          fechaPago: privateOrderData.fechaPago ? new Date(privateOrderData.fechaPago) : null,
+          documentoPago: privateOrderData.documentoPago,
+        };
+
+        const newPrivateOrder = await prisma.ordenCompraPrivada.create({ 
+          data: privateOrderBody 
+        });
+
+        // Crear pagos si se proporcionan
+        if (pagos && Array.isArray(pagos) && pagos.length > 0) {
+          for (const pago of pagos) {
+            await prisma.pagoOrdenCompraPrivada.create({
+              data: {
+                fechaPago: new Date(pago.fechaPago),
+                bancoPago: pago.bancoPago,
+                descripcionPago: pago.descripcionPago,
+                archivoPago: pago.archivoPago,
+                montoPago: pago.montoPago,
+                estadoPago: pago.estadoPago,
+                ordenCompraPrivadaId: newPrivateOrder.id,
+              },
+            });
+          }
+        }
+      }
+    }
+
+    return updatedVenta;
+  } catch (error) {
+    logger.error('Error en updateVenta:', error);
+    if (error instanceof Error) {
+      throw new Error(`Error al actualizar la venta: ${error.message}`);
+    }
+    throw new Error('Error desconocido al actualizar la venta');
+  }
 };
 
 export const deleteVenta = (id: number): Promise<OrdenCompra> => {

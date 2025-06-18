@@ -257,6 +257,7 @@ model OrdenCompra {
   fechaEstadoCobranza  DateTime?             @map("fecha_estado_cobranza") @db.Date
   fechaProximaGestion  DateTime?             @map("fecha_proxima_gestion") @db.Date
   etapaActual          String                @default("creacion") @map("etapa_actual")
+  estadoVenta          String                @default("incompleto") @map("estado_venta")
   estadoActivo         Boolean               @default(true) @map("estado_activo")
   createdAt            DateTime              @default(now()) @map("created_at")
   updatedAt            DateTime              @updatedAt @map("updated_at")

@@ -71,6 +71,7 @@ La estructura del JSON debe ser la siguiente:
     "provinciaEntrega": "EXTRAER_VALOR_O_NULL",
     "distritoEntrega": "EXTRAER_VALOR_O_NULL",
     "departamentoEntrega": "EXTRAER_VALOR_O_NULL",
+    "regionEntrega": "EXTRAER_VALOR_O_NULL", --> región de entrega igual a departamentoEntrega
     "direccionEntrega": "EXTRAER_VALOR_O_NULL",
     "referenciaEntrega": "EXTRAER_VALOR_O_NULL",
     "fechaEntrega": "EXTRAER_FECHA_ISO_O_NULL",
