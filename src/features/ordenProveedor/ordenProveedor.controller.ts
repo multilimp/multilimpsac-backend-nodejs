@@ -23,10 +23,14 @@ export const listOrdenesProveedor = async (req: Request, res: Response) => {
 
 export const getOrdenesProveedorByOrdenCompraId = async (req: Request, res: Response) => {
   try {
-    const ordenes = await ordenProveedorService.getOrdenesProveedorByOrdenCompraId(parseInt(req.query.ordenCompraId as string, 10));
+    const ordenCompraId = parseInt(req.params.ordenCompraId, 10);
+    if (isNaN(ordenCompraId)) {
+      return res.status(400).json({ message: 'ID de orden de compra inválido' });
+    }
+    const ordenes = await ordenProveedorService.getOrdenesProveedorByOrdenCompraId(ordenCompraId);
     res.status(200).json(ordenes);
   } catch (error) {
-    handleError({ res, error, msg: 'Error al listar órdenes de compra' });
+    handleError({ res, error, msg: 'Error al listar órdenes de proveedor por orden de compra' });
   }
 };
 
