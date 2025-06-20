@@ -1,6 +1,5 @@
+import prisma from '@/database/prisma';
 import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
 
 export class SeguimientoService {
   static async updateEstadoOpSeguimiento(ordenProveedorId: number, estado: string, usuarioId: number) {

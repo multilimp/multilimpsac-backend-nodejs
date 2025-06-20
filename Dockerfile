@@ -1,41 +1,56 @@
-FROM node:18-alpine AS base
-
-RUN apk add --no-cache libc6-compat openssl
+# Multi-stage build para MULTILIMP
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-COPY package.json ./
+# Copiar archivos de configuración
+COPY package*.json ./
+COPY tsconfig.json ./
 COPY prisma ./prisma/
 
-RUN npm ci --only=production
-RUN npx prisma generate
+# Instalar todas las dependencias (incluyendo dev)
 RUN npm ci
-COPY . .
+
+# Generar cliente Prisma
+RUN npx prisma generate
+
+# Copiar código fuente
+COPY src ./src/
+COPY index.ts ./
+
+# Compilar TypeScript
 RUN npm run build
 
-FROM node:18-alpine AS runner
+# Verificar que el build fue exitoso
+RUN ls -la dist/ && test -f dist/index.js
 
-RUN apk add --no-cache openssl
+# ===== STAGE 2: Production =====
+FROM node:20-alpine AS production
 
 WORKDIR /app
 
-RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 nodejs
+# Instalar solo dependencias de producción
+COPY package*.json ./
+RUN npm ci --only=production && npm cache clean --force
 
-COPY --from=base /app/dist ./dist
-COPY --from=base /app/node_modules ./node_modules
-COPY --from=base /app/package.json ./package.json
-COPY --from=base /app/prisma ./prisma
+# Copiar archivos compilados
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 
-RUN mkdir -p uploads/temp && \
-    chown -R nodejs:nodejs /app
+# Crear usuario no-root para seguridad
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S multilimp -u 1001 -G nodejs
 
-USER nodejs
+RUN chown -R multilimp:nodejs /app
+USER multilimp
 
+# Exponer puerto
 EXPOSE 5000
 
-ENV NODE_ENV=production \
-    PORT=5000 \
-    PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+# Health check para MULTILIMP
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:5000/api/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
 
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/index.js"]
+# Comando con migraciones automáticas
+CMD ["sh", "-c", "npx prisma migrate deploy && npm start"]

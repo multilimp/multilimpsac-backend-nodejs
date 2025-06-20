@@ -1,6 +1,7 @@
 import { Application, Request, Response, NextFunction } from 'express';
 import express from 'express';
 import cors from 'cors';
+import { healthCheck } from './routes/health';
 import ubigeoRoutes from './modules/ubigeo/ubigeo.routes';
 import clientRoutes from './modules/client/client.routes';
 import providerRoutes from './modules/provider/provider.routes';
@@ -30,6 +31,9 @@ import { simplifyResponseMiddleware } from './graphql/utils/simplifyResponseMidd
 
 export const configureRoutes = async (app: Application): Promise<void> => {
   app.get('/api', (req: Request, res: Response) => res.json({ message: 'BACKEND MULTILIMP SAC' }));
+  
+  // Health check endpoint (sin autenticación)
+  app.get('/api/health', healthCheck);
 
   app.use('/api/auth', authRoutes);
   // Configurar GraphQL como una ruta más
@@ -61,7 +65,8 @@ export const configureRoutes = async (app: Application): Promise<void> => {
   app.use('/api/print', printRoutes);
   app.use('/api/orden-compra', cobranzaRoutes);
   app.use('/api/tesoreria', tesoreriaRoutes);
-  app.use('/api/files', fileRoutes);// Middleware para rutas no encontradas
+  app.use('/api/files', fileRoutes);
+  // Middleware para rutas no encontradas
   app.use((req: Request, res: Response) => {
     res.status(404).json({ message: 'Ruta no encontrada' });
   });
