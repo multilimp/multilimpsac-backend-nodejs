@@ -128,6 +128,7 @@ export const getAllOrdenesProveedor = (): Promise<OrdenProveedor[]> => {
       pagos: true,
       transportesAsignados: { include: { transporte: true, contactoTransporte: true, pagos: true } },
     },
+    orderBy: { createdAt: 'desc' }, // Ordenamiento descendente por fecha de creación
   });
 };
 
@@ -141,7 +142,12 @@ export const getOrdenProveedorById = (id: number): Promise<OrdenProveedor | null
       empresa: true,
       proveedor: true,
       contactoProveedor: true,
-      ordenCompra: true,
+      ordenCompra: {
+        include: {
+          cliente: true,
+          contactoCliente: true,
+        },
+      },
       productos: true,
       pagos: true,
       transportesAsignados: { include: { transporte: true, contactoTransporte: true, pagos: true } },

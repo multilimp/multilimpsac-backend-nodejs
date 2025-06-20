@@ -4,7 +4,10 @@ import * as ordenProveedorService from './ordenProveedor.service';
 
 export const listCodigosOrdenesProveedor = async (req: Request, res: Response) => {
   try {
-    const ordenCompraId = parseInt(String(req.query.ordenCompraId), 10);
+    const ordenCompraId = parseInt(req.params.ordenCompraId, 10);
+    if (isNaN(ordenCompraId)) {
+      return res.status(400).json({ message: 'ID de orden de compra inválido' });
+    }
     const ordenes = await ordenProveedorService.getCodigosOrdenesProveedor(ordenCompraId);
     res.status(200).json(ordenes);
   } catch (error) {

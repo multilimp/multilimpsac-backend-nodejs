@@ -2,7 +2,13 @@ import { OrdenCompra, Prisma } from '@prisma/client';
 import prisma from '../../database/prisma';
 
 export const getAllOrdenesCompra = (args?: Prisma.OrdenCompraFindManyArgs): Promise<OrdenCompra[]> => {
-  return prisma.ordenCompra.findMany(args);
+  // Si no se especifica orderBy, usar ordenamiento descendente por fecha de creación
+  const defaultArgs: Prisma.OrdenCompraFindManyArgs = {
+    orderBy: { createdAt: 'desc' },
+    ...args
+  };
+  
+  return prisma.ordenCompra.findMany(defaultArgs);
 };
 
 export const getOrdenCompraById = (id: number, args?: Prisma.OrdenCompraFindUniqueArgs): Promise<OrdenCompra | null> => {
