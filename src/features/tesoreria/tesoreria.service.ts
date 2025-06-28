@@ -335,3 +335,43 @@ export const getTransporteAsignadoWithPagos = async (transporteAsignadoId: numbe
     }
   });
 };
+
+export const getTransportesByOrdenCompra = async (ordenCompraId: number) => {
+  if (isNaN(ordenCompraId)) {
+    throw new Error('El ID de la orden de compra debe ser un número.');
+  }
+  
+  return prisma.transporteAsignado.findMany({
+    where: {
+      ordenProveedor: {
+        ordenCompraId: ordenCompraId
+      }
+    },
+    include: {
+      pagos: {
+        where: { activo: true },
+        orderBy: { createdAt: 'desc' }
+      },
+      transporte: {
+        select: {
+          id: true,
+          razonSocial: true,
+          ruc: true
+        }
+      },
+      ordenProveedor: {
+        select: {
+          id: true,
+          codigoOp: true,
+          proveedor: {
+            select: {
+              id: true,
+              razonSocial: true,
+              ruc: true
+            }
+          }
+        }
+      }
+    }
+  });
+};

@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { handleError } from '../../shared/middleware/handleError';
-import { processTesoreriaOp, processTesoreriaTransporte, processTesoreriaVentaPrivada } from './tesoreria.service';
+import { processTesoreriaOp, processTesoreriaTransporte, processTesoreriaVentaPrivada, getTransporteAsignadoWithPagos, getTransportesByOrdenCompra } from './tesoreria.service';
 
 export const createOrUpdatePagoOp = async (req: Request, res: Response) => {
   try {
@@ -37,6 +37,39 @@ export const createOrUpdatePagoVentaPrivada = async (req: Request, res: Response
       res,
       error,
       msg: 'Error al procesar el pago de venta privada.'
+    });
+  }
+};
+
+export const getTransporteAsignadoForTesoreria = async (req: Request, res: Response) => {
+  try {
+    const { transporteAsignadoId } = req.params;
+    const result = await getTransporteAsignadoWithPagos(Number(transporteAsignadoId));
+    
+    if (!result) {
+      return res.status(404).json({ message: 'Transporte asignado no encontrado' });
+    }
+    
+    res.status(200).json(result);
+  } catch (error) {
+    handleError({
+      res,
+      error,
+      msg: 'Error al obtener el transporte asignado para tesorería.'
+    });
+  }
+};
+
+export const getTransportesByOrdenCompraForTesoreria = async (req: Request, res: Response) => {
+  try {
+    const { ordenCompraId } = req.params;
+    const result = await getTransportesByOrdenCompra(Number(ordenCompraId));
+    res.status(200).json(result);
+  } catch (error) {
+    handleError({
+      res,
+      error,
+      msg: 'Error al obtener los transportes para tesorería.'
     });
   }
 };

@@ -12,13 +12,15 @@ import {
 const router = Router();
 
 router.get('/', listOrdenesProveedor);
-router.get('/:ordenCompraId/codigos', listCodigosOrdenesProveedor);
 
+// Rutas específicas ANTES que las rutas con parámetros dinámicos
+router.get('/:ordenCompraId/codigos', listCodigosOrdenesProveedor);
 router.get('/:ordenCompraId/op', getOrdenesProveedorByOrdenCompraId);
 router.post('/:ordenCompraId/op', createOrdenProveedor);
 
-router.get('/:ordenProveedorId', getOrdenProveedor);
-router.put('/:ordenProveedorId', updateOrdenProveedor);
-router.delete('/:ordenProveedorId', deleteOrdenProveedor);
+// Rutas con ID específico de OP DESPUÉS
+router.get('/op/:ordenProveedorId', getOrdenProveedor);
+router.put('/op/:ordenProveedorId', updateOrdenProveedor);
+router.delete('/op/:ordenProveedorId', deleteOrdenProveedor);
 
 export default router;

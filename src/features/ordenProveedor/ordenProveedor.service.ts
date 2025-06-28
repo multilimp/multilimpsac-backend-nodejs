@@ -35,38 +35,52 @@ const processOrdenProveedorData = (data: any) => {
 const generateCodigoOp = async (id: number): Promise<string> => {
   const oc = await prisma.ordenCompra.findUnique({
     where: { id },
-    select: { codigoVenta: true },
+    select: { 
+      codigoVenta: true,
+      empresa: {
+        select: {
+          razonSocial: true
+        }
+      }
+    },
   });
 
   if (!oc) throw new Error('Orden de compra no encontrada');
+  if (!oc.empresa) throw new Error('La orden de compra no tiene empresa asociada');
 
-  const match = oc.codigoVenta.match(/OC(\w+)/);
-  if (!match) throw new Error('Formato de OC inválido');
+  // ✅ CORRECCIÓN: Manejar el formato real del sistema OC-2025-001, OCP-2025-001, etc.
+  // Extraer las 3 primeras letras de la razón social de la empresa
+  const empresaPrefix = oc.empresa.razonSocial
+    .replace(/\s+/g, '')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toUpperCase()
+    .substring(0, 3);
 
-  const base = match[1];
-
+  // ✅ CORRECCIÓN: Buscar OPs existentes con el patrón OP[EMP][ID]-
+  const basePattern = `OP${empresaPrefix}${id}-`;
+  
   const existingOps = await prisma.ordenProveedor.findMany({
     where: {
       codigoOp: {
-        startsWith: `OP${base}-`,
+        startsWith: basePattern,
       },
     },
     select: { codigoOp: true },
   });
 
-  // Extrae los números al final de cada OP, y encuentra el máximo
+  // ✅ CORRECCIÓN: Extraer el número secuencial correctamente
   let maxSuffix = 0;
   for (const op of existingOps) {
-    const match = op.codigoOp.match(new RegExp(`^OP${base}-(\\d+)$`));
-    if (match) {
-      const num = parseInt(match[1], 10);
+    const opMatch = op.codigoOp.match(new RegExp(`^${basePattern}(\\d+)$`));
+    if (opMatch) {
+      const num = parseInt(opMatch[1], 10);
       if (num > maxSuffix) maxSuffix = num;
     }
   }
 
-  // Genera nuevo código con número incrementado
+  // ✅ RESULTADO: OPMUL1-1, OPMUL1-2, OPMUL2-1, etc.
   const newSuffix = maxSuffix + 1;
-  return `OP${base}-${newSuffix}`;
+  return `${basePattern}${newSuffix}`;
 };
 
 const generateCodigoTransporte = async (ordenProveedorId: number): Promise<string> => {
