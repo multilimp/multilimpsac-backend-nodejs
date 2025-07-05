@@ -151,5 +151,31 @@ export const cobranzaService = {
       where: { ordenCompraId },
       orderBy: { fechaGestion: 'desc' }
     });
+  },
+
+  async createGestion(ordenCompraId: number, data: CreateGestionData) {
+    const processedData = processGestionData(data);
+    
+    return prisma.gestionCobranza.create({
+      data: {
+        ...(processedData as CreateGestionData),
+        ordenCompraId
+      }
+    });
+  },
+
+  async updateGestion(gestionId: number, data: UpdateGestionData) {
+    const processedData = processGestionData({ ...data, id: gestionId });
+    
+    return prisma.gestionCobranza.update({
+      where: { id: gestionId },
+      data: processedData
+    });
+  },
+
+  async deleteGestion(gestionId: number) {
+    return prisma.gestionCobranza.delete({
+      where: { id: gestionId }
+    });
   }
 };
