@@ -98,7 +98,7 @@ export const createVenta = async (data: CreateVentaType): Promise<OrdenCompra> =
       documentoOcf: directSaleBody.documentoOcf,
 
       // Productos y estado
-      productos: JSON.stringify(directSaleBody.productos),
+      productos: directSaleBody.productos,
       etapaActual: 'creacion',
       estadoVenta: directSaleBody.estadoVenta || 'incompleto',
       estadoActivo: true,
