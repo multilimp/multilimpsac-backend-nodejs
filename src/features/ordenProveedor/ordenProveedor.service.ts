@@ -196,6 +196,14 @@ export const updateOrdenProveedor = async (id: number, data: UpdateOrdenProveedo
   }
 
   const processedData = processOrdenProveedorData(data);
+  
+  // ✅ CORRECCIÓN: Generar códigos de transporte para operaciones de actualización
+  if (processedData.transportesAsignados && processedData.transportesAsignados.create && Array.isArray(processedData.transportesAsignados.create)) {
+    for (let i = 0; i < processedData.transportesAsignados.create.length; i++) {
+      processedData.transportesAsignados.create[i].codigoTransporte = await generateCodigoTransporte(id);
+    }
+  }
+  
   return prisma.ordenProveedor.update({
     where: { id },
     data: processedData as any,

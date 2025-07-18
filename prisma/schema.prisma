@@ -307,6 +307,7 @@ model OrdenCompraPrivada {
   estadoPago        EstadoPago? @map("estado_pago")
   fechaPago         DateTime? @map("fecha_pago") @db.Date
   documentoPago     String?   @map("documento_pago")
+  notaPago         String?   @map("nota_pago")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
