@@ -1,6 +1,4 @@
-import { Application, Request, Response, NextFunction } from 'express';
-import express from 'express';
-import cors from 'cors';
+import { Application, Request, Response } from 'express';
 import { healthCheck } from './routes/health';
 import ubigeoRoutes from './modules/ubigeo/ubigeo.routes';
 import clientRoutes from './modules/client/client.routes';
@@ -28,6 +26,9 @@ import tesoreriaRoutes from './features/tesoreria/tesoreria.routes';
 import { authenticateToken } from './shared/middleware/auth.middleware';
 // import { setupGraphQLRoutes } from './graphql/graphql.routes';
 import { simplifyResponseMiddleware } from './graphql/utils/simplifyResponseMiddleware';
+import pagoOrdenCompraPrivadaRoutes from './modules/pagoOrdenCompraPrivada/pagoOrdenCompraPrivada.routes';
+import pagoOrdenProveedorRoutes from './modules/pagoOrdenProveedor/pagoOrdenProveedor.routes';
+import pagoTransporteAsignadoRoutes from './modules/pagoTransporteAsignado/pagoTransporteAsignado.routes';
 
 export const configureRoutes = async (app: Application): Promise<void> => {
   app.get('/api', (req: Request, res: Response) => res.json({ message: 'BACKEND MULTILIMP SAC' }));
@@ -67,6 +68,12 @@ export const configureRoutes = async (app: Application): Promise<void> => {
   app.use('/api', gestionRoutes);
   app.use('/api/tesoreria', tesoreriaRoutes);
   app.use('/api/files', fileRoutes);
+
+  // Pagos
+  app.use('/api/pagos-orden-compra-privada', pagoOrdenCompraPrivadaRoutes);
+  app.use('/api/pagos-orden-proveedor', pagoOrdenProveedorRoutes);
+  app.use('/api/pagos-transporte-asignado', pagoTransporteAsignadoRoutes);
+  
   // Middleware para rutas no encontradas
   app.use((req: Request, res: Response) => {
     res.status(404).json({ message: 'Ruta no encontrada' });

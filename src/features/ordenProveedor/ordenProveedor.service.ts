@@ -4,6 +4,7 @@ import prisma from '../../database/prisma';
 type CreateOrdenProveedorData = Omit<OrdenProveedor, 'id' | 'createdAt' | 'updatedAt'> & {
   productos?: Prisma.OpProductoCreateNestedManyWithoutOrdenProveedorInput;
   transportesAsignados?: Prisma.TransporteAsignadoCreateNestedManyWithoutOrdenProveedorInput;
+  pagos?: Prisma.PagoOrdenProveedorCreateNestedManyWithoutOrdenProveedorInput;
 };
 
 type UpdateOrdenProveedorData = Partial<Omit<OrdenProveedor, 'id' | 'createdAt' | 'updatedAt'>> & {
@@ -181,6 +182,7 @@ export const createOrdenProveedor = async (id: number, data: CreateOrdenProveedo
     data: processedData as CreateOrdenProveedorData,
     include: {
       productos: true,
+      pagos: true,
       transportesAsignados: true,
     },
   });

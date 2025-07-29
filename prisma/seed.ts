@@ -76,7 +76,7 @@ async function main() {
     }),
     prisma.empresa.create({
       data: {
-        razonSocial: 'MULTILIMPSAC SUCURSAL NORTE',
+        razonSocial: 'CREDITOS Y FINANZAS S.A.C.',
         ruc: '20987654321',
         direccion: 'Av. Norte 456, Trujillo',
         telefono: '+51 999 654 321',
