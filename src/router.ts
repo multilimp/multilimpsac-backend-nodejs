@@ -19,6 +19,7 @@ import productoRoutes from './modules/producto/producto.routes';
 import agrupacionOrdenCompraRoutes from './modules/agrupacionOrdenCompra/agrupacionOrdenCompra.routes';
 import ventasRoutes from './features/ventas/ventas.routes';
 import ordenProveedorRoutes from './features/ordenProveedor/ordenProveedor.routes';
+import opProductoRoutes from './features/ordenProveedor/opProducto.routes';
 import facturacionRoutes from './features/facturacion/facturacion.routes';
 import printRoutes from './features/print/print.routes';
 import cobranzaRoutes, { gestionRoutes } from './features/cobranza/cobranza.routes';
@@ -59,6 +60,7 @@ export const configureRoutes = async (app: Application): Promise<void> => {
   app.use('/api/cotizaciones', cotizacionRoutes);
   app.use('/api/ordenes-compra', ordenCompraRoutes);
   app.use('/api/ordenes-proveedores', ordenProveedorRoutes);
+  app.use('/api/op-productos', opProductoRoutes);
   app.use('/api/productos', productoRoutes);
   app.use('/api/agrupaciones-oc', agrupacionOrdenCompraRoutes);
   app.use('/api/ventas', ventasRoutes);
