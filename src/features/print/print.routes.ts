@@ -1,12 +1,12 @@
 import { Router } from 'express';
-import { generateFacturaPDFHandler } from './print.controller';
+import { generateFacturaPDFHandler, generateOrdenProveedorPDFHandler } from './print.controller';
 
 const router = Router();
 
-// Por ahora usaremos POST para facilitar el envío de datos si fuera necesario en el futuro,
-// aunque para un ID podría ser GET. Se puede ajustar según la necesidad final.
+// Generar PDF de factura
 router.post('/factura/:id', generateFacturaPDFHandler);
-// Si se prefiere GET:
-// router.get('/factura/:id', generateFacturaPDFHandler);
+
+// Generar PDF de orden de proveedor
+router.post('/orden-proveedor/:id', generateOrdenProveedorPDFHandler);
 
 export default router;

@@ -126,3 +126,98 @@ export const generateFacturaPDF = async (id: number): Promise<Buffer> => {
   await browser.close();
   return Buffer.from(pdfData); // Convertir a Buffer de Node.js
 };
+
+export const generateOrdenProveedorPDF = async (id: number): Promise<Buffer> => {
+  const ordenProveedorData = await prisma.ordenProveedor.findUnique({
+    where: { id },
+    include: {
+      empresa: {
+        select: {
+          razonSocial: true,
+          ruc: true,
+          direccion: true,
+          telefono: true,
+        },
+      },
+      proveedor: {
+        select: {
+          razonSocial: true,
+          ruc: true,
+          direccion: true,
+          telefono: true,
+          email: true,
+        },
+      },
+      contactoProveedor: {
+        select: {
+          nombre: true,
+          telefono: true,
+          email: true,
+          cargo: true,
+        },
+      },
+      productos: true,
+      ordenCompra: {
+        select: {
+          codigoVenta: true,
+          cliente: {
+            select: {
+              razonSocial: true,
+              ruc: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!ordenProveedorData) {
+    throw new Error(`Orden de proveedor con ID ${id} no encontrada.`);
+  }
+
+  const templateHtmlPath = path.join(__dirname, 'templates', 'orden-proveedor.hbs');
+  const templateCssPath = path.join(__dirname, 'styles', 'orden-proveedor.css');
+
+  const [htmlTemplate, cssStyles] = await Promise.all([
+    fs.readFile(templateHtmlPath, 'utf-8'),
+    fs.readFile(templateCssPath, 'utf-8'),
+  ]);
+
+  const template = handlebars.compile(htmlTemplate);
+
+  // Prepara los datos para la plantilla
+  const dataForTemplate = {
+    ordenProveedor: ordenProveedorData,
+    empresa: ordenProveedorData.empresa,
+    proveedor: ordenProveedorData.proveedor,
+    contactoProveedor: ordenProveedorData.contactoProveedor,
+    productos: ordenProveedorData.productos || [],
+    ordenCompra: ordenProveedorData.ordenCompra,
+    css: cssStyles,
+    fechaActual: new Date().toLocaleDateString('es-ES'),
+  };
+
+  const finalHtml = template(dataForTemplate);
+
+  const browser = await puppeteer.launch({ 
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox']
+  });
+  const page = await browser.newPage();
+  
+  await page.setContent(finalHtml, { waitUntil: 'networkidle0' });
+  
+  const pdfData = await page.pdf({
+    format: 'A4',
+    printBackground: true,
+    margin: {
+      top: '20px',
+      right: '20px',
+      bottom: '20px',
+      left: '20px',
+    },
+  });
+
+  await browser.close();
+  return Buffer.from(pdfData);
+};

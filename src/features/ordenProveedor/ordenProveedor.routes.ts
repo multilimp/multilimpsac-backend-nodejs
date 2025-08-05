@@ -5,7 +5,6 @@ import {
   getOrdenProveedor,
   updateOrdenProveedor,
   getOrdenesProveedorByOrdenCompraId,
-  deleteOrdenProveedor,
   listCodigosOrdenesProveedor,
 } from './ordenProveedor.controller';
 
@@ -21,6 +20,6 @@ router.post('/:ordenCompraId/op', createOrdenProveedor);
 // Rutas con ID específico de OP DESPUÉS
 router.get('/op/:ordenProveedorId', getOrdenProveedor);
 router.put('/op/:ordenProveedorId', updateOrdenProveedor);
-router.delete('/op/:ordenProveedorId', deleteOrdenProveedor);
+// router.delete('/op/:ordenProveedorId', deleteOrdenProveedor);
 
 export default router;

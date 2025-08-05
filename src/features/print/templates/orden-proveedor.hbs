@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orden de Proveedor {{ ordenProveedor.codigoOp }}</title>
+    <style>
+        {{{ css }}}
+    </style>
+</head>
+<body>
+    <div class="contenedor">
+        <div class="encabezado">
+            <div class="empresa-info">
+                <strong>{{ empresa.razonSocial }}</strong><br>
+                RUC: {{ empresa.ruc }}<br>
+                {{ empresa.direccion }}<br>
+                Teléfono: {{ empresa.telefono }}
+            </div>
+            <div class="ruc-box">
+                R.U.C: {{ empresa.ruc }}
+                <div class="orden">ORDEN DE PROVEEDOR</div>
+                <div>Nº {{ ordenProveedor.codigoOp }}</div>
+            </div>
+        </div>
+
+        <div class="seccion">
+            <strong>Proveedor:</strong><br>
+            Razón Social: {{ proveedor.razonSocial }}<br>
+            RUC: {{ proveedor.ruc }}<br>
+            {{#if proveedor.direccion}}
+                Dirección: {{ proveedor.direccion }}<br>
+            {{/if}}
+            {{#if proveedor.telefono}}
+                Teléfono: {{ proveedor.telefono }}<br>
+            {{/if}}
+            {{#if proveedor.email}}
+                Email: {{ proveedor.email }}<br>
+            {{/if}}
+        </div>
+
+        {{#if contactoProveedor}}
+        <div class="seccion">
+            <strong>Contacto del Proveedor:</strong><br>
+            {{#if contactoProveedor.nombre}}
+                Nombre: {{ contactoProveedor.nombre }}<br>
+            {{/if}}
+            {{#if contactoProveedor.cargo}}
+                Cargo: {{ contactoProveedor.cargo }}<br>
+            {{/if}}
+            {{#if contactoProveedor.telefono}}
+                Teléfono: {{ contactoProveedor.telefono }}<br>
+            {{/if}}
+            {{#if contactoProveedor.email}}
+                Email: {{ contactoProveedor.email }}
+            {{/if}}
+        </div>
+        {{/if}}
+
+        <div class="seccion">
+            <strong>Información de la Orden:</strong><br>
+            {{#if ordenCompra.codigoVenta}}
+                Orden de Compra: {{ ordenCompra.codigoVenta }}<br>
+            {{/if}}
+            {{#if ordenCompra.cliente}}
+                Cliente Final: {{ ordenCompra.cliente.razonSocial }} (RUC: {{ ordenCompra.cliente.ruc }})<br>
+            {{/if}}
+            {{#if ordenProveedor.fechaProgramada}}
+                Fecha Programada: {{ ordenProveedor.fechaProgramada }}<br>
+            {{/if}}
+            {{#if ordenProveedor.fechaDespacho}}
+                Fecha de Despacho: {{ ordenProveedor.fechaDespacho }}<br>
+            {{/if}}
+            {{#if ordenProveedor.fechaRecepcion}}
+                Fecha de Recepción: {{ ordenProveedor.fechaRecepcion }}
+            {{/if}}
+        </div>
+
+        {{#if productos.length}}
+        <table class="tabla-productos">
+            <thead>
+                <tr>
+                    <th>CÓDIGO</th>
+                    <th>DESCRIPCIÓN</th>
+                    <th>UNIDAD</th>
+                    <th>CANTIDAD</th>
+                    <th>PRECIO UNIT. S/</th>
+                    <th>TOTAL S/</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each productos}}
+                <tr>
+                    <td>{{ this.codigo }}</td>
+                    <td>{{ this.descripcion }}</td>
+                    <td>{{ this.unidadMedida }}</td>
+                    <td>{{ this.cantidad }}</td>
+                    <td>{{formatCurrency this.precioUnitario }}</td>
+                    <td>{{formatCurrency this.total }}</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+        {{else}}
+        <div class="seccion">
+            <p>No hay productos detallados en esta orden de proveedor.</p>
+        </div>
+        {{/if}}
+
+        <div class="totales">
+            {{#if ordenProveedor.totalProveedor}}
+                <strong>TOTAL A PAGAR: {{ formatCurrency ordenProveedor.totalProveedor }}</strong>
+            {{else}}
+                <strong>TOTAL A PAGAR: (No especificado)</strong>
+            {{/if}}
+        </div>
+
+        {{#if ordenProveedor.notaPedido}}
+        <div class="seccion">
+            <strong>Notas del Pedido:</strong><br>
+            {{ ordenProveedor.notaPedido }}
+        </div>
+        {{/if}}
+
+        {{#if ordenProveedor.tipoPago}}
+        <div class="seccion">
+            <strong>Tipo de Pago:</strong> {{ ordenProveedor.tipoPago }}<br>
+            {{#if ordenProveedor.notaPago}}
+                <strong>Notas de Pago:</strong> {{ ordenProveedor.notaPago }}
+            {{/if}}
+        </div>
+        {{/if}}
+
+        <div class="footer">
+            Orden de Proveedor generada electrónicamente.
+            <br>
+            Fecha de generación: {{ fechaActual }}
+        </div>
+    </div>
+</body>
+</html>

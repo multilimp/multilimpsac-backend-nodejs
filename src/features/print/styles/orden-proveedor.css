@@ -1,0 +1,136 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    padding: 0;
+    color: #333;
+    font-size: 10pt;
+}
+
+.contenedor {
+    width: 100%;
+    background: #fff;
+    margin: 0 auto;
+}
+
+.encabezado {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 2px solid #1890ff;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.empresa-info {
+    font-size: 9pt;
+    flex: 2;
+}
+
+.empresa-info strong {
+    font-size: 12pt;
+    font-weight: bold;
+    color: #1890ff;
+}
+
+.ruc-box {
+    text-align: center;
+    border: 2px solid #1890ff;
+    padding: 10px;
+    font-weight: bold;
+    border-radius: 8px;
+    background: #f0f8ff;
+    flex: 1;
+    margin-left: 20px;
+}
+
+.ruc-box .orden {
+    color: #1890ff;
+    font-size: 12pt;
+    font-weight: bold;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+
+.tabla-productos {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    font-size: 9pt;
+}
+
+.tabla-productos th, .tabla-productos td {
+    border: 1px solid #666;
+    padding: 8px;
+    text-align: left;
+}
+
+.tabla-productos th {
+    background-color: #1890ff;
+    color: white;
+    text-align: center;
+    font-weight: bold;
+    font-size: 9pt;
+}
+
+.tabla-productos td:nth-child(4), /* Cantidad */
+.tabla-productos td:nth-child(5), /* Precio */
+.tabla-productos td:nth-child(6) { /* Total */
+    text-align: right;
+}
+
+.tabla-productos td:first-child { /* Código */
+    text-align: center;
+    font-weight: bold;
+}
+
+.seccion {
+    margin-top: 15px;
+    margin-bottom: 15px;
+    padding: 12px;
+    border-radius: 6px;
+    background: #f8f9fa;
+    border-left: 4px solid #1890ff;
+    font-size: 9pt;
+    line-height: 1.5;
+}
+
+.seccion strong {
+    color: #1890ff;
+    font-size: 10pt;
+}
+
+.totales {
+    margin-top: 25px;
+    font-size: 12pt;
+    text-align: right;
+    font-weight: bold;
+    background: #e6f7ff;
+    padding: 15px;
+    border: 2px solid #1890ff;
+    border-radius: 8px;
+    color: #1890ff;
+}
+
+.footer {
+    text-align: center;
+    margin-top: 30px;
+    font-size: 8pt;
+    padding: 15px;
+    border-top: 1px solid #ccc;
+    color: #666;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+
+/* Evitar saltos de página inoportunos */
+.tabla-productos, .seccion, .totales {
+    page-break-inside: avoid;
+}
+
+/* Estilo para destacar información importante */
+.destacado {
+    font-weight: bold;
+    font-size: 11pt;
+    color: #1890ff;
+}
