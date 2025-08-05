@@ -5,20 +5,29 @@ import { CreateFacturacionData, UpdateFacturacionData } from './facturacion.serv
 
 export const handleCreateOrUpdateFacturacion = async (req: Request, res: Response) => {
   try {
+    console.log('🔍 DEBUG: handleCreateOrUpdateFacturacion iniciado');
+    console.log('🔍 DEBUG: Parámetros:', req.params);
+    console.log('🔍 DEBUG: Body:', req.body);
+    
     const ordenCompraIdParam = req.params.ordenCompraId;
     const ordenCompraId = parseInt(ordenCompraIdParam, 10);
 
+    console.log('🔍 DEBUG: ordenCompraId parseado:', ordenCompraId);
+
     if (isNaN(ordenCompraId)) {
+      console.log('❌ DEBUG: ordenCompraId no es un número válido');
       return res.status(400).json({ success: false, message: 'El parámetro ordenCompraId debe ser un número.' });
     }
 
-    // El resto de los datos vienen del cuerpo
     const data = req.body as Omit<CreateFacturacionData | UpdateFacturacionData, 'ordenCompraId'>;
+    console.log('🔍 DEBUG: Datos procesados:', data);
     
-    // Pasamos ordenCompraId y el resto de los datos al servicio
     const facturacion = await facturacionService.createOrUpdateFacturacion({ ...data, ordenCompraId });
+    console.log('✅ DEBUG: Facturación creada/actualizada:', facturacion);
+    
     res.status(201).json({ success: true, data: facturacion });
   } catch (err) {
+    console.error('❌ DEBUG: Error en handleCreateOrUpdateFacturacion:', err);
     handleError({ res, error: err, msg: 'Error al crear o actualizar la facturación.' });
   }
 };

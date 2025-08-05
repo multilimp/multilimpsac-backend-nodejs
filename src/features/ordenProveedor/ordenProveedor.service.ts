@@ -85,20 +85,37 @@ const generateCodigoOp = async (id: number): Promise<string> => {
 };
 
 const generateCodigoTransporte = async (ordenProveedorId: number): Promise<string> => {
+  // ✅ NUEVO: Obtener el código de la OP para construir el código de transporte
+  const ordenProveedor = await prisma.ordenProveedor.findUnique({
+    where: { id: ordenProveedorId },
+    select: { codigoOp: true },
+  });
+
+  if (!ordenProveedor) {
+    throw new Error('Orden de proveedor no encontrada');
+  }
+
+  const codigoOp = ordenProveedor.codigoOp;
+  
+  // ✅ NUEVO: Buscar transportes existentes para esta OP con el patrón [CODIGO_OP]-T[N]
   const existing = await prisma.transporteAsignado.findMany({
     where: { ordenProveedorId: ordenProveedorId },
     select: { codigoTransporte: true },
   });
+  
   let maxSuffix = 0;
   for (const t of existing) {
-    const match = t.codigoTransporte.match(new RegExp(`^TR${ordenProveedorId}-(\\d+)$`));
+    // ✅ NUEVO: Buscar patrón [CODIGO_OP]-T[NUMERO]
+    const match = t.codigoTransporte.match(new RegExp(`^${codigoOp.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}-T(\\d+)$`));
     if (match) {
       const num = parseInt(match[1], 10);
       if (num > maxSuffix) maxSuffix = num;
     }
   }
+  
+  // ✅ RESULTADO: OPMUL4-1-T1, OPMUL4-1-T2, OPMUL4-1-T3, etc.
   const newSuffix = maxSuffix + 1;
-  return `TR${ordenProveedorId}-${newSuffix}`;
+  return `${codigoOp}-T${newSuffix}`;
 };
 
 export const getOrdenesProveedorByOrdenCompraId = async (ordenCompraId: number): Promise<OrdenProveedor[]> => {
@@ -173,11 +190,31 @@ export const getOrdenProveedorById = (id: number): Promise<OrdenProveedor | null
 export const createOrdenProveedor = async (id: number, data: CreateOrdenProveedorData): Promise<OrdenProveedor> => {
   const codigoOp = await generateCodigoOp(id);
   const processedData = processOrdenProveedorData({ ...data, codigoOp });
+  
+  // ✅ CORRECCIÓN: Generar códigos únicos para cada transporte
   if (processedData.transportesAsignados && Array.isArray(processedData.transportesAsignados.create)) {
+    // Obtener el número máximo actual de transportes para esta OP
+    const existing = await prisma.transporteAsignado.findMany({
+      where: { ordenProveedorId: id },
+      select: { codigoTransporte: true },
+    });
+    
+    let currentMaxSuffix = 0;
+    for (const t of existing) {
+      const match = t.codigoTransporte.match(new RegExp(`^${codigoOp.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}-T(\\d+)$`));
+      if (match) {
+        const num = parseInt(match[1], 10);
+        if (num > currentMaxSuffix) currentMaxSuffix = num;
+      }
+    }
+    
+    // Asignar códigos secuenciales únicos
     for (let i = 0; i < processedData.transportesAsignados.create.length; i++) {
-      processedData.transportesAsignados.create[i].codigoTransporte = await generateCodigoTransporte(id);
+      const newSuffix = currentMaxSuffix + i + 1;
+      processedData.transportesAsignados.create[i].codigoTransporte = `${codigoOp}-T${newSuffix}`;
     }
   }
+  
   return prisma.ordenProveedor.create({
     data: processedData as CreateOrdenProveedorData,
     include: {
@@ -191,6 +228,9 @@ export const createOrdenProveedor = async (id: number, data: CreateOrdenProveedo
 export const updateOrdenProveedor = async (id: number, data: UpdateOrdenProveedorData): Promise<OrdenProveedor> => {
   const existing = await prisma.ordenProveedor.findFirst({
     where: { id, activo: true },
+    include: {
+      transportesAsignados: true // ✅ Incluir transportes existentes
+    }
   });
 
   if (!existing) {
@@ -199,10 +239,35 @@ export const updateOrdenProveedor = async (id: number, data: UpdateOrdenProveedo
 
   const processedData = processOrdenProveedorData(data);
   
-  // ✅ CORRECCIÓN: Generar códigos de transporte para operaciones de actualización
-  if (processedData.transportesAsignados && processedData.transportesAsignados.create && Array.isArray(processedData.transportesAsignados.create)) {
-    for (let i = 0; i < processedData.transportesAsignados.create.length; i++) {
-      processedData.transportesAsignados.create[i].codigoTransporte = await generateCodigoTransporte(id);
+  // ✅ NUEVA LÓGICA: Solo generar códigos para transportes REALMENTE NUEVOS
+  if (processedData.transportesAsignados) {
+    const codigoOp = existing.codigoOp;
+    
+    // Si hay operaciones de creación (transportes realmente nuevos)
+    if (processedData.transportesAsignados.create && Array.isArray(processedData.transportesAsignados.create)) {
+      // Obtener todos los transportes existentes (incluye los que se van a mantener)
+      const allExistingTransports = await prisma.transporteAsignado.findMany({
+        where: { ordenProveedorId: id },
+        select: { codigoTransporte: true },
+      });
+      
+      let currentMaxSuffix = 0;
+      for (const t of allExistingTransports) {
+        const match = t.codigoTransporte.match(new RegExp(`^${codigoOp.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}-T(\\d+)$`));
+        if (match) {
+          const num = parseInt(match[1], 10);
+          if (num > currentMaxSuffix) currentMaxSuffix = num;
+        }
+      }
+      
+      // ✅ SOLO generar códigos para los NUEVOS transportes
+      for (let i = 0; i < processedData.transportesAsignados.create.length; i++) {
+        // Verificar si realmente es nuevo (no tiene codigoTransporte)
+        if (!processedData.transportesAsignados.create[i].codigoTransporte) {
+          const newSuffix = currentMaxSuffix + i + 1;
+          processedData.transportesAsignados.create[i].codigoTransporte = `${codigoOp}-T${newSuffix}`;
+        }
+      }
     }
   }
   
@@ -212,19 +277,7 @@ export const updateOrdenProveedor = async (id: number, data: UpdateOrdenProveedo
     include: {
       productos: true,
       pagos: true,
-      transportesAsignados: true,
-    },
-  });
-};
-
-export const deleteOrdenProveedor = (id: number): Promise<OrdenProveedor> => {
-  return prisma.ordenProveedor.update({
-    where: { id },
-    data: { activo: false },
-    include: {
-      productos: true,
-      pagos: true,
-      transportesAsignados: true,
+      transportesAsignados: { include: { transporte: true, contactoTransporte: true, pagos: true } },
     },
   });
 };

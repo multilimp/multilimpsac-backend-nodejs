@@ -487,7 +487,7 @@ async function main() {
   await Promise.all([
     prisma.transporteAsignado.create({
       data: {
-        codigoTransporte: 'TR-2025-001',
+        codigoTransporte: 'OP-2025-001-T1', // ✅ NUEVO FORMATO: [CODIGO_OP]-T[N]
         transporteId: transportes[0].id,
         ordenProveedorId: ordenesProveedor[0].id,
         contactoTransporteId: contactos[4].id,
@@ -502,7 +502,7 @@ async function main() {
     }),
     prisma.transporteAsignado.create({
       data: {
-        codigoTransporte: 'TR-2025-002',
+        codigoTransporte: 'OP-2025-002-T1', // ✅ NUEVO FORMATO: [CODIGO_OP]-T[N]
         transporteId: transportes[1].id,
         ordenProveedorId: ordenesProveedor[1].id,
         region: 'Lima Metropolitana',

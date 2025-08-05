@@ -11,7 +11,14 @@ const processFacturacionData = (data: any): Partial<Facturacion> => {
   const processedData: Partial<Facturacion> = { ...data };
 
   if (data.fechaFactura && typeof data.fechaFactura === 'string') {
-    processedData.fechaFactura = new Date(data.fechaFactura);
+    // Detectar si es formato YYYY-MM-DD (solo fecha) y agregar tiempo local
+    if (/^\d{4}-\d{2}-\d{2}$/.test(data.fechaFactura)) {
+      // Para formato solo fecha, agregar tiempo medio día para evitar problemas de zona horaria
+      processedData.fechaFactura = new Date(`${data.fechaFactura}T12:00:00.000Z`);
+    } else {
+      // Para otros formatos (con tiempo), usar normal
+      processedData.fechaFactura = new Date(data.fechaFactura);
+    }
   }
 
   if (data.retencion && typeof data.retencion !== 'object') {
@@ -36,42 +43,57 @@ const processFacturacionData = (data: any): Partial<Facturacion> => {
 
 export const facturacionService = {
   async createOrUpdateFacturacion(data: CreateFacturacionData | UpdateFacturacionData) {
+    console.log('🔍 DEBUG: createOrUpdateFacturacion iniciado');
+    console.log('🔍 DEBUG: Datos recibidos:', data);
+    
     const { ordenCompraId } = data;
 
     if (ordenCompraId === undefined || ordenCompraId === null) {
+      console.log('❌ DEBUG: ordenCompraId es undefined o null');
       throw new Error('El ID de la orden de compra es requerido.');
     }
 
+    console.log('🔍 DEBUG: Verificando existencia de orden de compra:', ordenCompraId);
     const ordenCompraExists = await prisma.ordenCompra.findUnique({
       where: { id: ordenCompraId },
     });
 
     if (!ordenCompraExists) {
+      console.log('❌ DEBUG: Orden de compra no existe');
       throw new Error(`La orden de compra con ID ${ordenCompraId} no existe.`);
     }
 
+    console.log('✅ DEBUG: Orden de compra existe');
     const processedInputData = processFacturacionData(data);
+    console.log('🔍 DEBUG: Datos procesados:', processedInputData);
 
     const existingFacturacion = await prisma.facturacion.findFirst({
       where: { ordenCompraId },
       orderBy: { createdAt: 'desc' },
     });
 
+    console.log('🔍 DEBUG: Facturación existente:', existingFacturacion);
+
     if (existingFacturacion) {
-      // Actualizar
+      console.log('🔍 DEBUG: Actualizando facturación existente');
       const { id: _id, ordenCompraId: _ocId, createdAt: _ca, updatedAt: _ua, ...updateData } = processedInputData;
-      return prisma.facturacion.update({
+      const result = await prisma.facturacion.update({
         where: { id: existingFacturacion.id },
         data: updateData,
       });
+      console.log('✅ DEBUG: Facturación actualizada:', result);
+      return result;
     } else {
-      // Crear
-      if (!processedInputData.ordenCompraId) { // Asegurar que ordenCompraId esté para la creación
+      console.log('🔍 DEBUG: Creando nueva facturación');
+      if (!processedInputData.ordenCompraId) {
+        console.log('❌ DEBUG: ordenCompraId faltante para creación');
         throw new Error('El ID de la orden de compra es requerido para crear la facturación.');
       }
-      return prisma.facturacion.create({
+      const result = await prisma.facturacion.create({
         data: processedInputData as CreateFacturacionData,
       });
+      console.log('✅ DEBUG: Facturación creada:', result);
+      return result;
     }
   },
 
