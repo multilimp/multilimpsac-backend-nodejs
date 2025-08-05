@@ -137,13 +137,13 @@ export const getOrdenesProveedorByOrdenCompraId = async (ordenCompraId: number):
   });
 };
 
-export const getCodigosOrdenesProveedor = (ordenCompraId: number): Promise<Array<Pick<OrdenProveedor, 'codigoOp' | 'id'>>> => {
+export const getCodigosOrdenesProveedor = (ordenCompraId: number): Promise<Array<Pick<OrdenProveedor, 'codigoOp' | 'id' | 'createdAt' | 'updatedAt'>>> => {
   return prisma.ordenProveedor.findMany({
     where: {
       ordenCompraId,
       activo: true,
     },
-    select: { codigoOp: true, id: true },
+    select: { codigoOp: true, id: true, createdAt: true, updatedAt: true },
     orderBy: { createdAt: 'desc' },
   });
 };
