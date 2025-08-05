@@ -6,6 +6,7 @@ import {
   updateOrdenProveedor,
   getOrdenesProveedorByOrdenCompraId,
   listCodigosOrdenesProveedor,
+  // deleteOrdenProveedor, // Comentado porque no existe en el controller
 } from './ordenProveedor.controller';
 
 const router = Router();
