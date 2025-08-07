@@ -26,7 +26,6 @@ import cobranzaRoutes, { gestionRoutes } from './features/cobranza/cobranza.rout
 import tesoreriaRoutes from './features/tesoreria/tesoreria.routes';
 import { authenticateToken } from './shared/middleware/auth.middleware';
 // import { setupGraphQLRoutes } from './graphql/graphql.routes';
-import { simplifyResponseMiddleware } from './graphql/utils/simplifyResponseMiddleware';
 import pagoOrdenCompraPrivadaRoutes from './modules/pagoOrdenCompraPrivada/pagoOrdenCompraPrivada.routes';
 import pagoOrdenProveedorRoutes from './modules/pagoOrdenProveedor/pagoOrdenProveedor.routes';
 import pagoTransporteAsignadoRoutes from './modules/pagoTransporteAsignado/pagoTransporteAsignado.routes';

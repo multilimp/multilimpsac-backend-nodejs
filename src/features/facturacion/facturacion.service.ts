@@ -6,16 +6,27 @@ export type CreateFacturacionData = Omit<Facturacion, 'id' | 'createdAt' | 'upda
 
 export type UpdateFacturacionData = Partial<Omit<Facturacion, 'id' | 'createdAt' | 'updatedAt'>>;
 
-// Función auxiliar para procesar datos (solo Decimal, sin fechas)
+// Función auxiliar para procesar datos (fechas, Decimal)
 const processFacturacionData = (data: any): Partial<Facturacion> => {
   const processedData: Partial<Facturacion> = { ...data };
 
-  // ✅ SOLO PROCESAR DECIMALES - Las fechas vienen como ISO strings desde el frontend
+  if (data.fechaFactura && typeof data.fechaFactura === 'string') {
+    // Detectar si es formato YYYY-MM-DD (solo fecha) y agregar tiempo local
+    if (/^\d{4}-\d{2}-\d{2}$/.test(data.fechaFactura)) {
+      // Para formato solo fecha, agregar tiempo medio día para evitar problemas de zona horaria
+      processedData.fechaFactura = new Date(`${data.fechaFactura}T12:00:00.000Z`);
+    } else {
+      // Para otros formatos (con tiempo), usar normal
+      processedData.fechaFactura = new Date(data.fechaFactura);
+    }
+  }
+
   if (data.retencion && typeof data.retencion !== 'object') {
     processedData.retencion = new Prisma.Decimal(data.retencion);
   } else if (data.retencion === null || data.retencion === undefined) {
     processedData.retencion = null;
   }
+
 
   if (data.detraccion && typeof data.detraccion !== 'object') {
     processedData.detraccion = new Prisma.Decimal(data.detraccion);
