@@ -1,12 +1,13 @@
 import { Router } from 'express';
-import { generateFacturaPDFHandler, generateOrdenProveedorPDFHandler } from './print.controller';
+import { generateOrdenProveedorPDFHandler } from './print.controller';
+// import { generateFacturaPDFHandler } from './print.controller'; // Comentado temporalmente
 
 const router = Router();
 
-// Generar PDF de factura por orden de compra
-router.post('/factura/:ordenCompraId', generateFacturaPDFHandler); // ✅ CORRECCIÓN: Cambiar parámetro
+// Generar PDF de factura por orden de compra (comentado temporalmente)
+// router.post('/factura/:ordenCompraId', generateFacturaPDFHandler);
 
 // Generar PDF de orden de proveedor
-router.post('/orden-proveedor/:id', generateOrdenProveedorPDFHandler);
+router.get('/orden-proveedor/:id', generateOrdenProveedorPDFHandler);
 
 export default router;

@@ -2,22 +2,23 @@ import { Request, Response } from 'express';
 import { generateFacturaPDF, generateOrdenProveedorPDF } from './print.service';
 import { handleError } from '../../shared/middleware/handleError';
 
-export const generateFacturaPDFHandler = async (req: Request, res: Response) => {
+// Comentado temporalmente - funcionalidad de factura
+/* export const generateFacturaPDFHandler = async (req: Request, res: Response) => {
   try {
-    const ordenCompraId = parseInt(req.params.ordenCompraId, 10); // ✅ CORRECCIÓN: Cambiar nombre del parámetro
+    const ordenCompraId = parseInt(req.params.ordenCompraId, 10);
     if (isNaN(ordenCompraId)) {
       return res.status(400).json({ success: false, message: 'ID de orden de compra inválido.' });
     }
 
-    const pdfBuffer = await generateFacturaPDF(ordenCompraId); // ✅ CORRECCIÓN: Pasar ordenCompraId
+    const pdfBuffer = await generateFacturaPDF(ordenCompraId);
 
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `inline; filename="factura-oc-${ordenCompraId}.pdf"`); // ✅ CORRECCIÓN: Nombre más descriptivo
+    res.setHeader('Content-Disposition', `inline; filename="factura-oc-${ordenCompraId}.pdf"`);
     res.send(pdfBuffer);
   } catch (error) {
     handleError({ res, error, msg: 'Error al generar el PDF de la factura.' });
   }
-};
+}; */
 
 export const generateOrdenProveedorPDFHandler = async (req: Request, res: Response) => {
   try {

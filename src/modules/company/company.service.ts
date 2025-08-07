@@ -40,10 +40,24 @@ export const createCompany = (data: any): Promise<Empresa> => {
   return prisma.empresa.create({ data: mappedData });
 };
 
-export const updateCompany = (id: number, data: UpdateCompanyData): Promise<Empresa> => {
+export const updateCompany = (id: number, data: any): Promise<Empresa> => {
+  const mappedData = {
+    ruc: data.ruc,
+    razonSocial: data.razon_social ?? data.razonSocial,
+    direccion: data.direccion,
+    telefono: data.telefono,
+    email: data.email,
+    departamento: data.departamento,
+    provincia: data.provincia,
+    distrito: data.distrito,
+    logo: data.logo,
+    direcciones: data.direcciones,
+    web: data.web,
+  };
+  
   return prisma.empresa.update({
     where: { id },
-    data,
+    data: mappedData,
   });
 };
 

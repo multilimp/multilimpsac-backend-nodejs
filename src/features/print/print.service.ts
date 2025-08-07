@@ -4,6 +4,51 @@ import fs from 'fs/promises';
 import path from 'path';
 import prisma from '../../database/prisma'; // Ajusta la ruta a tu cliente Prisma
 
+// Función para procesar el logo de la empresa
+const processEmpresaLogo = async (logoPath: string | null): Promise<string> => {
+  // Si no hay logo en BD, usar el de assets como respaldo
+  if (!logoPath) {
+    console.log('No hay logo en BD, usando respaldo desde assets');
+    const fallbackLogoPath = path.join(process.cwd(), 'assets', 'images.png');
+    return getImageAsBase64(fallbackLogoPath);
+  }
+  
+  try {
+    // Si es una URL completa (http/https), devolverla directamente
+    if (logoPath.startsWith('http://') || logoPath.startsWith('https://')) {
+      return logoPath;
+    }
+    
+    // Si es una ruta relativa, construir la ruta completa desde assets
+    const fullPath = logoPath.startsWith('/') 
+      ? path.join(process.cwd(), logoPath.substring(1)) // Remover "/" inicial si existe
+      : path.join(process.cwd(), 'assets', logoPath);
+    
+    const imageBuffer = await fs.readFile(fullPath);
+    const base64String = imageBuffer.toString('base64');
+    const mimeType = fullPath.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
+    return `data:${mimeType};base64,${base64String}`;
+  } catch (error) {
+    console.warn('No se pudo cargar el logo desde BD:', logoPath, 'usando respaldo desde assets');
+    // Si falla cargar el logo de BD, usar el de assets como respaldo
+    const fallbackLogoPath = path.join(process.cwd(), 'assets', 'images.png');
+    return getImageAsBase64(fallbackLogoPath);
+  }
+};
+
+// Función para convertir imagen a base64 (mantenida para compatibilidad)
+const getImageAsBase64 = async (imagePath: string): Promise<string> => {
+  try {
+    const imageBuffer = await fs.readFile(imagePath);
+    const base64String = imageBuffer.toString('base64');
+    const mimeType = imagePath.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
+    return `data:${mimeType};base64,${base64String}`;
+  } catch (error) {
+    console.warn('No se pudo cargar el logo de respaldo:', imagePath, error);
+    return ''; // Si ni siquiera el respaldo funciona, devolver vacío
+  }
+};
+
 interface ProductoOrdenCompra {
   codigo: string;
   cantidad: number;
@@ -12,6 +57,21 @@ interface ProductoOrdenCompra {
   precio_unitario: number; // Asegúrate que el tipo sea correcto (number o string)
   total: number;          // Asegúrate que el tipo sea correcto (number o string)
 }
+
+// Registrar helpers de Handlebars de forma global
+handlebars.registerHelper('formatCurrency', (value: any) => {
+  if (typeof value === 'number') {
+    return 'S/ ' + value.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+  return value; // Devuelve el valor original si no es un número
+});
+
+handlebars.registerHelper('or', function(this: any, v1: any, v2: any, options: any) {
+  if (v1 || v2) {
+    return options.fn(this);
+  }
+  return options.inverse(this);
+});
 
 export const generateFacturaPDF = async (ordenCompraId: number): Promise<Buffer> => {
   const facturaData = await prisma.facturacion.findFirst({
@@ -86,21 +146,6 @@ export const generateFacturaPDF = async (ordenCompraId: number): Promise<Buffer>
     fechaActual: new Date().toLocaleDateString('es-ES'),
     // Formatear números si es necesario (Handlebars helpers pueden ser útiles para esto)
   };
-  
-  // Registrar helper para formatear números si no lo tienes globalmente
-  handlebars.registerHelper('formatCurrency', (value: any) => { // Añadido :any a value por si acaso, aunque el error principal es 'this'
-    if (typeof value === 'number') {
-      return 'S/ ' + value.toFixed(2).replace(/\\B(?=(\\d{3})+(?!\\d))/g, ',');
-    }
-    return value; // Devuelve el valor original si no es un número
-  });
-  
-  handlebars.registerHelper('or', function(this: any, v1: any, v2: any, options: any) {
-    if (v1 || v2) {
-      return options.fn(this);
-    }
-    return options.inverse(this);
-  });
 
   const finalHtml = template(dataForTemplate);
 
@@ -137,6 +182,10 @@ export const generateOrdenProveedorPDF = async (id: number): Promise<Buffer> => 
           ruc: true,
           direccion: true,
           telefono: true,
+          email: true,
+          web: true,
+          direcciones: true,
+          logo: true, // ✅ AGREGAR: Campo logo desde la BD
         },
       },
       proveedor: {
@@ -160,10 +209,27 @@ export const generateOrdenProveedorPDF = async (id: number): Promise<Buffer> => 
       ordenCompra: {
         select: {
           codigoVenta: true,
+          fechaEmision: true,
+          fechaEntrega: true,
+          montoVenta: true,
+          direccionEntrega: true,
+          distritoEntrega: true,
+          provinciaEntrega: true,
+          departamentoEntrega: true,
+          referenciaEntrega: true,
           cliente: {
             select: {
               razonSocial: true,
               ruc: true,
+              direccion: true,
+            },
+          },
+          contactoCliente: {
+            select: {
+              nombre: true,
+              telefono: true,
+              email: true,
+              cargo: true,
             },
           },
         },
@@ -178,9 +244,10 @@ export const generateOrdenProveedorPDF = async (id: number): Promise<Buffer> => 
   const templateHtmlPath = path.join(__dirname, 'templates', 'orden-proveedor.hbs');
   const templateCssPath = path.join(__dirname, 'styles', 'orden-proveedor.css');
 
-  const [htmlTemplate, cssStyles] = await Promise.all([
+  const [htmlTemplate, cssStyles, logoBase64] = await Promise.all([
     fs.readFile(templateHtmlPath, 'utf-8'),
     fs.readFile(templateCssPath, 'utf-8'),
+    processEmpresaLogo(ordenProveedorData.empresa?.logo || null), // ✅ USAR logo desde BD
   ]);
 
   const template = handlebars.compile(htmlTemplate);
@@ -194,6 +261,7 @@ export const generateOrdenProveedorPDF = async (id: number): Promise<Buffer> => 
     productos: ordenProveedorData.productos || [],
     ordenCompra: ordenProveedorData.ordenCompra,
     css: cssStyles,
+    logoEmpresa: logoBase64, // Logo desde BD procesado
     fechaActual: new Date().toLocaleDateString('es-ES'),
   };
 
