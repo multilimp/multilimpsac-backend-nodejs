@@ -76,6 +76,19 @@ export const updateOrdenProveedor = async (req: Request, res: Response) => {
   }
 };
 
+export const patchOrdenProveedor = async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.ordenProveedorId, 10);
+    if (isNaN(id)) {
+      return res.status(400).json({ message: 'ID de orden de proveedor inválido' });
+    }
+    const updatedOrden = await ordenProveedorService.patchOrdenProveedor(id, req.body);
+    res.status(200).json(updatedOrden);
+  } catch (error) {
+    handleError({ res, error, msg: 'Error al actualizar parcialmente orden de proveedor' });
+  }
+};
+
 // export const deleteOrdenProveedor = async (req: Request, res: Response) => {
 //   try {
 //     const id = parseInt(req.params.ordenProveedorId, 10);

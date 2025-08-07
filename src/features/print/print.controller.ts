@@ -4,15 +4,15 @@ import { handleError } from '../../shared/middleware/handleError';
 
 export const generateFacturaPDFHandler = async (req: Request, res: Response) => {
   try {
-    const id = parseInt(req.params.id, 10);
-    if (isNaN(id)) {
-      return res.status(400).json({ success: false, message: 'ID de factura inválido.' });
+    const ordenCompraId = parseInt(req.params.ordenCompraId, 10); // ✅ CORRECCIÓN: Cambiar nombre del parámetro
+    if (isNaN(ordenCompraId)) {
+      return res.status(400).json({ success: false, message: 'ID de orden de compra inválido.' });
     }
 
-    const pdfBuffer = await generateFacturaPDF(id);
+    const pdfBuffer = await generateFacturaPDF(ordenCompraId); // ✅ CORRECCIÓN: Pasar ordenCompraId
 
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `inline; filename="factura-${id}.pdf"`);
+    res.setHeader('Content-Disposition', `inline; filename="factura-oc-${ordenCompraId}.pdf"`); // ✅ CORRECCIÓN: Nombre más descriptivo
     res.send(pdfBuffer);
   } catch (error) {
     handleError({ res, error, msg: 'Error al generar el PDF de la factura.' });

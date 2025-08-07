@@ -3,8 +3,8 @@ import { generateFacturaPDFHandler, generateOrdenProveedorPDFHandler } from './p
 
 const router = Router();
 
-// Generar PDF de factura
-router.post('/factura/:id', generateFacturaPDFHandler);
+// Generar PDF de factura por orden de compra
+router.post('/factura/:ordenCompraId', generateFacturaPDFHandler); // ✅ CORRECCIÓN: Cambiar parámetro
 
 // Generar PDF de orden de proveedor
 router.post('/orden-proveedor/:id', generateOrdenProveedorPDFHandler);

@@ -13,9 +13,9 @@ interface ProductoOrdenCompra {
   total: number;          // Asegúrate que el tipo sea correcto (number o string)
 }
 
-export const generateFacturaPDF = async (id: number): Promise<Buffer> => {
-  const facturaData = await prisma.facturacion.findUnique({
-    where: { id },
+export const generateFacturaPDF = async (ordenCompraId: number): Promise<Buffer> => {
+  const facturaData = await prisma.facturacion.findFirst({
+    where: { ordenCompraId: ordenCompraId }, // ✅ CORRECCIÓN: Buscar por ordenCompraId
     include: {
       ordenCompra: {
         include: {
@@ -45,11 +45,11 @@ export const generateFacturaPDF = async (id: number): Promise<Buffer> => {
   });
 
   if (!facturaData) {
-    throw new Error(`Factura con ID ${id} no encontrada.`);
+    throw new Error(`Factura para orden de compra ID ${ordenCompraId} no encontrada.`); // ✅ CORRECCIÓN: Mensaje más claro
   }
   
   if (!facturaData.ordenCompra) {
-    throw new Error(`La factura con ID ${id} no tiene una orden de compra asociada.`);
+    throw new Error(`La factura para orden de compra ID ${ordenCompraId} no tiene una orden de compra asociada.`); // ✅ CORRECCIÓN: Usar ordenCompraId
   }
 
   // Validar que productos sea un array antes de pasarlo

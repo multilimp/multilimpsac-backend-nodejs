@@ -281,3 +281,25 @@ export const updateOrdenProveedor = async (id: number, data: UpdateOrdenProveedo
     },
   });
 };
+
+export const patchOrdenProveedor = async (id: number, data: Partial<UpdateOrdenProveedorData>): Promise<OrdenProveedor> => {
+  const existing = await prisma.ordenProveedor.findFirst({
+    where: { id, activo: true },
+  });
+
+  if (!existing) {
+    throw new Error('NOT_FOUND');
+  }
+
+  const processedData = processOrdenProveedorData(data);
+  
+  return prisma.ordenProveedor.update({
+    where: { id },
+    data: processedData as any,
+    include: {
+      productos: true,
+      pagos: true,
+      transportesAsignados: { include: { transporte: true, contactoTransporte: true, pagos: true } },
+    },
+  });
+};

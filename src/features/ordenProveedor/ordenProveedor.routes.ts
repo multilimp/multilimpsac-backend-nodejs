@@ -1,12 +1,12 @@
 import { Router } from 'express';
 import {
+  listCodigosOrdenesProveedor,
   listOrdenesProveedor,
+  getOrdenesProveedorByOrdenCompraId,
   createOrdenProveedor,
   getOrdenProveedor,
   updateOrdenProveedor,
-  getOrdenesProveedorByOrdenCompraId,
-  listCodigosOrdenesProveedor,
-  // deleteOrdenProveedor, // Comentado porque no existe en el controller
+  patchOrdenProveedor,
 } from './ordenProveedor.controller';
 
 const router = Router();
@@ -21,6 +21,7 @@ router.post('/:ordenCompraId/op', createOrdenProveedor);
 // Rutas con ID específico de OP DESPUÉS
 router.get('/op/:ordenProveedorId', getOrdenProveedor);
 router.put('/op/:ordenProveedorId', updateOrdenProveedor);
+router.patch('/op/:ordenProveedorId', patchOrdenProveedor);
 // router.delete('/op/:ordenProveedorId', deleteOrdenProveedor);
 
 export default router;

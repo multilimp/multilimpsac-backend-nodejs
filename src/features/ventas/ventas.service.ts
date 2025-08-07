@@ -215,7 +215,7 @@ export const updateVenta = async (id: number, data: UpdateVentaType): Promise<Or
             });
           }
         }
-      } else if (updatedVenta.ventaPrivada) {
+      } else {
         // Crear nueva orden privada si no existe pero la venta es privada
         const privateOrderBody = {
           ordenCompraId: id,
@@ -256,6 +256,44 @@ export const updateVenta = async (id: number, data: UpdateVentaType): Promise<Or
       throw new Error(`Error al actualizar la venta: ${error.message}`);
     }
     throw new Error('Error desconocido al actualizar la venta');
+  }
+};
+
+export const patchVenta = async (id: number, data: Partial<UpdateVentaType>): Promise<OrdenCompra> => {
+  try {
+    const { ventaPrivada, ...ventaData } = data;
+    
+    // Convertir fechas string a objetos Date para Prisma
+    const processedData: Partial<Prisma.OrdenCompraUpdateInput> = { ...ventaData };
+    
+    if (ventaData.fechaEntregaOc && typeof ventaData.fechaEntregaOc === 'string') {
+      processedData.fechaEntregaOc = new Date(ventaData.fechaEntregaOc);
+    }
+    
+    if (ventaData.fechaPeruCompras && typeof ventaData.fechaPeruCompras === 'string') {
+      processedData.fechaPeruCompras = new Date(ventaData.fechaPeruCompras);
+    }
+    
+    if (ventaData.documentoPeruCompras) {
+      processedData.documentoPeruCompras = ventaData.documentoPeruCompras;
+    }
+    
+    // Actualizar orden de compra principal usando el servicio de OC
+    const updatedVenta = await ocService.patchOrdenCompra(id, processedData);
+    
+    // Si hay datos de venta privada, manejarlos
+    if (ventaPrivada) {
+      // Aquí puedes agregar lógica específica para venta privada si es necesario
+      logger.info('Datos de venta privada recibidos en PATCH:', ventaPrivada);
+    }
+    
+    return updatedVenta;
+  } catch (error) {
+    logger.error('Error en patchVenta:', error);
+    if (error instanceof Error) {
+      throw new Error(`Error al actualizar parcialmente la venta: ${error.message}`);
+    }
+    throw new Error('Error desconocido al actualizar parcialmente la venta');
   }
 };
 

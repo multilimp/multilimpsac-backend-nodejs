@@ -53,6 +53,19 @@ export const updateOrdenCompra = async (req: Request, res: Response) => {
   }
 };
 
+export const patchOrdenCompra = async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.ordenCompraId, 10);
+    if (isNaN(id)) {
+      return res.status(400).json({ message: 'ID de orden de compra inválido' });
+    }
+    const updatedOrden = await ordenCompraService.patchOrdenCompra(id, req.body);
+    res.status(200).json(updatedOrden);
+  } catch (error) {
+    handleError({ res, error, msg: 'Error al actualizar parcialmente orden de compra' });
+  }
+};
+
 export const deleteOrdenCompra = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.ordenCompraId, 10);

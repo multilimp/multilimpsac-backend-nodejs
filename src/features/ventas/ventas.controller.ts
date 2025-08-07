@@ -55,6 +55,19 @@ export const updateVenta = async (req: Request, res: Response) => {
   }
 };
 
+export const patchVenta = async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.ventaId, 10);
+    const data = req.body;
+    if (isNaN(id)) throw new Error('NOT_FOUND');
+    
+    const updated = await ventasService.patchVenta(id, data);
+    res.status(200).json(updated);
+  } catch (error) {
+    handleError({ res, error, msg: 'Error al actualizar parcialmente la venta' });
+  }
+};
+
 export const deleteVenta = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.ventaId, 10);
