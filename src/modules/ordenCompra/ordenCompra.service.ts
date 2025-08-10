@@ -11,10 +11,10 @@ export const getAllOrdenesCompra = (args?: Prisma.OrdenCompraFindManyArgs): Prom
   return prisma.ordenCompra.findMany(defaultArgs);
 };
 
-export const getOrdenCompraById = (id: number, args?: Prisma.OrdenCompraFindUniqueArgs): Promise<OrdenCompra | null> => {
+export const getOrdenCompraById = (id: number, includeOptions?: Prisma.OrdenCompraInclude): Promise<OrdenCompra | null> => {
   return prisma.ordenCompra.findUnique({
     where: { id },
-    ...args,
+    include: includeOptions,
   });
 };
 

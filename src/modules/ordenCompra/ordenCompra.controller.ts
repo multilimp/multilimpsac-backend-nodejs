@@ -30,7 +30,18 @@ export const getOrdenCompra = async (req: Request, res: Response) => {
     if (isNaN(id)) {
       return res.status(400).json({ message: 'ID de orden de compra inválido' });
     }
-    const orden = await ordenCompraService.getOrdenCompraById(id);
+    
+    // Verificar si se solicita incluir la facturación
+    const includeFacturacion = req.query.include === 'facturacion';
+    
+    const includeOptions = includeFacturacion ? {
+      facturacion: true,
+      cliente: true,
+      empresa: true,
+      contactoCliente: true
+    } : undefined;
+    
+    const orden = await ordenCompraService.getOrdenCompraById(id, includeOptions);
     if (!orden) {
       return res.status(404).json({ message: 'Orden de compra no encontrada' });
     }
