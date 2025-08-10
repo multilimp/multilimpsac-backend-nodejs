@@ -14,6 +14,11 @@ export const createFacturacion = (data: CreateFacturacionData): Promise<Facturac
 export const updateFacturacion = (id: number, data: UpdateFacturacionData): Promise<Facturacion> => {
   return prisma.facturacion.update({ where: { id }, data });
 };
+
+export const partialUpdateFacturacion = (id: number, data: Partial<Facturacion>): Promise<Facturacion> => {
+  return prisma.facturacion.update({ where: { id }, data });
+};
+
 export const deleteFacturacion = (id: number): Promise<Facturacion> => {
   return prisma.facturacion.delete({ where: { id } });
 };

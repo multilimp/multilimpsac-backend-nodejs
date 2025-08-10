@@ -40,10 +40,10 @@ export const getVentaById = (id: number): Promise<OrdenCompra | null> => {
           pagos: true,
         }
       },
-      facturaciones: true,
+      facturacion: true,
       gestionCobranzas: true,
       OrdenCompraAgrupada: true,
-    },
+    },  
   });
 };
 
