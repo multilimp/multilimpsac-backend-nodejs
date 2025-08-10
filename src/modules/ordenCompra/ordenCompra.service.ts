@@ -30,10 +30,12 @@ export const updateOrdenCompra = (id: number, data: Prisma.OrdenCompraUpdateInpu
 };
 
 export const patchOrdenCompra = (id: number, data: Partial<Prisma.OrdenCompraUpdateInput>): Promise<OrdenCompra> => {
-  // Procesar fechas si vienen como strings
   const processedData: Prisma.OrdenCompraUpdateInput = { ...data };
   
-  // Convertir fechas string a objetos Date si es necesario
+  if (data.fechaEmision && typeof data.fechaEmision === 'string') {
+    processedData.fechaEmision = new Date(data.fechaEmision);
+  }
+  
   if (data.fechaEntregaOc && typeof data.fechaEntregaOc === 'string') {
     processedData.fechaEntregaOc = new Date(data.fechaEntregaOc);
   }
@@ -56,6 +58,14 @@ export const patchOrdenCompra = (id: number, data: Partial<Prisma.OrdenCompraUpd
   
   if (data.fechaSiaf && typeof data.fechaSiaf === 'string') {
     processedData.fechaSiaf = new Date(data.fechaSiaf);
+  }
+  
+  if (data.fechaEstadoCobranza && typeof data.fechaEstadoCobranza === 'string') {
+    processedData.fechaEstadoCobranza = new Date(data.fechaEstadoCobranza);
+  }
+  
+  if (data.fechaProximaGestion && typeof data.fechaProximaGestion === 'string') {
+    processedData.fechaProximaGestion = new Date(data.fechaProximaGestion);
   }
   
   return prisma.ordenCompra.update({
