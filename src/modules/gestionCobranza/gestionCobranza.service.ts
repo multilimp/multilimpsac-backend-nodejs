@@ -53,6 +53,21 @@ export const getAllGestionCobranza = (): Promise<GestionCobranza[]> => {
 export const getGestionCobranzaByOrdenCompra = (ordenCompraId: number): Promise<GestionCobranza[]> => {
   return prisma.gestionCobranza.findMany({
     where: { ordenCompraId },
+    include: {
+      usuario: {
+        select: {
+          id: true,
+          nombre: true,
+          email: true
+        }
+      },
+      ordenCompra: {
+        select: {
+          id: true,
+          codigoVenta: true
+        }
+      }
+    },
     orderBy: { fechaGestion: 'desc' }
   });
 };

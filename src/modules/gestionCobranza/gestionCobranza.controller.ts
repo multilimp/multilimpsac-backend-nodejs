@@ -85,7 +85,15 @@ export const createGestionCobranza = async (req: Request, res: Response) => {
       });
     }
 
-    const item = await service.createGestionCobranza(req.body);
+    // Obtener usuario del token JWT (añadido por middleware de autenticación)
+    const usuarioId = (req as any).user?.id || 1; // Default a ID 1 si no hay usuario
+    
+    const gestionData = {
+      ...req.body,
+      usuarioId // Asignar automáticamente el usuario del token
+    };
+
+    const item = await service.createGestionCobranza(gestionData);
     res.status(201).json({
       success: true,
       message: 'Gestión de cobranza creada exitosamente',
