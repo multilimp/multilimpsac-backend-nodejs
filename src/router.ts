@@ -23,6 +23,8 @@ import opProductoRoutes from './features/ordenProveedor/opProducto.routes';
 import facturacionRoutes from './modules/facturacion/facturacion.routes';
 import printRoutes from './features/print/print.routes';
 import cobranzaRoutes, { gestionRoutes } from './features/cobranza/cobranza.routes';
+import cobranzaFieldsRoutes from './modules/cobranza/cobranza.routes';
+import gestionCobranzaRoutes from './modules/gestionCobranza/gestionCobranza.routes';
 import tesoreriaRoutes from './features/tesoreria/tesoreria.routes';
 import { authenticateToken } from './shared/middleware/auth.middleware';
 // import { setupGraphQLRoutes } from './graphql/graphql.routes';
@@ -66,6 +68,8 @@ export const configureRoutes = async (app: Application): Promise<void> => {
   app.use('/api/facturacion/', facturacionRoutes);
   app.use('/api/print', printRoutes);
   app.use('/api/orden-compra', cobranzaRoutes);
+  app.use('/api/orden-compra', cobranzaFieldsRoutes);  // Nuevas rutas para campos de cobranza
+  app.use('/api/gestiones-cobranza', gestionCobranzaRoutes);  // CRUD de gestiones
   app.use('/api', gestionRoutes);
   app.use('/api/tesoreria', tesoreriaRoutes);
   app.use('/api/files', fileRoutes);
