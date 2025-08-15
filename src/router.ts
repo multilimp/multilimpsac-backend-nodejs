@@ -31,6 +31,7 @@ import { authenticateToken } from './shared/middleware/auth.middleware';
 import pagoOrdenCompraPrivadaRoutes from './modules/pagoOrdenCompraPrivada/pagoOrdenCompraPrivada.routes';
 import pagoOrdenProveedorRoutes from './modules/pagoOrdenProveedor/pagoOrdenProveedor.routes';
 import pagoTransporteAsignadoRoutes from './modules/pagoTransporteAsignado/pagoTransporteAsignado.routes';
+import paymentsRoutes from './modules/payments/payments.routes';
 
 export const configureRoutes = async (app: Application): Promise<void> => {
   app.get('/api', (req: Request, res: Response) => res.json({ message: 'BACKEND MULTILIMP SAC' }));
@@ -78,6 +79,9 @@ export const configureRoutes = async (app: Application): Promise<void> => {
   app.use('/api/pagos-orden-compra-privada', pagoOrdenCompraPrivadaRoutes);
   app.use('/api/pagos-orden-proveedor', pagoOrdenProveedorRoutes);
   app.use('/api/pagos-transporte-asignado', pagoTransporteAsignadoRoutes);
+  
+  // Controlador unificado de pagos
+  app.use('/api/payments', paymentsRoutes);
   
   // Middleware para rutas no encontradas
   app.use((req: Request, res: Response) => {
