@@ -16,6 +16,7 @@ const envVarsSchema = z.object({
   R2_PUBLIC_URL: z.string().url(),
   JWT_SECRET: z.string().min(32, 'JWT_SECRET debe tener al menos 32 caracteres'),
   JWT_EXPIRES_IN: z.number().default(36000), // 1 hora en segundos
+  OPENAI_API_KEY: z.string().min(1, 'OPENAI_API_KEY es requerida'),
 });
 
 const result = envVarsSchema.safeParse(process.env);
@@ -47,5 +48,8 @@ export const config = Object.freeze({
   jwt: {
     secret: envVars.JWT_SECRET,
     expiresIn: envVars.JWT_EXPIRES_IN,
+  },
+  openai: {
+    apiKey: envVars.OPENAI_API_KEY,
   },
 });

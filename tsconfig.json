@@ -25,6 +25,6 @@
     },
 
   },
-  "include": ["./src/**/*.ts", "index.ts"],
+  "include": ["./src/**/*.ts", "./src/types/**/*.d.ts", "index.ts"],
   "exclude": ["node_modules", "dist", "**/*.spec.ts", "**/*.test.ts"]
 }
