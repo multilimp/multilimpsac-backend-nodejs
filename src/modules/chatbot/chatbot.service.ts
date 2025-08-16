@@ -1,16 +1,13 @@
-import OpenAI from 'openai';
 import prisma from '../../database/prisma';
 import { ChatMessage, QueryIntent, ChatbotResponse, DatabaseSchema } from './chatbot.types';
-import { config } from '../../shared/config/env';
+import { GeminiService } from '../../shared/services/gemini.service';
 
 class ChatbotService {
-  private openai: OpenAI;
+  private geminiService: GeminiService;
   private schema: DatabaseSchema = { tables: {} };
 
   constructor() {
-    this.openai = new OpenAI({
-      apiKey: config.openai.apiKey,
-    });
+    this.geminiService = new GeminiService();
     this.initializeSchema();
   }
 
@@ -34,24 +31,44 @@ class ChatbotService {
         clientes: {
           columns: {
             id: { type: 'number', nullable: false, description: 'ID único del cliente' },
-            razonSocial: { type: 'string', nullable: false, description: 'Razón social del cliente' },
+            razon_social: { type: 'string', nullable: false, description: 'Razón social del cliente' },
             ruc: { type: 'string', nullable: false, description: 'RUC del cliente' },
             email: { type: 'string', nullable: true, description: 'Email de contacto' },
-            estado: { type: 'boolean', nullable: false, description: 'Estado activo/inactivo' }
+            estado: { type: 'boolean', nullable: false, description: 'Estado activo/inactivo' },
+            codigo_unidad_ejecutora: { type: 'string', nullable: true, description: 'Código de unidad ejecutora' },
+            departamento: { type: 'string', nullable: true, description: 'Departamento' },
+            provincia: { type: 'string', nullable: true, description: 'Provincia' },
+            distrito: { type: 'string', nullable: true, description: 'Distrito' }
           },
           relationships: {
             ordenesCompra: { table: 'ordenes_compra', type: 'one-to-many' },
             contactos: { table: 'contactos', type: 'one-to-many' }
           }
         },
+        proveedores: {
+          columns: {
+            id: { type: 'number', nullable: false, description: 'ID único del proveedor' },
+            razon_social: { type: 'string', nullable: false, description: 'Razón social del proveedor' },
+            ruc: { type: 'string', nullable: false, description: 'RUC del proveedor' },
+            email: { type: 'string', nullable: true, description: 'Email de contacto' },
+            estado: { type: 'boolean', nullable: false, description: 'Estado activo/inactivo' },
+            departamento: { type: 'string', nullable: true, description: 'Departamento' },
+            provincia: { type: 'string', nullable: true, description: 'Provincia' },
+            distrito: { type: 'string', nullable: true, description: 'Distrito' }
+          },
+          relationships: {
+            ordenesProveedor: { table: 'ordenes_proveedor', type: 'one-to-many' },
+            contactos: { table: 'contactos', type: 'one-to-many' }
+          }
+        },
         ordenes_compra: {
           columns: {
             id: { type: 'number', nullable: false, description: 'ID único de la orden' },
-            codigoVenta: { type: 'string', nullable: false, description: 'Código de venta único' },
-            fechaEmision: { type: 'date', nullable: true, description: 'Fecha de emisión' },
-            montoVenta: { type: 'decimal', nullable: true, description: 'Monto total de venta' },
-            etapaActual: { type: 'string', nullable: false, description: 'Etapa actual del proceso' },
-            estadoVenta: { type: 'string', nullable: false, description: 'Estado de la venta' }
+            codigo_venta: { type: 'string', nullable: false, description: 'Código de venta único' },
+            fecha_emision: { type: 'date', nullable: true, description: 'Fecha de emisión' },
+            monto_venta: { type: 'decimal', nullable: true, description: 'Monto total de venta' },
+            etapa_actual: { type: 'string', nullable: false, description: 'Etapa actual del proceso' },
+            estado_venta: { type: 'string', nullable: false, description: 'Estado de la venta' }
           },
           relationships: {
             cliente: { table: 'clientes', type: 'one-to-one' },
@@ -107,16 +124,16 @@ Responde SOLO con un JSON válido:
   "orderBy": "createdAt"
 }`;
 
-    const completion = await this.openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.1,
-      max_tokens: 200
-    });
-
     try {
-      return JSON.parse(completion.choices[0].message.content || '{}');
-    } catch {
+      const content = await this.geminiService.generateTextContent(prompt, {
+        temperature: 0.1,
+        maxOutputTokens: 200,
+        responseMimeType: "application/json"
+      });
+      
+      return JSON.parse(content);
+    } catch (error) {
+      console.error('Error analizando intención:', error);
       // Fallback por defecto
       return {
         type: 'list',
@@ -139,23 +156,41 @@ ${schemaContext}
 
 REGLAS IMPORTANTES:
 1. USA SOLO SELECT, no INSERT/UPDATE/DELETE
-2. Usa nombres de tabla y columna exactos del schema
-3. Incluye LIMIT para evitar consultas masivas
-4. Usa parámetros seguros, no concatenación
-5. Responde SOLO con la consulta SQL, sin explicaciones
+2. Usa nombres de tabla y columna EXACTOS del schema (snake_case en BD)
+3. Para clientes usa: razon_social, codigo_unidad_ejecutora (NO razonSocial)
+4. Para proveedores usa: razon_social (NO razonSocial)
+5. Para ordenes_compra usa: codigo_venta, fecha_emision, monto_venta, etapa_actual
+6. Incluye LIMIT para evitar consultas masivas (máximo 50)
+7. Responde SOLO con la consulta SQL pura, sin bloques de código markdown
+8. NO uses backticks ni bloques de código en tu respuesta
+9. NO agregues explicaciones adicionales
 
-Ejemplo de respuesta:
+Ejemplo de respuesta (solo el SQL):
 SELECT id, nombre, email, role FROM usuarios WHERE estado = true LIMIT 10;
 `;
 
-    const completion = await this.openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0,
-      max_tokens: 300
-    });
-
-    return completion.choices[0].message.content?.trim() || 'SELECT 1;';
+    try {
+      const content = await this.geminiService.generateTextContent(prompt, {
+        temperature: 0,
+        maxOutputTokens: 300
+      });
+      
+      // Limpiar la respuesta de Gemini removiendo bloques de código markdown
+      let cleanSQL = content.trim();
+      
+      // Remover bloques de código SQL (```sql ... ``` o ``` ... ```)
+      cleanSQL = cleanSQL.replace(/```sql\n?/gi, '');
+      cleanSQL = cleanSQL.replace(/```\n?/g, '');
+      
+      // Remover espacios extra y saltos de línea al inicio/final
+      cleanSQL = cleanSQL.trim();
+      
+      // Si está vacío, devolver consulta por defecto
+      return cleanSQL || 'SELECT 1;';
+    } catch (error) {
+      console.error('Error generando SQL:', error);
+      return 'SELECT 1;';
+    }
   }
 
   private async executeQuery(sqlQuery: string): Promise<any[]> {
@@ -167,11 +202,28 @@ SELECT id, nombre, email, role FROM usuarios WHERE estado = true LIMIT 10;
     try {
       // Usar Prisma raw query de forma segura
       const result = await prisma.$queryRawUnsafe(sqlQuery);
-      return Array.isArray(result) ? result : [result];
+      const arrayResult = Array.isArray(result) ? result : [result];
+      
+      // Convertir BigInt a string para evitar errores de serialización
+      return this.convertBigIntToString(arrayResult);
     } catch (error) {
       console.error('Error ejecutando SQL:', error);
       throw new Error('Error ejecutando consulta en base de datos');
     }
+  }
+
+  private convertBigIntToString(data: any[]): any[] {
+    return data.map(row => {
+      const convertedRow: any = {};
+      for (const [key, value] of Object.entries(row)) {
+        if (typeof value === 'bigint') {
+          convertedRow[key] = value.toString();
+        } else {
+          convertedRow[key] = value;
+        }
+      }
+      return convertedRow;
+    });
   }
 
   private isSafeQuery(sql: string): boolean {
@@ -202,29 +254,48 @@ Responde de forma conversacional, menciona insights relevantes y sugiere accione
 Máximo 150 palabras.
 `;
 
-    const completion = await this.openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.7,
-      max_tokens: 200
-    });
+    try {
+      const content = await this.geminiService.generateTextContent(prompt, {
+        temperature: 0.7,
+        maxOutputTokens: 200
+      });
 
-    // Determinar tipo de visualización
-    let visualization: 'table' | 'chart' | 'list' | 'card' = 'table';
-    if (intent.type === 'count' || intent.type === 'aggregate') {
-      visualization = 'chart';
-    } else if (data.length === 1) {
-      visualization = 'card';
-    } else if (data.length <= 5) {
-      visualization = 'list';
+      // Determinar tipo de visualización
+      let visualization: 'table' | 'chart' | 'list' | 'card' = 'table';
+      if (intent.type === 'count' || intent.type === 'aggregate') {
+        visualization = 'chart';
+      } else if (data.length === 1) {
+        visualization = 'card';
+      } else if (data.length <= 5) {
+        visualization = 'list';
+      }
+
+      return {
+        message: content || 'Aquí están los resultados:',
+        data: data,
+        visualization,
+        suggestions: this.generateSuggestions(intent.entity)
+      };
+    } catch (error) {
+      console.error('Error generando respuesta:', error);
+      
+      // Fallback response
+      let visualization: 'table' | 'chart' | 'list' | 'card' = 'table';
+      if (intent.type === 'count' || intent.type === 'aggregate') {
+        visualization = 'chart';
+      } else if (data.length === 1) {
+        visualization = 'card';
+      } else if (data.length <= 5) {
+        visualization = 'list';
+      }
+
+      return {
+        message: `Encontré ${data.length} resultado${data.length !== 1 ? 's' : ''} para tu consulta.`,
+        data: data,
+        visualization,
+        suggestions: this.generateSuggestions(intent.entity)
+      };
     }
-
-    return {
-      message: completion.choices[0].message.content || 'Aquí están los resultados:',
-      data: data,
-      visualization,
-      suggestions: this.generateSuggestions(intent.entity)
-    };
   }
 
   private generateSuggestions(entity: string): string[] {

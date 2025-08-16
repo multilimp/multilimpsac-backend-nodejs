@@ -191,4 +191,40 @@ No incluyas comentarios como "EXTRAER_VALOR_O_NULL" en el JSON final; reempláza
       throw new GeminiServiceException('Unexpected error analyzing PDF', 500, error as Error);
     }
   }
+
+  // Método para generar contenido de texto simple para el chatbot
+  async generateTextContent(prompt: string, options: {
+    temperature?: number;
+    maxOutputTokens?: number;
+    responseMimeType?: string;
+  } = {}): Promise<string> {
+    try {
+      const response = await this.client.post(
+        `${this.baseUrl}/models/${this.model}:generateContent?key=${this.apiKey}`,
+        {
+          contents: [
+            {
+              parts: [
+                {
+                  text: prompt
+                }
+              ]
+            }
+          ],
+          generationConfig: {
+            temperature: options.temperature ?? 0.7,
+            maxOutputTokens: options.maxOutputTokens ?? 1000,
+            responseMimeType: options.responseMimeType ?? "text/plain",
+            topK: 1,
+            topP: 0.95
+          }
+        }
+      );
+
+      return response.data.candidates[0].content.parts[0].text;
+    } catch (error) {
+      logger.error('Error generating text content with Gemini:', error);
+      throw new GeminiServiceException('Error generating text content', 500, error as Error);
+    }
+  }
 }

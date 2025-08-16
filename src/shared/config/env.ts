@@ -16,7 +16,9 @@ const envVarsSchema = z.object({
   R2_PUBLIC_URL: z.string().url(),
   JWT_SECRET: z.string().min(32, 'JWT_SECRET debe tener al menos 32 caracteres'),
   JWT_EXPIRES_IN: z.number().default(36000), // 1 hora en segundos
-  OPENAI_API_KEY: z.string().min(1, 'OPENAI_API_KEY es requerida'),
+  GOOGLE_GEMINI_API_KEY: z.string().min(1, 'GOOGLE_GEMINI_API_KEY es requerida'),
+  GEMINI_MODEL: z.string().default('gemini-1.5-flash-latest'),
+  GEMINI_BASE_URL: z.string().default('https://generativelanguage.googleapis.com/v1beta'),
 });
 
 const result = envVarsSchema.safeParse(process.env);
@@ -49,7 +51,9 @@ export const config = Object.freeze({
     secret: envVars.JWT_SECRET,
     expiresIn: envVars.JWT_EXPIRES_IN,
   },
-  openai: {
-    apiKey: envVars.OPENAI_API_KEY,
+  gemini: {
+    apiKey: envVars.GOOGLE_GEMINI_API_KEY,
+    model: envVars.GEMINI_MODEL,
+    baseUrl: envVars.GEMINI_BASE_URL,
   },
 });

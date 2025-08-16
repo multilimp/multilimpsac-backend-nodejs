@@ -35,6 +35,11 @@ Backend para la aplicación MULTILIMP SAC, desarrollado con Express, TypeScript 
     JWT_SECRET="ESTO_ES_UN_SECRETO_MUY_LARGO_Y_SEGURO_DE_AL_MENOS_32_CARACTERES"
     JWT_EXPIRES_IN="1h"
 
+    # Google Gemini AI
+    GOOGLE_GEMINI_API_KEY="TU_GOOGLE_GEMINI_API_KEY"
+    GEMINI_MODEL="gemini-1.5-flash-latest"
+    GEMINI_BASE_URL="https://generativelanguage.googleapis.com/v1beta"
+
     # Aplicación
     PORT=5000
     ```
