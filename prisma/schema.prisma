@@ -543,15 +543,19 @@ model GestionCobranza {
 }
 
 model Usuario {
-  id        Int      @id @default(autoincrement())
-  nombre    String
-  email     String   @unique
-  password  String
-  role      Role     @default(USER)
-  foto      String?
-  estado    Boolean  @default(true)
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id           Int      @id @default(autoincrement())
+  nombre       String
+  email        String   @unique
+  password     String
+  role         Role     @default(USER)
+  foto         String?
+  estado       Boolean  @default(true)
+  telefono     String?
+  departamento String?
+  ubicacion    String?
+  permisos     String[] @default([])
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
   gestionCobranzas        GestionCobranza[]
   historialModificaciones HistorialModificacionesOp[]

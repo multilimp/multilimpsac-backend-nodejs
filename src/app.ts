@@ -36,6 +36,9 @@ class Server {
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: false }));
 
+    // Servir archivos estáticos
+    this.app.use('/uploads', express.static('uploads'));
+
     this.app.use((req: Request, res: Response, next: NextFunction) => {
       logger.info(`${req.method} ${req.url}`);
       next();

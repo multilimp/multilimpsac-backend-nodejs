@@ -1,22 +1,34 @@
 import { PrismaClient } from '@prisma/client';
 import { ContactoTipo, Role, TipoPago, EstadoPago, CotizacionEstado, TipoDestino, TipoProgramacionOp, EstadoProgramacionOp, TipoCobranza } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log('🌱 Iniciando el seed de la base de datos...');
 
-  // Limpiar datos existentes (opcional)
+  // Limpiar datos existentes (opcional) - orden correcto para evitar errores de clave foránea
   console.log('🧹 Limpiando datos existentes...');
+  await prisma.programacionEntrega.deleteMany();
+  await prisma.costoAdicionalOp.deleteMany();
+  await prisma.historialModificacionesOp.deleteMany();
   await prisma.gestionCobranza.deleteMany();
   await prisma.facturacion.deleteMany();
+  await prisma.pagoTransporteAsignado.deleteMany();
+  await prisma.transporteAsignado.deleteMany();
   await prisma.pagoOrdenProveedor.deleteMany();
+  await prisma.pagoOrdenCompraPrivada.deleteMany();
   await prisma.opProducto.deleteMany();
   await prisma.ordenProveedor.deleteMany();
   await prisma.ordenCompraPrivada.deleteMany();
+  await prisma.ordenCompraAgrupada.deleteMany();
+  await prisma.agrupacionOrdenCompra.deleteMany();
   await prisma.ordenCompra.deleteMany();
   await prisma.cotizacionProducto.deleteMany();
   await prisma.cotizacion.deleteMany();
+  await prisma.stockProducto.deleteMany();
+  await prisma.producto.deleteMany();
+  await prisma.almacen.deleteMany();
   await prisma.catalogo.deleteMany();
   await prisma.contacto.deleteMany();
   await prisma.cuentaBancaria.deleteMany();
@@ -28,32 +40,41 @@ async function main() {
 
   // 1. Crear usuarios
   console.log('👤 Creando usuarios...');
+  const adminPassword = await bcrypt.hash('admin123', 10);
+  const userPassword = await bcrypt.hash('user123', 10);
+  
+  const adminPermissions = ['dashboard', 'profile', 'users', 'providers', 'sales', 'treasury', 'companies', 'transports', 'provider_orders', 'billing', 'clients', 'quotes', 'tracking', 'collections'];
+  const userPermissions = ['dashboard', 'profile', 'providers', 'sales', 'clients', 'quotes'];
+
   const usuarios = await Promise.all([
     prisma.usuario.create({
       data: {
         nombre: 'Harold Administrador',
         email: 'admin@multilimpsac.com',
-        password: '$2b$10$example.hash.password', // En producción usar hash real
+        password: adminPassword,
         role: Role.ADMIN,
         estado: true,
+        permisos: adminPermissions,
       },
     }),
     prisma.usuario.create({
       data: {
         nombre: 'Ana García',
         email: 'ana.garcia@multilimpsac.com',
-        password: '$2b$10$example.hash.password',
+        password: userPassword,
         role: Role.USER,
         estado: true,
+        permisos: userPermissions,
       },
     }),
     prisma.usuario.create({
       data: {
         nombre: 'Carlos López',
         email: 'carlos.lopez@multilimpsac.com',
-        password: '$2b$10$example.hash.password',
+        password: userPassword,
         role: Role.USER,
         estado: true,
+        permisos: userPermissions,
       },
     }),
   ]);
@@ -616,7 +637,7 @@ async function main() {
 main()
   .catch((e) => {
     console.error('❌ Error durante el seed:', e);
-    process.exit(1);
+    throw e;
   })
   .finally(async () => {
     await prisma.$disconnect();
