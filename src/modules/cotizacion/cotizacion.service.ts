@@ -4,10 +4,10 @@ import prisma from '../../database/prisma';
 // Asumiendo que CotizacionProducto se maneja aquí o se pasa como data anidada
 type CreateCotizacionData = Omit<Cotizacion, 'id' | 'createdAt' | 'updatedAt' | 'codigoCotizacion'> & {
   codigoCotizacion?: string; // Opcional porque se genera automáticamente
-  productos?: Prisma.CotizacionProductoCreateNestedManyWithoutCotizacionInput; // Para crear productos junto con la cotización
+  productos?: any[]; // Array simple de productos para crear
 };
 type UpdateCotizacionData = Partial<Omit<Cotizacion, 'id' | 'createdAt' | 'updatedAt'>> & {
-   productos?: Prisma.CotizacionProductoUpdateManyWithoutCotizacionNestedInput // Para actualizar productos
+  productos?: any[] // Array simple de productos para actualizar
 };
 
 
@@ -37,12 +37,12 @@ export const getCotizacionById = (id: number): Promise<Cotizacion | null> => {
 export const createCotizacion = async (data: CreateCotizacionData): Promise<Cotizacion> => {
   // Generar código de cotización automáticamente
   const codigoCotizacion = await generateCodigoCotizacion(data.empresaId);
-  
+
   // Validaciones básicas (sin codigoCotizacion ya que se genera automáticamente)
   if (!data.empresaId || !data.clienteId || !data.montoTotal || !data.tipoPago) {
     throw new Error('Faltan campos requeridos para crear la cotización.');
   }
-  
+
   // Convertir fechas si vienen como string
   if (data.fechaCotizacion && typeof data.fechaCotizacion === 'string') {
     data.fechaCotizacion = new Date(data.fechaCotizacion);
@@ -147,21 +147,60 @@ const generateCodigoCotizacion = async (empresaId: number): Promise<string> => {
   }
 };
 
-export const updateCotizacion = (id: number, data: UpdateCotizacionData): Promise<Cotizacion> => {
+export const updateCotizacion = async (id: number, data: UpdateCotizacionData): Promise<Cotizacion> => {
+  // Extraer productos del data para manejarlos por separado
+  const { productos, ...cotizacionData } = data;
+
   // Convertir fechas si vienen como string
-  if (data.fechaCotizacion && typeof data.fechaCotizacion === 'string') {
-    data.fechaCotizacion = new Date(data.fechaCotizacion);
+  if (cotizacionData.fechaCotizacion && typeof cotizacionData.fechaCotizacion === 'string') {
+    cotizacionData.fechaCotizacion = new Date(cotizacionData.fechaCotizacion);
   }
-  if (data.fechaEntrega && typeof data.fechaEntrega === 'string') {
-    data.fechaEntrega = new Date(data.fechaEntrega);
+  if (cotizacionData.fechaEntrega && typeof cotizacionData.fechaEntrega === 'string') {
+    cotizacionData.fechaEntrega = new Date(cotizacionData.fechaEntrega);
   }
 
-  return prisma.cotizacion.update({
-    where: { id },
-    data: data as any, // Usar 'as any' si hay problemas con tipos anidados o Decimal
-    include: {
-      productos: true, // Devolver la cotización actualizada con sus productos
-    },
+  return prisma.$transaction(async (tx) => {
+    // 1. Actualizar la cotización sin productos
+    const updatedCotizacion = await tx.cotizacion.update({
+      where: { id },
+      data: cotizacionData as any,
+    });
+
+    // 2. Si hay productos, reemplazar todos los productos existentes
+    if (productos && Array.isArray(productos) && productos.length > 0) {
+      // Eliminar productos existentes
+      await tx.cotizacionProducto.deleteMany({
+        where: { cotizacionId: id }
+      });
+
+      // Crear nuevos productos
+      const productosData = productos.map((producto: any) => ({
+        codigo: producto.codigo,
+        descripcion: producto.descripcion,
+        unidadMedida: producto.unidadMedida,
+        cantidad: producto.cantidad,
+        cantidadAlmacen: producto.cantidadAlmacen,
+        cantidadTotal: producto.cantidadTotal,
+        precioUnitario: producto.precioUnitario,
+        total: producto.total,
+        cotizacionId: id,
+      }));
+
+      await tx.cotizacionProducto.createMany({
+        data: productosData,
+      });
+    }
+
+    // 3. Retornar la cotización actualizada con productos
+    return tx.cotizacion.findUnique({
+      where: { id },
+      include: {
+        productos: true,
+        cliente: true,
+        empresa: true,
+        contactoCliente: true,
+      },
+    }) as Promise<Cotizacion>;
   });
 };
 

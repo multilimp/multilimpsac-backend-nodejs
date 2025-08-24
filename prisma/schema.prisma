@@ -577,8 +577,8 @@ enum ContactoTipo {
 
 enum CotizacionEstado {
   PENDIENTE
-  ACEPTADA
-  RECHAZADA
+  APROBADO
+  COTIZADO
 }
 
 enum OrdenCompraEstado {
