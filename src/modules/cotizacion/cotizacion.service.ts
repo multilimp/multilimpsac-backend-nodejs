@@ -100,12 +100,6 @@ export const createCotizacion = async (data: CreateCotizacionData): Promise<Coti
   }) as Promise<Cotizacion>;
 };
 
-// Función para generar el código de cotización
-// Formato: COT + 3 primeras letras de la empresa + número secuencial
-// Ejemplos:
-// - Empresa "MULTILIMP S.A.C." -> COTMUL1, COTMUL2, COTMUL3...
-// - Empresa "ABC CORPORATION" -> COTABC1, COTABC2, COTABC3...
-// - Empresa "123 COMPANY" -> COTCOM1, COTCOM2, COTCOM3... (solo letras)
 const generateCodigoCotizacion = async (empresaId: number): Promise<string> => {
   try {
     // Obtener la empresa para extraer las 3 primeras letras
