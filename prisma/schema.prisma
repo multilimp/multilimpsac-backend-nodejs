@@ -245,6 +245,7 @@ model OrdenCompra {
   productos             Json?
   documentoOce          String?               @map("documento_oce")
   documentoOcf          String?               @map("documento_ocf")
+  codigoOcf             String?               @map("codigo_ocf") // Código manual de orden de compra física
   siaf                  String?
   etapaSiaf             String?               @map("etapa_siaf")
   fechaSiaf             DateTime?             @map("fecha_siaf") @db.Date
