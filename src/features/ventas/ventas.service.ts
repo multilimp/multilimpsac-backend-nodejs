@@ -35,21 +35,21 @@ export const getVentaById = (id: number): Promise<OrdenCompra | null> => {
       ordenesProveedor: true,
       ordenCompraPrivada: {
         include: {
-          cliente: true,
-          contactoCliente: true,
           pagos: true,
         }
       },
       facturacion: true,
       gestionCobranzas: true,
       OrdenCompraAgrupada: true,
-    },  
+    },
   });
 };
 
 type CreateVentaType = Prisma.OrdenCompraCreateInput & {
   ventaPrivada: Omit<Prisma.OrdenCompraPrivadaCreateInput, 'id' | 'createdAt' | 'updatedAt'> & {
     pagos: Omit<Prisma.PagoOrdenCompraPrivadaCreateInput, 'id' | 'createdAt' | 'updatedAt' | 'ordenCompraPrivada'>[];
+    documentoCotizacion?: string; // Agregamos el nuevo campo como opcional
+    notaPago?: string; // Aseguramos que notaPago esté disponible
   };
 };
 
@@ -142,11 +142,11 @@ export const createVenta = async (data: CreateVentaType): Promise<OrdenCompra> =
 
 type UpdateVentaType = Prisma.OrdenCompraUpdateInput & {
   ventaPrivada?: {
-    clienteId?: number;
-    contactoClienteId?: number;
     estadoPago?: any;
     fechaPago?: string | Date;
     documentoPago?: string;
+    documentoCotizacion?: string; // Nuevo campo agregado
+    notaPago?: string; // Campo que ya existía pero ahora se maneja correctamente
     pagos?: Array<{
       fechaPago: string | Date;
       bancoPago: string;
@@ -169,11 +169,11 @@ export const updateVenta = async (id: number, data: UpdateVentaType): Promise<Or
     if (ventaPrivada) {
       const pagos = ventaPrivada.pagos;
       const privateOrderData = {
-        clienteId: ventaPrivada.clienteId,
-        contactoClienteId: ventaPrivada.contactoClienteId,
         estadoPago: ventaPrivada.estadoPago,
         fechaPago: ventaPrivada.fechaPago,
         documentoPago: ventaPrivada.documentoPago,
+        documentoCotizacion: ventaPrivada.documentoCotizacion, // Nuevo campo
+        notaPago: ventaPrivada.notaPago, // Campo que faltaba
       };
 
       // Verificar si ya existe una orden privada
@@ -187,11 +187,11 @@ export const updateVenta = async (id: number, data: UpdateVentaType): Promise<Or
         await prisma.ordenCompraPrivada.update({
           where: { id: existingPrivateOrder.id },
           data: {
-            clienteId: privateOrderData.clienteId,
-            contactoClienteId: privateOrderData.contactoClienteId,
             estadoPago: privateOrderData.estadoPago,
             fechaPago: privateOrderData.fechaPago ? new Date(privateOrderData.fechaPago) : null,
             documentoPago: privateOrderData.documentoPago,
+            documentoCotizacion: privateOrderData.documentoCotizacion, // Nuevo campo
+            notaPago: privateOrderData.notaPago, // Campo que faltaba
           }
         });
 
@@ -219,15 +219,15 @@ export const updateVenta = async (id: number, data: UpdateVentaType): Promise<Or
         // Crear nueva orden privada si no existe pero la venta es privada
         const privateOrderBody = {
           ordenCompraId: id,
-          clienteId: privateOrderData.clienteId,
-          contactoClienteId: privateOrderData.contactoClienteId,
           estadoPago: privateOrderData.estadoPago,
           fechaPago: privateOrderData.fechaPago ? new Date(privateOrderData.fechaPago) : null,
           documentoPago: privateOrderData.documentoPago,
+          documentoCotizacion: privateOrderData.documentoCotizacion, // Nuevo campo
+          notaPago: privateOrderData.notaPago, // Campo que faltaba
         };
 
-        const newPrivateOrder = await prisma.ordenCompraPrivada.create({ 
-          data: privateOrderBody 
+        const newPrivateOrder = await prisma.ordenCompraPrivada.create({
+          data: privateOrderBody
         });
 
         // Crear pagos si se proporcionan
@@ -262,31 +262,31 @@ export const updateVenta = async (id: number, data: UpdateVentaType): Promise<Or
 export const patchVenta = async (id: number, data: Partial<UpdateVentaType>): Promise<OrdenCompra> => {
   try {
     const { ventaPrivada, ...ventaData } = data;
-    
+
     // Convertir fechas string a objetos Date para Prisma
     const processedData: Partial<Prisma.OrdenCompraUpdateInput> = { ...ventaData };
-    
+
     if (ventaData.fechaEntregaOc && typeof ventaData.fechaEntregaOc === 'string') {
       processedData.fechaEntregaOc = new Date(ventaData.fechaEntregaOc);
     }
-    
+
     if (ventaData.fechaPeruCompras && typeof ventaData.fechaPeruCompras === 'string') {
       processedData.fechaPeruCompras = new Date(ventaData.fechaPeruCompras);
     }
-    
+
     if (ventaData.documentoPeruCompras) {
       processedData.documentoPeruCompras = ventaData.documentoPeruCompras;
     }
-    
+
     // Actualizar orden de compra principal usando el servicio de OC
     const updatedVenta = await ocService.patchOrdenCompra(id, processedData);
-    
+
     // Si hay datos de venta privada, manejarlos
     if (ventaPrivada) {
       // Aquí puedes agregar lógica específica para venta privada si es necesario
       logger.info('Datos de venta privada recibidos en PATCH:', ventaPrivada);
     }
-    
+
     return updatedVenta;
   } catch (error) {
     logger.error('Error en patchVenta:', error);

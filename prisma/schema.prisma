@@ -10,24 +10,23 @@ datasource db {
 }
 
 model Cliente {
-  id                    Int                  @id @default(autoincrement())
-  razonSocial           String               @map("razon_social")
-  ruc                   String               @unique
+  id                    Int              @id @default(autoincrement())
+  razonSocial           String           @map("razon_social")
+  ruc                   String           @unique
   direccion             String?
   telefono              String?
   email                 String?
-  estado                Boolean              @default(true)
-  codigoUnidadEjecutora String?              @map("codigo_unidad_ejecutora")
+  estado                Boolean          @default(true)
+  codigoUnidadEjecutora String?          @map("codigo_unidad_ejecutora")
   departamento          String?
   provincia             String?
   distrito              String?
-  createdAt             DateTime             @default(now()) @map("created_at")
-  updatedAt             DateTime             @updatedAt @map("updated_at")
+  createdAt             DateTime         @default(now()) @map("created_at")
+  updatedAt             DateTime         @updatedAt @map("updated_at")
   contactos             Contacto[]
   cotizaciones          Cotizacion[]
   cuentasBancarias      CuentaBancaria[]
   ordenesCompra         OrdenCompra[]
-  ordenesCompraPrivada  OrdenCompraPrivada[]
 
   @@map("clientes")
 }
@@ -157,7 +156,6 @@ model Contacto {
   transporte           Transporte?          @relation(fields: [transporteId], references: [id])
   Cotizacion           Cotizacion[]
   ordenesCompra        OrdenCompra[]
-  ordenesCompraPrivada OrdenCompraPrivada[]
   ordenesProveedor     OrdenProveedor[]
   transportesAsignados TransporteAsignado[]
 
@@ -301,21 +299,18 @@ model OrdenCompraAgrupada {
 }
 
 model OrdenCompraPrivada {
-  id                Int         @id @default(autoincrement())
-  ordenCompraId     Int         @unique @map("orden_compra_id") // Clave foránea y única para relación 1-1
-  clienteId         Int?        @map("cliente_id")
-  contactoClienteId Int?        @map("contacto_cliente_id")
-  estadoPago        EstadoPago? @map("estado_pago")
-  fechaPago         DateTime?   @map("fecha_pago") @db.Date
-  documentoPago     String?     @map("documento_pago")
-  notaPago          String?     @map("nota_pago")
+  id                  Int         @id @default(autoincrement())
+  ordenCompraId       Int         @unique @map("orden_compra_id") // Clave foránea y única para relación 1-1
+  estadoPago          EstadoPago? @map("estado_pago")
+  fechaPago           DateTime?   @map("fecha_pago") @db.Date
+  documentoPago       String?     @map("documento_pago")
+  documentoCotizacion String?     @map("documento_cotizacion") // Nuevo campo agregado
+  notaPago            String?     @map("nota_pago")
 
   createdAt        DateTime                 @default(now()) @map("created_at")
   updatedAt        DateTime                 @updatedAt @map("updated_at")
   // Relaciones
   ordenCompra      OrdenCompra              @relation(fields: [ordenCompraId], references: [id])
-  cliente          Cliente?                 @relation(fields: [clienteId], references: [id])
-  contactoCliente  Contacto?                @relation(fields: [contactoClienteId], references: [id])
   pagos            PagoOrdenCompraPrivada[] // Relación inversa
   gestionCobranzas GestionCobranza[] // Relación inversa añadida
 
