@@ -14,12 +14,15 @@ export const uploadFileR2 = async (file: File, folder: string = ''): Promise<str
 
   let fileStream;
   try {
-    const numeroRandom = nanoid();
+    const timestamp = Date.now();
     fileStream = fs.createReadStream(filePath);
 
     const originalFilename = file.originalFilename || 'archivo-sin-nombre';
+    const fileNameWithoutExt = originalFilename.split('.').slice(0, -1).join('.') || 'archivo';
     const extension = originalFilename.split('.').pop() || 'bin';
-    const uniqueKey = `${folder ? folder + '/' : ''}${numeroRandom}.${extension}`;
+
+    // Preservar nombre original + timestamp para evitar duplicados
+    const uniqueKey = `${folder ? folder + '/' : ''}${fileNameWithoutExt}_${timestamp}.${extension}`;
 
     const putCommand = new PutObjectCommand({
       Bucket: config.r2.bucket,

@@ -33,8 +33,8 @@ export const createVenta = async (req: Request, res: Response) => {
   try {
     const data = req.body;
 
-      const nuevaVenta = await ventasService.createVenta(data);
-      res.status(201).json(nuevaVenta);
+    const nuevaVenta = await ventasService.createVenta(data);
+    res.status(201).json(nuevaVenta);
 
   } catch (error) {
     handleError({ res, error, msg: 'Error al crear la venta' });
@@ -44,7 +44,7 @@ export const createVenta = async (req: Request, res: Response) => {
 
 export const updateVenta = async (req: Request, res: Response) => {
   try {
-    const id   = parseInt(req.params.ventaId, 10);
+    const id = parseInt(req.params.ventaId, 10);
     const data = req.body;
     if (isNaN(id)) throw new Error('NOT_FOUND');
 
@@ -60,7 +60,7 @@ export const patchVenta = async (req: Request, res: Response) => {
     const id = parseInt(req.params.ventaId, 10);
     const data = req.body;
     if (isNaN(id)) throw new Error('NOT_FOUND');
-    
+
     const updated = await ventasService.patchVenta(id, data);
     res.status(200).json(updated);
   } catch (error) {
@@ -97,15 +97,25 @@ export const analyzePdfForVenta = async (req: Request, res: Response) => {
     }
 
     if (pdfFile.mimetype !== 'application/pdf') {
-        logger.warn(`Invalid file type uploaded: ${pdfFile.mimetype}`);
-        return res.status(400).json({ message: 'Invalid file type. Only PDF files are allowed.' });
+      logger.warn(`Invalid file type uploaded: ${pdfFile.mimetype}`);
+      return res.status(400).json({ message: 'Invalid file type. Only PDF files are allowed.' });
     }
 
     const geminiService = new GeminiService();
     const analysisResult: AnalyzePdfResult = await geminiService.analyzePdf(pdfFile as formidable.File);
 
     if (analysisResult.success) {
-      res.status(200).json(analysisResult.data); // Devuelve directamente analysisResult.data
+      // Subir el archivo a R2 después del análisis exitoso
+      const { uploadFile } = await import('../../modules/file/file.service');
+      const fileUrl = await uploadFile(pdfFile as formidable.File, 'documentos-oce');
+
+      // Agregar la URL del archivo al resultado
+      const responseData = {
+        ...analysisResult.data,
+        documentoOceUrl: fileUrl
+      };
+
+      res.status(200).json(responseData);
     } else {
       logger.error('Analysis failed but no exception caught from GeminiService, result:', analysisResult);
       res.status(500).json({ message: analysisResult.error || 'Error during PDF analysis with Gemini.' });
@@ -115,8 +125,8 @@ export const analyzePdfForVenta = async (req: Request, res: Response) => {
       logger.error(`GeminiServiceException in controller: ${error.message}`, { statusCode: error.statusCode, originalError: error.originalError });
       handleError({ res, error, statusCode: error.statusCode, msg: error.message });
     } else if (error.message && (error.message.includes('no files uploaded') || error.message.includes('maxFileSize exceeded'))) {
-        logger.warn(`Formidable parsing error: ${error.message}`);
-        handleError({ res, error, statusCode: 400, msg: `File upload error: ${error.message}` });
+      logger.warn(`Formidable parsing error: ${error.message}`);
+      handleError({ res, error, statusCode: 400, msg: `File upload error: ${error.message}` });
     }
     else {
       logger.error('Unexpected error processing PDF analysis request:', error);
