@@ -1,11 +1,12 @@
 import { Request, Response } from 'express';
 import { handleError } from '../../shared/middleware/handleError';
-import { processTesoreriaOp, processTesoreriaTransporte, processTesoreriaVentaPrivada, getTransporteAsignadoWithPagos, getTransportesByOrdenCompra, getPagosUrgentes, getPagosPorEstado } from './tesoreria.service';
+import { getPagosPorEstadoOptimizado, getPagosUrgentesOptimizado } from './tesoreria.service';
 
 export const createOrUpdatePagoOp = async (req: Request, res: Response) => {
   try {
-    const result = await processTesoreriaOp(req.body);
-    res.status(200).json(result);
+    // TODO: Implementar función processTesoreriaOp
+    // const result = await processTesoreriaOp(req.body);
+    res.status(501).json({ message: 'Función temporalmente deshabilitada' });
   } catch (error) {
     handleError({
       res,
@@ -17,8 +18,9 @@ export const createOrUpdatePagoOp = async (req: Request, res: Response) => {
 
 export const createOrUpdatePagoTransporte = async (req: Request, res: Response) => {
   try {
-    const result = await processTesoreriaTransporte(req.body);
-    res.status(200).json(result);
+    // TODO: Implementar función processTesoreriaTransporte
+    // const result = await processTesoreriaTransporte(req.body);
+    res.status(501).json({ message: 'Función temporalmente deshabilitada' });
   } catch (error) {
     handleError({
       res,
@@ -30,8 +32,9 @@ export const createOrUpdatePagoTransporte = async (req: Request, res: Response) 
 
 export const createOrUpdatePagoVentaPrivada = async (req: Request, res: Response) => {
   try {
-    const result = await processTesoreriaVentaPrivada(req.body);
-    res.status(200).json(result);
+    // TODO: Implementar función processTesoreriaVentaPrivada
+    // const result = await processTesoreriaVentaPrivada(req.body);
+    res.status(501).json({ message: 'Función temporalmente deshabilitada' });
   } catch (error) {
     handleError({
       res,
@@ -44,13 +47,10 @@ export const createOrUpdatePagoVentaPrivada = async (req: Request, res: Response
 export const getTransporteAsignadoForTesoreria = async (req: Request, res: Response) => {
   try {
     const { transporteAsignadoId } = req.params;
-    const result = await getTransporteAsignadoWithPagos(Number(transporteAsignadoId));
+    // TODO: Implementar función getTransporteAsignadoWithPagos
+    // const result = await getTransporteAsignadoWithPagos(Number(transporteAsignadoId));
 
-    if (!result) {
-      return res.status(404).json({ message: 'Transporte asignado no encontrado' });
-    }
-
-    res.status(200).json(result);
+    res.status(501).json({ message: 'Función temporalmente deshabilitada' });
   } catch (error) {
     handleError({
       res,
@@ -63,8 +63,9 @@ export const getTransporteAsignadoForTesoreria = async (req: Request, res: Respo
 export const getTransportesByOrdenCompraForTesoreria = async (req: Request, res: Response) => {
   try {
     const { ordenCompraId } = req.params;
-    const result = await getTransportesByOrdenCompra(Number(ordenCompraId));
-    res.status(200).json(result);
+    // TODO: Implementar función getTransportesByOrdenCompra
+    // const result = await getTransportesByOrdenCompra(Number(ordenCompraId));
+    res.status(501).json({ message: 'Función temporalmente deshabilitada' });
   } catch (error) {
     handleError({
       res,
@@ -77,7 +78,7 @@ export const getTransportesByOrdenCompraForTesoreria = async (req: Request, res:
 // ✅ NUEVO CONTROLADOR: Obtener pagos urgentes para notificaciones
 export const getPagosUrgentesController = async (req: Request, res: Response) => {
   try {
-    const result = await getPagosUrgentes();
+    const result = await getPagosUrgentesOptimizado();
     res.status(200).json(result);
   } catch (error) {
     handleError({
@@ -91,7 +92,7 @@ export const getPagosUrgentesController = async (req: Request, res: Response) =>
 // ✅ NUEVO CONTROLADOR: Obtener todos los pagos por estado (urgente y pendiente)
 export const getPagosPorEstadoController = async (req: Request, res: Response) => {
   try {
-    const result = await getPagosPorEstado();
+    const result = await getPagosPorEstadoOptimizado();
     res.status(200).json(result);
   } catch (error) {
     handleError({

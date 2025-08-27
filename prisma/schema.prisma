@@ -563,6 +563,7 @@ model Usuario {
 enum TipoDestino {
   ALMACEN
   CLIENTE
+  AGENCIA
 }
 
 enum ContactoTipo {
