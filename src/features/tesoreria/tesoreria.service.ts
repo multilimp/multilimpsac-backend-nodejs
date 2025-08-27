@@ -304,8 +304,44 @@ export const limpiarCacheTesoreria = (): void => {
   console.log('Cache de tesorería limpiado completamente');
 };
 
+// Tipos para respuesta de pagos urgentes
+interface PagoUrgenteResponse {
+  id: number;
+  tipo: 'TRANSPORTE' | 'VENTA_PRIVADA';
+  codigo: string;
+  monto: number | null;
+  fechaLimite: Date | null;
+  entidad: {
+    id: number;
+    nombre: string;
+    ruc: string;
+  };
+  descripcion: string;
+  notaPago: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface EstadisticasPagosUrgentes {
+  totalUrgentes: number;
+  totalTransportes: number;
+  totalVentas: number;
+  montoTotal: number;
+  montoTotalTransportes: number;
+  montoTotalVentas: number;
+}
+
+interface PagosUrgentesCompleteResponse {
+  success: boolean;
+  data: {
+    transportes: PagoUrgenteResponse[];
+    ventasPrivadas: PagoUrgenteResponse[];
+  };
+  estadisticas: EstadisticasPagosUrgentes;
+}
+
 // Función para obtener solo pagos urgentes (más liviana)
-export const getPagosUrgentesOptimizado = async (): Promise<PagoOptimizado[]> => {
+export const getPagosUrgentesOptimizado = async (): Promise<PagosUrgentesCompleteResponse> => {
   const cacheKey = 'pagos-urgentes-notificaciones';
 
   // Intentar obtener desde cache
@@ -326,6 +362,7 @@ export const getPagosUrgentesOptimizado = async (): Promise<PagoOptimizado[]> =>
           codigoTransporte: true,
           montoFlete: true,
           createdAt: true,
+          updatedAt: true,
           estadoPago: true,
           notaPago: true,
           ordenProveedor: {
@@ -334,7 +371,9 @@ export const getPagosUrgentesOptimizado = async (): Promise<PagoOptimizado[]> =>
                 select: {
                   cliente: {
                     select: {
-                      razonSocial: true
+                      id: true,
+                      razonSocial: true,
+                      ruc: true
                     }
                   }
                 }
@@ -354,13 +393,17 @@ export const getPagosUrgentesOptimizado = async (): Promise<PagoOptimizado[]> =>
           estadoPago: true,
           notaPago: true,
           createdAt: true,
+          updatedAt: true,
           ordenCompra: {
             select: {
+              id: true,
               codigoVenta: true,
               montoVenta: true,
               cliente: {
                 select: {
-                  razonSocial: true
+                  id: true,
+                  razonSocial: true,
+                  ruc: true
                 }
               }
             }
@@ -370,39 +413,74 @@ export const getPagosUrgentesOptimizado = async (): Promise<PagoOptimizado[]> =>
       })
     ]);
 
-    // Procesar datos mínimos
-    const transportes: PagoOptimizado[] = transportesUrgentes
+    // Procesar datos de transportes
+    const transportes: PagoUrgenteResponse[] = transportesUrgentes
       .filter(t => t.estadoPago !== null) // Filtrar nulls
       .map(t => ({
         id: t.id,
-        codigo: t.codigoTransporte,
         tipo: 'TRANSPORTE' as const,
-        cliente: t.ordenProveedor?.ordenCompra?.cliente?.razonSocial || 'Sin cliente',
+        codigo: t.codigoTransporte,
         monto: Number(t.montoFlete || 0),
-        fechaVencimiento: t.createdAt, // Usamos createdAt como referencia
-        estadoPago: t.estadoPago!,
-        notaPago: t.notaPago
+        fechaLimite: t.createdAt, // Usamos createdAt como referencia
+        entidad: {
+          id: t.ordenProveedor?.ordenCompra?.cliente?.id || 0,
+          nombre: t.ordenProveedor?.ordenCompra?.cliente?.razonSocial || 'Sin cliente',
+          ruc: t.ordenProveedor?.ordenCompra?.cliente?.ruc || 'Sin RUC'
+        },
+        descripcion: `Transporte ${t.codigoTransporte}`,
+        notaPago: t.notaPago,
+        createdAt: t.createdAt,
+        updatedAt: t.updatedAt
       }));
 
-    const ventas: PagoOptimizado[] = ventasUrgentes
+    // Procesar datos de ventas privadas
+    const ventasPrivadas: PagoUrgenteResponse[] = ventasUrgentes
       .filter(v => v.estadoPago !== null) // Filtrar nulls
       .map(v => ({
         id: v.id,
-        codigo: v.ordenCompra?.codigoVenta || `VEN-${v.id}`,
         tipo: 'VENTA_PRIVADA' as const,
-        cliente: v.ordenCompra?.cliente?.razonSocial || 'Sin cliente',
+        codigo: v.ordenCompra?.codigoVenta || `VEN-${v.id}`,
         monto: Number(v.ordenCompra?.montoVenta || 0),
-        fechaVencimiento: v.createdAt, // Usamos createdAt como referencia
-        estadoPago: v.estadoPago!,
-        notaPago: v.notaPago
+        fechaLimite: v.createdAt, // Usamos createdAt como referencia
+        entidad: {
+          id: v.ordenCompra?.cliente?.id || 0,
+          nombre: v.ordenCompra?.cliente?.razonSocial || 'Sin cliente',
+          ruc: v.ordenCompra?.cliente?.ruc || 'Sin RUC'
+        },
+        descripcion: `Venta ${v.ordenCompra?.codigoVenta || `VEN-${v.id}`}`,
+        notaPago: v.notaPago,
+        createdAt: v.createdAt,
+        updatedAt: v.updatedAt
       }));
 
-    const urgentes = [...transportes, ...ventas];
+    // Calcular estadísticas
+    const totalTransportes = transportes.length;
+    const totalVentas = ventasPrivadas.length;
+    const montoTotalTransportes = transportes.reduce((sum, t) => sum + (t.monto || 0), 0);
+    const montoTotalVentas = ventasPrivadas.reduce((sum, v) => sum + (v.monto || 0), 0);
+
+    const estadisticas: EstadisticasPagosUrgentes = {
+      totalUrgentes: totalTransportes + totalVentas,
+      totalTransportes,
+      totalVentas,
+      montoTotal: montoTotalTransportes + montoTotalVentas,
+      montoTotalTransportes,
+      montoTotalVentas
+    };
+
+    const response: PagosUrgentesCompleteResponse = {
+      success: true,
+      data: {
+        transportes,
+        ventasPrivadas
+      },
+      estadisticas
+    };
 
     // Cache por 2 minutos (menos tiempo para notificaciones)
-    tesoreriaCache.set(cacheKey, urgentes, 2);
+    tesoreriaCache.set(cacheKey, response, 2);
 
-    return urgentes;
+    return response;
 
   } catch (error) {
     console.error('Error al obtener pagos urgentes optimizados:', error);
