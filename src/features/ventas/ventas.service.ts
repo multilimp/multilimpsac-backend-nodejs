@@ -48,7 +48,8 @@ export const getVentaById = (id: number): Promise<OrdenCompra | null> => {
 type CreateVentaType = Prisma.OrdenCompraCreateInput & {
   ventaPrivada: Omit<Prisma.OrdenCompraPrivadaCreateInput, 'id' | 'createdAt' | 'updatedAt'> & {
     pagos: Omit<Prisma.PagoOrdenCompraPrivadaCreateInput, 'id' | 'createdAt' | 'updatedAt' | 'ordenCompraPrivada'>[];
-    documentoCotizacion?: string; // Agregamos el nuevo campo como opcional
+    documentoCotizacion?: string; // Documento de cotización
+    cotizacion?: string; // Campo de cotización
     notaPago?: string; // Aseguramos que notaPago esté disponible
   };
 };
@@ -145,7 +146,8 @@ type UpdateVentaType = Prisma.OrdenCompraUpdateInput & {
     estadoPago?: any;
     fechaPago?: string | Date;
     documentoPago?: string;
-    documentoCotizacion?: string; // Nuevo campo agregado
+    documentoCotizacion?: string; // Documento de cotización
+    cotizacion?: string; // Campo de cotización
     notaPago?: string; // Campo que ya existía pero ahora se maneja correctamente
     pagos?: Array<{
       fechaPago: string | Date;
@@ -172,7 +174,8 @@ export const updateVenta = async (id: number, data: UpdateVentaType): Promise<Or
         estadoPago: ventaPrivada.estadoPago,
         fechaPago: ventaPrivada.fechaPago,
         documentoPago: ventaPrivada.documentoPago,
-        documentoCotizacion: ventaPrivada.documentoCotizacion, // Nuevo campo
+        documentoCotizacion: ventaPrivada.documentoCotizacion, // Documento de cotización
+        cotizacion: ventaPrivada.cotizacion, // Campo de cotización
         notaPago: ventaPrivada.notaPago, // Campo que faltaba
       };
 
@@ -190,7 +193,8 @@ export const updateVenta = async (id: number, data: UpdateVentaType): Promise<Or
             estadoPago: privateOrderData.estadoPago,
             fechaPago: privateOrderData.fechaPago ? new Date(privateOrderData.fechaPago) : null,
             documentoPago: privateOrderData.documentoPago,
-            documentoCotizacion: privateOrderData.documentoCotizacion, // Nuevo campo
+            documentoCotizacion: privateOrderData.documentoCotizacion, // Documento de cotización
+            cotizacion: privateOrderData.cotizacion, // Campo de cotización
             notaPago: privateOrderData.notaPago, // Campo que faltaba
           }
         });
@@ -222,7 +226,8 @@ export const updateVenta = async (id: number, data: UpdateVentaType): Promise<Or
           estadoPago: privateOrderData.estadoPago,
           fechaPago: privateOrderData.fechaPago ? new Date(privateOrderData.fechaPago) : null,
           documentoPago: privateOrderData.documentoPago,
-          documentoCotizacion: privateOrderData.documentoCotizacion, // Nuevo campo
+          documentoCotizacion: privateOrderData.documentoCotizacion, // Documento de cotización
+          cotizacion: privateOrderData.cotizacion, // Campo de cotización
           notaPago: privateOrderData.notaPago, // Campo que faltaba
         };
 

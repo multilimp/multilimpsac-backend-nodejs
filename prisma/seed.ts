@@ -400,16 +400,6 @@ async function main() {
     }),
   ]);
 
-  // 9. Crear orden de compra privada
-  console.log('💰 Creando orden de compra privada...');
-  await prisma.ordenCompraPrivada.create({
-    data: {
-      ordenCompraId: ordenesCompra[2].id,
-      estadoPago: EstadoPago.PENDIENTE,
-      fechaPago: new Date('2025-02-28'),
-    },
-  });
-
   // 10. Crear órdenes de proveedor
   console.log('📦 Creando órdenes de proveedor...');
   const ordenesProveedor = await Promise.all([

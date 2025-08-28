@@ -304,7 +304,8 @@ model OrdenCompraPrivada {
   estadoPago          EstadoPago? @map("estado_pago")
   fechaPago           DateTime?   @map("fecha_pago") @db.Date
   documentoPago       String?     @map("documento_pago")
-  documentoCotizacion String?     @map("documento_cotizacion") // Nuevo campo agregado
+  documentoCotizacion String?     @map("documento_cotizacion") // Documento de cotización
+  cotizacion          String?     @map("cotizacion") // Campo de cotización como texto
   notaPago            String?     @map("nota_pago")
 
   createdAt        DateTime                 @default(now()) @map("created_at")
