@@ -32,12 +32,11 @@ import pagoOrdenCompraPrivadaRoutes from './modules/pagoOrdenCompraPrivada/pagoO
 import pagoOrdenProveedorRoutes from './modules/pagoOrdenProveedor/pagoOrdenProveedor.routes';
 import pagoTransporteAsignadoRoutes from './modules/pagoTransporteAsignado/pagoTransporteAsignado.routes';
 import paymentsRoutes from './modules/payments/payments.routes';
-import uploadRoutes from './modules/upload/upload.routes';
 import chatbotRoutes from './modules/chatbot/chatbot.routes';
 
 export const configureRoutes = async (app: Application): Promise<void> => {
   app.get('/api', (req: Request, res: Response) => res.json({ message: 'BACKEND MULTILIMP SAC' }));
-  
+
   // Health check endpoint (sin autenticación)
   app.get('/api/health', healthCheck);
 
@@ -46,7 +45,7 @@ export const configureRoutes = async (app: Application): Promise<void> => {
   // const graphqlMiddleware = await setupGraphQLRoutes();
   // Aplicar middleware personalizado para simplificar respuestas GraphQL
   //app.use('/graphqlk', express.json(), cors(), simplifyResponseMiddleware, graphqlMiddleware);
-  
+
 
   app.use(authenticateToken);
 
@@ -81,16 +80,13 @@ export const configureRoutes = async (app: Application): Promise<void> => {
   app.use('/api/pagos-orden-compra-privada', pagoOrdenCompraPrivadaRoutes);
   app.use('/api/pagos-orden-proveedor', pagoOrdenProveedorRoutes);
   app.use('/api/pagos-transporte-asignado', pagoTransporteAsignadoRoutes);
-  
+
   // Controlador unificado de pagos
   app.use('/api/payments', paymentsRoutes);
-  
-  // Upload de archivos
-  app.use('/api/upload', uploadRoutes);
-  
+
   // Chatbot/Asistente Virtual
   app.use('/api/chatbot', chatbotRoutes);
-  
+
   // Middleware para rutas no encontradas
   app.use((req: Request, res: Response) => {
     res.status(404).json({ message: 'Ruta no encontrada' });

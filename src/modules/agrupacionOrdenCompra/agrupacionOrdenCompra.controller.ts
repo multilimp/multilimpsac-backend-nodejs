@@ -64,30 +64,49 @@ export const deleteAgrupacion = async (req: Request, res: Response) => {
 
 // Controladores para añadir/quitar OCs
 export const addOrdenCompra = async (req: Request, res: Response) => {
-    try {
-        const agrupacionId = parseInt(req.params.agrupacionId, 10);
-        const { ordenCompraId } = req.body;
-        if (isNaN(agrupacionId) || typeof ordenCompraId !== 'number') {
-             return res.status(400).json({ message: 'IDs inválidos' });
-        }
-        const updatedAgrupacion = await agrupacionService.addOrdenCompraToAgrupacion(agrupacionId, ordenCompraId);
-        res.status(200).json(updatedAgrupacion);
-    } catch (error) {
-         handleError({ res, error, msg: 'Error al añadir OC a la agrupación' });
+  try {
+    const agrupacionId = parseInt(req.params.agrupacionId, 10);
+    const { ordenCompraId } = req.body;
+    if (isNaN(agrupacionId) || typeof ordenCompraId !== 'number') {
+      return res.status(400).json({ message: 'IDs inválidos' });
     }
+    const updatedAgrupacion = await agrupacionService.addOrdenCompraToAgrupacion(agrupacionId, ordenCompraId);
+    res.status(200).json(updatedAgrupacion);
+  } catch (error) {
+    handleError({ res, error, msg: 'Error al añadir OC a la agrupación' });
+  }
 }
 
 export const removeOrdenCompra = async (req: Request, res: Response) => {
-     try {
-        const agrupacionId = parseInt(req.params.agrupacionId, 10);
-        // Asumiendo que el ID de la OC a quitar viene en la URL o body
-        const ordenCompraId = parseInt(req.params.ordenCompraId || req.body.ordenCompraId, 10);
-        if (isNaN(agrupacionId) || isNaN(ordenCompraId)) {
-             return res.status(400).json({ message: 'IDs inválidos' });
-        }
-        const updatedAgrupacion = await agrupacionService.removeOrdenCompraFromAgrupacion(agrupacionId, ordenCompraId);
-        res.status(200).json(updatedAgrupacion);
-    } catch (error) {
-         handleError({ res, error, msg: 'Error al quitar OC de la agrupación' });
+  try {
+    const agrupacionId = parseInt(req.params.agrupacionId, 10);
+    // Asumiendo que el ID de la OC a quitar viene en la URL o body
+    const ordenCompraId = parseInt(req.params.ordenCompraId || req.body.ordenCompraId, 10);
+    if (isNaN(agrupacionId) || isNaN(ordenCompraId)) {
+      return res.status(400).json({ message: 'IDs inválidos' });
     }
+    const updatedAgrupacion = await agrupacionService.removeOrdenCompraFromAgrupacion(agrupacionId, ordenCompraId);
+    res.status(200).json(updatedAgrupacion);
+  } catch (error) {
+    handleError({ res, error, msg: 'Error al quitar OC de la agrupación' });
+  }
 }
+
+// ✅ NUEVO: Obtener agrupación de una OC específica
+export const getAgrupacionByOrdenCompra = async (req: Request, res: Response) => {
+  try {
+    const ordenCompraId = parseInt(req.params.ordenCompraId, 10);
+    if (isNaN(ordenCompraId)) {
+      return res.status(400).json({ message: 'ID de orden de compra inválido' });
+    }
+
+    const agrupacion = await agrupacionService.getAgrupacionByOrdenCompraId(ordenCompraId);
+    if (!agrupacion) {
+      return res.status(404).json({ message: 'Esta OC no pertenece a ninguna agrupación' });
+    }
+
+    res.status(200).json(agrupacion);
+  } catch (error) {
+    handleError({ res, error, msg: 'Error al obtener agrupación de la OC' });
+  }
+};

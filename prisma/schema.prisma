@@ -276,7 +276,7 @@ model OrdenCompra {
 
 model AgrupacionOrdenCompra {
   id            Int                   @id @default(autoincrement())
-  codigoGrupo   String                @map("codigo_grupo") @db.VarChar(255)
+  codigoGrupo   String                @unique @map("codigo_grupo") @db.VarChar(255)
   descripcion   String?
   fecha         DateTime              @default(now())
   createdAt     DateTime              @default(now()) @map("created_at")

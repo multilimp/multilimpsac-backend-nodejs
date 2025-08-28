@@ -42,7 +42,7 @@ async function main() {
   console.log('👤 Creando usuarios...');
   const adminPassword = await bcrypt.hash('admin123', 10);
   const userPassword = await bcrypt.hash('user123', 10);
-  
+
   const adminPermissions = ['dashboard', 'profile', 'users', 'providers', 'sales', 'treasury', 'companies', 'transports', 'provider_orders', 'billing', 'clients', 'quotes', 'tracking', 'collections'];
   const userPermissions = ['dashboard', 'profile', 'providers', 'sales', 'clients', 'quotes'];
 
@@ -405,7 +405,6 @@ async function main() {
   await prisma.ordenCompraPrivada.create({
     data: {
       ordenCompraId: ordenesCompra[2].id,
-      clienteId: clientes[2].id,
       estadoPago: EstadoPago.PENDIENTE,
       fechaPago: new Date('2025-02-28'),
     },
