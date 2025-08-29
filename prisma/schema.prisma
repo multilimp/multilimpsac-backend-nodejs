@@ -308,6 +308,12 @@ model OrdenCompraPrivada {
   cotizacion          String?     @map("cotizacion") // Campo de cotización como texto
   notaPago            String?     @map("nota_pago")
 
+  // Campos de tipo de entrega
+  tipoDestino   TipoEntregaPrivada? @map("tipo_destino")
+  nombreAgencia String?             @map("nombre_agencia")
+  destinoFinal  String?             @map("destino_final")
+  nombreEntidad String?             @map("nombre_entidad")
+
   createdAt        DateTime                 @default(now()) @map("created_at")
   updatedAt        DateTime                 @updatedAt @map("updated_at")
   // Relaciones
@@ -565,6 +571,12 @@ enum TipoDestino {
   ALMACEN
   CLIENTE
   AGENCIA
+}
+
+enum TipoEntregaPrivada {
+  ENTREGA_DOMICILIO
+  ENTREGA_AGENCIA
+  RECOJO_ALMACEN
 }
 
 enum ContactoTipo {

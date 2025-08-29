@@ -51,6 +51,11 @@ type CreateVentaType = Prisma.OrdenCompraCreateInput & {
     documentoCotizacion?: string; // Documento de cotización
     cotizacion?: string; // Campo de cotización
     notaPago?: string; // Aseguramos que notaPago esté disponible
+    // Campos de tipo de entrega
+    tipoDestino?: string;
+    nombreAgencia?: string;
+    destinoFinal?: string;
+    nombreEntidad?: string;
   };
 };
 
@@ -149,6 +154,11 @@ type UpdateVentaType = Prisma.OrdenCompraUpdateInput & {
     documentoCotizacion?: string; // Documento de cotización
     cotizacion?: string; // Campo de cotización
     notaPago?: string; // Campo que ya existía pero ahora se maneja correctamente
+    // Campos de tipo de entrega
+    tipoDestino?: string;
+    nombreAgencia?: string;
+    destinoFinal?: string;
+    nombreEntidad?: string;
     pagos?: Array<{
       fechaPago: string | Date;
       bancoPago: string;
@@ -177,6 +187,11 @@ export const updateVenta = async (id: number, data: UpdateVentaType): Promise<Or
         documentoCotizacion: ventaPrivada.documentoCotizacion, // Documento de cotización
         cotizacion: ventaPrivada.cotizacion, // Campo de cotización
         notaPago: ventaPrivada.notaPago, // Campo que faltaba
+        // Campos de tipo de entrega
+        tipoDestino: ventaPrivada.tipoDestino,
+        nombreAgencia: ventaPrivada.nombreAgencia,
+        destinoFinal: ventaPrivada.destinoFinal,
+        nombreEntidad: ventaPrivada.nombreEntidad,
       };
 
       // Verificar si ya existe una orden privada
@@ -196,6 +211,11 @@ export const updateVenta = async (id: number, data: UpdateVentaType): Promise<Or
             documentoCotizacion: privateOrderData.documentoCotizacion, // Documento de cotización
             cotizacion: privateOrderData.cotizacion, // Campo de cotización
             notaPago: privateOrderData.notaPago, // Campo que faltaba
+            // Campos de tipo de entrega
+            tipoDestino: privateOrderData.tipoDestino as "ENTREGA_DOMICILIO" | "ENTREGA_AGENCIA" | "RECOJO_ALMACEN" | null,
+            nombreAgencia: privateOrderData.nombreAgencia,
+            destinoFinal: privateOrderData.destinoFinal,
+            nombreEntidad: privateOrderData.nombreEntidad,
           }
         });
 
