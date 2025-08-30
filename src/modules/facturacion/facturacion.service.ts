@@ -8,6 +8,13 @@ export const getAllFacturacion = (): Promise<Facturacion[]> => {
 export const getFacturacionById = (id: number): Promise<Facturacion | null> => {
   return prisma.facturacion.findUnique({ where: { id } });
 };
+
+export const getFacturacionesByOrdenCompraId = (ordenCompraId: number): Promise<Facturacion[]> => {
+  return prisma.facturacion.findMany({
+    where: { ordenCompraId },
+    orderBy: { createdAt: 'desc' }
+  });
+};
 export const createFacturacion = (data: CreateFacturacionData): Promise<Facturacion> => {
   return prisma.facturacion.create({ data });
 };

@@ -3,6 +3,7 @@ import * as ctrl from './facturacion.controller';
 
 const router = Router();
 router.get('/', ctrl.listFacturacion);
+router.get('/orden-compra/:ordenCompraId', ctrl.getFacturacionesByOrdenCompraId);
 router.get('/:id', ctrl.getFacturacion);
 router.post('/', ctrl.createFacturacion);
 router.put('/:id', ctrl.updateFacturacion);

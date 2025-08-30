@@ -38,7 +38,7 @@ export const getVentaById = (id: number): Promise<OrdenCompra | null> => {
           pagos: true,
         }
       },
-      facturacion: true,
+      facturaciones: true,
       gestionCobranzas: true,
       OrdenCompraAgrupada: true,
     },

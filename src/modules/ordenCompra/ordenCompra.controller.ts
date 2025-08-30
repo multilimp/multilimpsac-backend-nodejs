@@ -30,17 +30,25 @@ export const getOrdenCompra = async (req: Request, res: Response) => {
     if (isNaN(id)) {
       return res.status(400).json({ message: 'ID de orden de compra inválido' });
     }
-    
+
     // Verificar si se solicita incluir la facturación
     const includeFacturacion = req.query.include === 'facturacion';
-    
+    const includeFacturaciones = req.query.include === 'facturaciones';
+
     const includeOptions = includeFacturacion ? {
       facturacion: true,
       cliente: true,
       empresa: true,
       contactoCliente: true
+    } : includeFacturaciones ? {
+      facturaciones: {
+        orderBy: { createdAt: 'desc' as const }
+      },
+      cliente: true,
+      empresa: true,
+      contactoCliente: true
     } : undefined;
-    
+
     const orden = await ordenCompraService.getOrdenCompraById(id, includeOptions);
     if (!orden) {
       return res.status(404).json({ message: 'Orden de compra no encontrada' });
@@ -92,14 +100,14 @@ export const deleteOrdenCompra = async (req: Request, res: Response) => {
 
 // Controlador para generar código único (opcional)
 export const generateCode = async (req: Request, res: Response) => {
-    try {
-        const empresaId = parseInt(req.query.empresaId as string, 10);
-        if (isNaN(empresaId)) {
-            return res.status(400).json({ message: 'Se requiere un empresaId válido.' });
-        }
-        const code = await ordenCompraService.generateUniqueOrdenCompraCode(empresaId);
-        res.status(200).json({ code });
-    } catch (error) {
-        handleError({ res, error, msg: 'Error al generar código único' });
+  try {
+    const empresaId = parseInt(req.query.empresaId as string, 10);
+    if (isNaN(empresaId)) {
+      return res.status(400).json({ message: 'Se requiere un empresaId válido.' });
     }
+    const code = await ordenCompraService.generateUniqueOrdenCompraCode(empresaId);
+    res.status(200).json({ code });
+  } catch (error) {
+    handleError({ res, error, msg: 'Error al generar código único' });
+  }
 };

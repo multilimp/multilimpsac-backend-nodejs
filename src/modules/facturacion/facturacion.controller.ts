@@ -20,6 +20,17 @@ export const getFacturacion = async (req: Request, res: Response) => {
     handleError({ res, error, msg: 'Error al obtener facturacion' });
   }
 };
+
+export const getFacturacionesByOrdenCompraId = async (req: Request, res: Response) => {
+  try {
+    const ordenCompraId = parseInt(req.params.ordenCompraId, 10);
+    if (isNaN(ordenCompraId)) return res.status(400).json({ message: 'ID de orden de compra inválido' });
+    const items = await service.getFacturacionesByOrdenCompraId(ordenCompraId);
+    res.status(200).json(items);
+  } catch (error) {
+    handleError({ res, error, msg: 'Error al obtener facturaciones por orden de compra' });
+  }
+};
 export const createFacturacion = async (req: Request, res: Response) => {
   try {
     const item = await service.createFacturacion(req.body);

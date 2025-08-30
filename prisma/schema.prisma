@@ -261,7 +261,7 @@ model OrdenCompra {
   estadoActivo          Boolean               @default(true) @map("estado_activo")
   createdAt             DateTime              @default(now()) @map("created_at")
   updatedAt             DateTime              @updatedAt @map("updated_at")
-  facturacion           Facturacion?
+  facturaciones         Facturacion[]
   gestionCobranzas      GestionCobranza[]
   catalogoEmpresa       Catalogo?             @relation(fields: [catalogoEmpresaId], references: [id])
   cliente               Cliente?              @relation(fields: [clienteId], references: [id])
@@ -507,7 +507,7 @@ model Almacen {
 
 model Facturacion {
   id                Int         @id @default(autoincrement())
-  ordenCompraId     Int         @unique @map("orden_compra_id")
+  ordenCompraId     Int         @map("orden_compra_id")
   factura           String?
   fechaFactura      DateTime?   @map("fecha_factura") @db.Date
   grr               String?
