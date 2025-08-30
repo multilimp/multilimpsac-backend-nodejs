@@ -405,6 +405,7 @@ model TransporteAsignado {
   transporteId         Int                      @map("transporte_id")
   ordenProveedorId     Int                      @map("orden_proveedor_id")
   contactoTransporteId Int?                     @map("contacto_transporte_id")
+  almacenId            Int?                     @map("almacen_id")
   region               String?
   provincia            String?
   distrito             String?
@@ -422,6 +423,7 @@ model TransporteAsignado {
   contactoTransporte   Contacto?                @relation(fields: [contactoTransporteId], references: [id])
   ordenProveedor       OrdenProveedor           @relation(fields: [ordenProveedorId], references: [id])
   transporte           Transporte               @relation(fields: [transporteId], references: [id])
+  almacen              Almacen?                 @relation(fields: [almacenId], references: [id])
 
   @@map("transportes_asignados")
 }
@@ -489,13 +491,14 @@ model StockProducto {
 }
 
 model Almacen {
-  id             Int             @id @default(autoincrement())
-  nombre         String
-  direccion      String?
-  ciudad         String?
-  createdAt      DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt      DateTime        @updatedAt @map("updated_at")
-  stockProductos StockProducto[]
+  id                   Int                  @id @default(autoincrement())
+  nombre               String
+  direccion            String?
+  ciudad               String?
+  createdAt            DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime             @updatedAt @map("updated_at")
+  stockProductos       StockProducto[]
+  transportesAsignados TransporteAsignado[]
 
   @@map("almacenes")
 }
