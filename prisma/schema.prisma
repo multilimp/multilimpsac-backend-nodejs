@@ -210,6 +210,7 @@ model CotizacionProducto {
   unidadMedida    String?    @map("unidad_medida")
   cantidad        Int
   cantidadAlmacen Int?       @map("cantidad_almacen")
+  cantidadCliente Int?       @map("cantidad_cliente")
   cantidadTotal   Int        @map("cantidad_total")
   precioUnitario  Decimal    @map("precio_unitario")
   total           Decimal
@@ -388,6 +389,7 @@ model OpProducto {
   unidadMedida     String?        @map("unidad_medida")
   cantidad         Int
   cantidadAlmacen  Int?           @map("cantidad_almacen")
+  cantidadCliente  Int?           @map("cantidad_cliente")
   cantidadTotal    Int            @map("cantidad_total")
   precioUnitario   Decimal        @map("precio_unitario")
   total            Decimal
