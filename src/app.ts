@@ -10,8 +10,8 @@ dotenv.config();
 class Server {
   public app: Application;
   private readonly puerto: string | number;
-  private readonly url: string;  constructor() {
-    this.puerto = process.env.PORT ?? 5000;
+  private readonly url: string; constructor() {
+    this.puerto = process.env.PORT ?? 5001;
     this.url = process.env.URL ?? 'http://localhost';
     this.app = express();
 

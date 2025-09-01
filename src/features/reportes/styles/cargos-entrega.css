@@ -1,0 +1,325 @@
+/* Estilos para el reporte de cargos de entrega */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    font-size: 10pt;
+    line-height: 1.4;
+    color: #333;
+    background: white;
+}
+
+.contenedor {
+    max-width: 100%;
+    margin: 0;
+    padding: 10px;
+}
+
+/* Encabezado del reporte */
+.encabezado {
+    text-align: center;
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 2px solid #1890ff;
+    background: #f0f8ff;
+    border-radius: 8px;
+}
+
+.encabezado h1 {
+    font-size: 18pt;
+    color: #1890ff;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.periodo,
+.fecha-generacion,
+.total-ops {
+    margin: 5px 0;
+    font-size: 11pt;
+}
+
+/* Fecha de programación */
+.fecha-programacion {
+    page-break-inside: avoid;
+    margin-bottom: 25px;
+}
+
+.fecha-programacion h2 {
+    background: #1890ff;
+    color: white;
+    padding: 10px 15px;
+    margin: 0 0 15px 0;
+    font-size: 14pt;
+    border-radius: 5px;
+}
+
+/* Cargo individual */
+.cargo-entrega {
+    border: 1px solid #ddd;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #fafafa;
+    border-radius: 5px;
+    page-break-inside: avoid;
+}
+
+.numero-cargo {
+    display: inline-block;
+    background: #1890ff;
+    color: white;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 25px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    font-size: 12pt;
+}
+
+.datos-op {
+    margin-bottom: 15px;
+    padding: 10px;
+    background: white;
+    border-radius: 5px;
+    border-left: 4px solid #1890ff;
+}
+
+.codigo-op {
+    font-size: 14pt;
+    font-weight: bold;
+    color: #1890ff;
+    margin-bottom: 5px;
+}
+
+.ocf,
+.estado {
+    font-size: 10pt;
+    color: #666;
+    margin: 2px 0;
+}
+
+/* Tabla de productos */
+.seccion-productos {
+    margin: 15px 0;
+}
+
+.tabla-productos {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+    background: white;
+    border-radius: 5px;
+    overflow: hidden;
+    border: 1px solid #ddd;
+}
+
+.tabla-productos th {
+    background: #1890ff;
+    color: white;
+    padding: 8px 10px;
+    text-align: left;
+    font-weight: bold;
+    font-size: 9pt;
+}
+
+.tabla-productos td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #eee;
+    font-size: 9pt;
+}
+
+.tabla-productos tr:nth-child(even) {
+    background: #f9f9f9;
+}
+
+.codigo-producto {
+    font-weight: bold;
+    color: #1890ff;
+    text-align: center;
+    width: 15%;
+}
+
+.descripcion-producto {
+    width: 65%;
+    line-height: 1.3;
+}
+
+.cantidad {
+    text-align: center;
+    font-weight: bold;
+    width: 20%;
+}
+
+/* Datos principales */
+.datos-principales {
+    display: flex;
+    justify-content: space-between;
+    margin: 15px 0;
+    gap: 20px;
+}
+
+.seccion-proveedor,
+.seccion-destino {
+    flex: 1;
+    background: white;
+    padding: 12px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
+.seccion-proveedor h4,
+.seccion-destino h4 {
+    color: #1890ff;
+    font-size: 11pt;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #1890ff;
+    padding-bottom: 3px;
+}
+
+.empresa,
+.cliente {
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #333;
+    font-size: 10pt;
+}
+
+.tipo-destino {
+    font-weight: bold;
+    color: #1890ff;
+    margin-bottom: 5px;
+    font-size: 10pt;
+}
+
+.contacto,
+.direccion,
+.ubicacion,
+.referencia,
+.telefono,
+.contacto-destino,
+.telefono-destino {
+    margin: 3px 0;
+    font-size: 9pt;
+    line-height: 1.3;
+}
+
+/* Observaciones */
+.seccion-observacion {
+    margin-top: 15px;
+    padding: 10px;
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 5px;
+}
+
+.seccion-observacion h4 {
+    color: #856404;
+    font-size: 11pt;
+    margin-bottom: 5px;
+}
+
+.texto-observacion {
+    font-size: 9pt;
+    line-height: 1.3;
+    color: #856404;
+}
+
+/* Sin datos */
+.sin-datos {
+    text-align: center;
+    padding: 40px;
+    background: #f8f9fa;
+    border: 2px dashed #ddd;
+    border-radius: 10px;
+    margin: 20px 0;
+}
+
+.sin-datos h3 {
+    color: #666;
+    margin-bottom: 10px;
+}
+
+.sin-datos p {
+    color: #999;
+}
+
+/* Pie de página */
+.pie-pagina {
+    margin-top: 30px;
+    padding: 15px;
+    border-top: 2px solid #1890ff;
+    text-align: center;
+    font-size: 9pt;
+    color: #666;
+    background: #f8fafc;
+}
+
+.pie-pagina div {
+    margin: 2px 0;
+}
+
+/* Saltos de página */
+.fecha-programacion {
+    page-break-before: auto;
+}
+
+.cargo-entrega {
+    page-break-inside: avoid;
+    break-inside: avoid;
+}
+
+/* Responsive para impresión */
+@media print {
+    body {
+        font-size: 9pt;
+    }
+
+    .contenedor {
+        padding: 5px;
+    }
+
+    .encabezado {
+        padding: 10px;
+    }
+
+    .encabezado h1 {
+        font-size: 16pt;
+    }
+
+    .fecha-programacion h2 {
+        font-size: 12pt;
+        padding: 8px 12px;
+    }
+
+    .cargo-entrega {
+        margin-bottom: 15px;
+        padding: 10px;
+    }
+
+    .datos-principales {
+        gap: 15px;
+    }
+}
+
+/* Para pantallas pequeñas */
+@media (max-width: 768px) {
+    .datos-principales {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .tabla-productos {
+        font-size: 8pt;
+    }
+
+    .tabla-productos th,
+    .tabla-productos td {
+        padding: 5px 8px;
+    }
+}

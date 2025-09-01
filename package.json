@@ -25,6 +25,7 @@
     "bcryptjs": "^3.0.2",
     "body-parser": "^2.2.0",
     "cors": "^2.8.5",
+    "dayjs": "^1.11.18",
     "dotenv": "^16.0.3",
     "express": "^4.21.2",
     "formidable": "^3.5.4",
