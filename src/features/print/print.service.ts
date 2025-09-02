@@ -310,6 +310,26 @@ interface OpCargosEntrega {
       telefono: string;
     };
   };
+  transporteAsignado?: {
+    transporte: {
+      razonSocial: string;
+      ruc: string;
+      direccion?: string;
+      telefono?: string;
+    };
+    contactoTransporte?: {
+      nombre: string;
+      telefono: string;
+    };
+    codigoTransporte: string;
+    direccion?: string;
+    montoFlete?: number;
+    notaTransporte?: string;
+    almacen?: {
+      nombre: string;
+      direccion?: string;
+    };
+  };
   destino: {
     tipo: string;
     cliente?: {
@@ -385,6 +405,13 @@ export const generateCargosEntregaHtml = async (fechaInicio: Date, fechaFin: Dat
         productos: true,
         proveedor: true,
         contactoProveedor: true,
+        transportesAsignados: {
+          include: {
+            transporte: true,
+            contactoTransporte: true,
+            almacen: true
+          }
+        },
         ordenCompra: {
           include: {
             cliente: true,
@@ -426,6 +453,26 @@ export const generateCargosEntregaHtml = async (fechaInicio: Date, fechaFin: Dat
             telefono: op.contactoProveedor.telefono || ''
           } : undefined
         },
+        transporteAsignado: op.transportesAsignados && op.transportesAsignados.length > 0 ? {
+          transporte: {
+            razonSocial: op.transportesAsignados[0].transporte.razonSocial || '',
+            ruc: op.transportesAsignados[0].transporte.ruc || '',
+            direccion: op.transportesAsignados[0].transporte.direccion || undefined,
+            telefono: op.transportesAsignados[0].transporte.telefono || undefined
+          },
+          contactoTransporte: op.transportesAsignados[0].contactoTransporte ? {
+            nombre: op.transportesAsignados[0].contactoTransporte.nombre || '',
+            telefono: op.transportesAsignados[0].contactoTransporte.telefono || ''
+          } : undefined,
+          codigoTransporte: op.transportesAsignados[0].codigoTransporte || '',
+          direccion: op.transportesAsignados[0].direccion || undefined,
+          montoFlete: op.transportesAsignados[0].montoFlete ? Number(op.transportesAsignados[0].montoFlete) : undefined,
+          notaTransporte: op.transportesAsignados[0].notaTransporte || undefined,
+          almacen: op.transportesAsignados[0].almacen ? {
+            nombre: op.transportesAsignados[0].almacen.nombre || '',
+            direccion: op.transportesAsignados[0].almacen.direccion || undefined
+          } : undefined
+        } : undefined,
         destino: {
           tipo: determinarTipoDestino(op.ordenCompra),
           cliente: op.ordenCompra?.cliente ? {
