@@ -33,7 +33,7 @@ import pagoOrdenProveedorRoutes from './modules/pagoOrdenProveedor/pagoOrdenProv
 import pagoTransporteAsignadoRoutes from './modules/pagoTransporteAsignado/pagoTransporteAsignado.routes';
 import paymentsRoutes from './modules/payments/payments.routes';
 import chatbotRoutes from './modules/chatbot/chatbot.routes';
-import reportesRoutes from './features/reportes/reportes.routes';
+import reportesRoutes from './features/print/reportes.routes';
 
 export const configureRoutes = async (app: Application): Promise<void> => {
   app.get('/api', (req: Request, res: Response) => res.json({ message: 'BACKEND MULTILIMP SAC' }));
