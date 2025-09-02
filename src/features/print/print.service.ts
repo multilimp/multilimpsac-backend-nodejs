@@ -3,7 +3,7 @@ import handlebars from 'handlebars';
 import fs from 'fs/promises';
 import path from 'path';
 import dayjs from 'dayjs';
-import prisma from '../../database/prisma'; // Ajusta la ruta a tu cliente Prisma
+import prisma from '../../database/prisma';
 
 // Función para procesar el logo de la empresa
 const processEmpresaLogo = async (logoPath: string | null): Promise<string> => {
