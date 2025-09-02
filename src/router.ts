@@ -33,16 +33,12 @@ import pagoOrdenProveedorRoutes from './modules/pagoOrdenProveedor/pagoOrdenProv
 import pagoTransporteAsignadoRoutes from './modules/pagoTransporteAsignado/pagoTransporteAsignado.routes';
 import paymentsRoutes from './modules/payments/payments.routes';
 import chatbotRoutes from './modules/chatbot/chatbot.routes';
-import reportesRoutes from './features/print/reportes.routes';
 
 export const configureRoutes = async (app: Application): Promise<void> => {
   app.get('/api', (req: Request, res: Response) => res.json({ message: 'BACKEND MULTILIMP SAC' }));
 
   // Health check endpoint (sin autenticación)
   app.get('/api/health', healthCheck);
-
-  // Reportes HTML público (temporal para testing)
-  app.use('/api/reportes-public', reportesRoutes);
 
   app.use('/api/auth', authRoutes);
   // Configurar GraphQL como una ruta más
@@ -79,9 +75,6 @@ export const configureRoutes = async (app: Application): Promise<void> => {
   app.use('/api', gestionRoutes);
   app.use('/api/tesoreria', tesoreriaRoutes);
   app.use('/api/files', fileRoutes);
-
-  // Reportes
-  app.use('/api/reportes', reportesRoutes);
 
   // Pagos
   app.use('/api/pagos-orden-compra-privada', pagoOrdenCompraPrivadaRoutes);
