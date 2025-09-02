@@ -18,141 +18,185 @@
 
 <body>
     <div class="contenedor">
-        <!-- Encabezado del reporte -->
-        <div class="encabezado">
-            <h1>REPORTE DE CARGOS DE ENTREGA</h1>
-            <div class="periodo">
-                <strong>Período:</strong> {{ fechaInicio }} - {{ fechaFin }}
-            </div>
-            <div class="fecha-generacion">
-                <strong>Fecha de Generación:</strong> {{ fechaGeneracion }}
-            </div>
-            <div class="total-ops">
-                <strong>Total de Órdenes:</strong> {{ totalOps }}
-            </div>
-        </div>
-
+        {{#if fechasConCargos}}
         <!-- Listado de cargos por fecha -->
         {{#each fechasConCargos}}
-        <div class="fecha-programacion">
-            <h2>Fecha de Programación: {{ this.fecha }}</h2>
+        <div class="fecha-seccion">
+            <h2 class="fecha-titulo">Fecha de Programación: {{ this.fecha }}</h2>
 
             {{#each this.ops}}
-            <div class="cargo-entrega">
-                <div class="numero-cargo">{{increment @index}}</div>
+            <div class="op-container">
+                <!-- Encabezado de la OP -->
+                <table class="op-header">
+                    <tr>
+                        <td class="op-numero">{{increment @index}}</td>
+                        <td class="op-codigo">{{ this.codigoOp }}<br><span class="ocf-text">{{#if this.ocf}}OCF: {{
+                                this.ocf }}{{/if}}</span></td>
+                        {{!-- <td class="gestor-campo">Gestor:</td>
+                        <td class="estado-campo">Estado: <span class="estado-valor">{{#if this.estadoOp}}{{
+                                this.estadoOp }}{{/if}}</span></td> --}}
+                    </tr>
+                </table>
 
-                <div class="datos-op">
-                    <div class="codigo-op">{{ this.codigoOp }}</div>
-                    {{#if this.ocf}}
-                    <div class="ocf">OCF: {{ this.ocf }}</div>
-                    {{/if}}
-                    {{#if this.estadoOp}}
-                    <div class="estado">Estado: {{ this.estadoOp }}</div>
-                    {{/if}}
-                </div>
-
-                <!-- Productos -->
-                {{#if this.productos.length}}
-                <div class="seccion-productos">
-                    <table class="tabla-productos">
-                        <thead>
-                            <tr>
-                                <th>PRODUCTO</th>
-                                <th>DESCRIPCIÓN</th>
-                                <th>CANTIDAD</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {{#each this.productos}}
-                            <tr>
-                                <td class="codigo-producto">{{ this.codigo }}</td>
-                                <td class="descripcion-producto">{{ this.descripcion }}</td>
-                                <td class="cantidad">{{ this.cantidad }}</td>
-                            </tr>
-                            {{/each}}
-                        </tbody>
-                    </table>
-                </div>
+                <!-- Tabla de productos -->
+                {{#if this.productos}}
+                <table class="tabla-productos">
+                    <thead>
+                        <tr>
+                            <th class="col-producto">PRODUCTO</th>
+                            <th class="col-descripcion">DESCRIPCIÓN</th>
+                            <th class="col-cantidad">CANTIDAD</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each this.productos}}
+                        <tr>
+                            <td class="producto-codigo">{{ this.codigo }}</td>
+                            <td class="producto-descripcion">{{ this.descripcion }}</td>
+                            <td class="producto-cantidad">{{ this.cantidad }}</td>
+                        </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
                 {{/if}}
 
-                <div class="datos-principales">
-                    <!-- Proveedor -->
-                    <div class="seccion-proveedor">
-                        <h4>PROVEEDOR</h4>
-                        <div class="empresa">{{ this.proveedor.razonSocial }}</div>
-                        {{#if this.proveedor.contacto}}
-                        <div class="contacto">
-                            <strong>ENCARGADO:</strong> {{ this.proveedor.contacto.nombre }}
-                        </div>
-                        {{#if this.proveedor.contacto.telefono}}
-                        <div class="telefono">
-                            <strong>TELÉFONO:</strong> {{ this.proveedor.contacto.telefono }}
-                        </div>
-                        {{/if}}
-                        {{/if}}
-                    </div>
+                <!-- Información del proveedor -->
+                {{#if this.proveedor}}
+                <table class="info-proveedor">
+                    <tr>
+                        <td class="label-proveedor">PROVEEDOR</td>
+                        <td class="data-proveedor">{{ this.proveedor.empresa }}</td>
+                    </tr>
+                    {{#if this.proveedor.contacto}}
+                    <tr>
+                        <td class="label-ventas">CONTACTO:</td>
+                        <td class="data-ventas">{{ this.proveedor.contacto }} {{#if this.proveedor.telefono}}TELÉFONO:
+                            {{ this.proveedor.telefono }}{{/if}}</td>
+                    </tr>
+                    {{/if}}
+                </table>
+                {{/if}}
 
-                    <!-- Destino -->
-                    <div class="seccion-destino">
-                        <h4>DESTINO</h4>
-                        <div class="tipo-destino">{{ this.destino.tipo }}</div>
-                        {{#if this.destino.cliente}}
-                        <div class="cliente">{{ this.destino.cliente.razonSocial }}</div>
-                        {{/if}}
-                        {{#if this.destino.direccion}}
-                        <div class="direccion">
-                            <strong>DESTINO:</strong> {{ this.destino.direccion }}
-                        </div>
-                        {{/if}}
-                        {{#if this.destino.distrito}}
-                        <div class="ubicacion">
-                            {{ this.destino.distrito }}{{#if this.destino.provincia}} / {{ this.destino.provincia
-                            }}{{/if}}{{#if this.destino.departamento}} / {{ this.destino.departamento }}{{/if}}
-                        </div>
-                        {{/if}}
-                        {{#if this.destino.referencia}}
-                        <div class="referencia">
-                            <strong>REFERENCIA:</strong> {{ this.destino.referencia }}
-                        </div>
-                        {{/if}}
-                        {{#if this.destino.contacto}}
-                        <div class="contacto-destino">
-                            <strong>CONTACTO:</strong> {{ this.destino.contacto.nombre }}
-                        </div>
-                        {{#if this.destino.contacto.telefono}}
-                        <div class="telefono-destino">
-                            <strong>TELÉFONO:</strong> {{ this.destino.contacto.telefono }}
-                        </div>
-                        {{/if}}
-                        {{/if}}
-                    </div>
-                </div>
+                <!-- Información del transporte asignado -->
+                {{#if this.transporteAsignado}}
+                <table class="info-transporte">
+                    <tr>
+                        <td class="label-transporte">TRANSPORTE ASIGNADO</td>
+                        <td class="data-transporte">{{ this.transporteAsignado.razonSocial }}</td>
+                    </tr>
+                    {{#if this.transporteAsignado.ubicacion}}
+                    <tr>
+                        <td class="label-ubicacion-transporte">UBICACIÓN:</td>
+                        <td class="data-ubicacion-transporte">{{ this.transporteAsignado.ubicacion }}</td>
+                    </tr>
+                    {{/if}}
+                    {{#if this.transporteAsignado.contacto}}
+                    <tr>
+                        <td class="label-contacto-transporte">CONTACTO:</td>
+                        <td class="data-contacto-transporte">{{ this.transporteAsignado.contacto.nombre }} - {{
+                            this.transporteAsignado.contacto.rol }} - {{ this.transporteAsignado.contacto.telefono }}
+                        </td>
+                    </tr>
+                    {{/if}}
+                </table>
+                {{/if}}
+
+                <!-- Información del destino -->
+                {{#if this.destino}}
+                <table class="info-destino">
+                    <tr>
+                        <td class="label-destino">DESTINO {{#if this.destino.tipoDestino}}{{ this.destino.tipoDestino
+                            }}{{/if}}</td>
+                        <td class="data-destino"></td>
+                    </tr>
+                    {{#if this.destino.cliente}}
+                    <tr>
+                        <td class="label-cliente">Cliente</td>
+                        <td class="data-cliente">{{ this.destino.cliente }}</td>
+                    </tr>
+                    {{/if}}
+                    {{#if this.destino.direccion}}
+                    <tr>
+                        <td class="label-direccion">DESTINO:</td>
+                        <td class="data-direccion">{{ this.destino.direccion }}</td>
+                    </tr>
+                    {{/if}}
+                    {{#if this.destino.ubicacion}}
+                    <tr>
+                        <td class="label-ubicacion"></td>
+                        <td class="data-ubicacion">{{ this.destino.ubicacion }}</td>
+                    </tr>
+                    {{/if}}
+                    {{#if this.destino.referencia}}
+                    <tr>
+                        <td class="label-referencia">REFERENCIA:</td>
+                        <td class="data-referencia">{{ this.destino.referencia }}</td>
+                    </tr>
+                    {{/if}}
+                    {{#if this.destino.contacto}}
+                    <tr>
+                        <td class="label-jefe">JEFE DE ALMACÉN:</td>
+                        <td class="data-jefe">{{ this.destino.contacto }}</td>
+                    </tr>
+                    {{/if}}
+                    {{#if this.destino.telefono}}
+                    <tr>
+                        <td class="label-telefono">TELÉFONO:</td>
+                        <td class="data-telefono">{{ this.destino.telefono }}</td>
+                    </tr>
+                    {{/if}}
+                    {{#if this.oc}}
+                    <tr>
+                        <td class="label-oc">OC:</td>
+                        <td class="data-oc">{{ this.oc }}</td>
+                    </tr>
+                    {{/if}}
+                    {{#if this.observacionesOp}}
+                    <tr>
+                        <td class="label-observaciones">OBSERVACIONES OP:</td>
+                        <td class="data-observaciones">{{ this.observacionesOp }}</td>
+                    </tr>
+                    {{/if}}
+                </table>
+                {{/if}}
 
                 <!-- Observaciones -->
                 {{#if this.observacion}}
-                <div class="seccion-observacion">
-                    <h4>OBSERVACIÓN</h4>
-                    <div class="texto-observacion">{{ this.observacion }}</div>
-                </div>
+                <table class="info-observacion">
+                    <tr>
+                        <td class="label-observacion">OBSERVACIÓN</td>
+                        <td class="data-observacion">{{ this.observacion }}</td>
+                    </tr>
+                </table>
                 {{/if}}
             </div>
             {{/each}}
         </div>
         {{/each}}
-
-        {{#unless fechasConCargos.length}}
+        {{else}}
+        <!-- Sin datos -->
         <div class="sin-datos">
-            <h3>No se encontraron órdenes de proveedor en el período seleccionado</h3>
-            <p>Período consultado: {{ fechaInicio }} - {{ fechaFin }}</p>
+            <h3>No se encontraron datos</h3>
+            <p>No hay órdenes de proveedor para el período seleccionado</p>
         </div>
-        {{/unless}}
+        {{/if}}
+        <script>
+            // Función para imprimir automáticamente cuando se carga la página
+            window.onload = function () {
+                // Pequeño delay para asegurar que el contenido se cargue completamente
+                setTimeout(function () {
+                    window.print();
+                }, 500);
+            };
 
-        <!-- Pie de página -->
-        <div class="pie-pagina">
-            <div>Reporte generado automáticamente el {{ fechaGeneracion }}</div>
-            <div>Sistema ERP - MULTILIMP SAC</div>
-        </div>
-    </div>
+            // Función para cerrar la ventana después de imprimir (opcional)
+            window.onafterprint = function () {
+                // Cerrar la ventana después de imprimir (solo si se abrió en popup)
+                if (window.opener) {
+                    window.close();
+                }
+            };
+        </script>
 </body>
 
 </html>

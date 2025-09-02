@@ -47,6 +47,33 @@ interface FechaCargos {
 }
 
 export const generateCargosEntregaReport = async (fechaInicio: Date, fechaFin: Date): Promise<Buffer> => {
+    const html = await generateCargosEntregaHtml(fechaInicio, fechaFin);
+
+    // Generar PDF
+    const browser = await puppeteer.launch({
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
+
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: 'networkidle0' });
+
+    const pdfBuffer = await page.pdf({
+        format: 'A4',
+        margin: {
+            top: '20mm',
+            right: '15mm',
+            bottom: '20mm',
+            left: '15mm'
+        },
+        printBackground: true
+    });
+
+    await browser.close();
+    return Buffer.from(pdfBuffer);
+};
+
+export const generateCargosEntregaHtml = async (fechaInicio: Date, fechaFin: Date): Promise<string> => {
     try {
         // Obtener todas las OPs con fechaProgramada en el rango especificado
         const ordenesProveedor = await prisma.ordenProveedor.findMany({
@@ -158,36 +185,13 @@ export const generateCargosEntregaReport = async (fechaInicio: Date, fechaFin: D
         const template = handlebars.compile(templateHtml);
         const html = template({ ...templateData, css: cssContent });
 
-        // Generar PDF
-        const browser = await puppeteer.launch({
-            headless: true,
-            args: ['--no-sandbox', '--disable-setuid-sandbox']
-        });
-
-        const page = await browser.newPage();
-        await page.setContent(html, { waitUntil: 'networkidle0' });
-
-        const pdfBuffer = await page.pdf({
-            format: 'A4',
-            margin: {
-                top: '20mm',
-                right: '15mm',
-                bottom: '20mm',
-                left: '15mm'
-            },
-            printBackground: true
-        });
-
-        await browser.close();
-        return Buffer.from(pdfBuffer);
+        return html;
 
     } catch (error) {
-        console.error('Error generando reporte de cargos de entrega:', error);
-        throw new Error(`Error al generar el reporte: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+        console.error('Error generando HTML del reporte de cargos de entrega:', error);
+        throw new Error(`Error al generar el HTML: ${error instanceof Error ? error.message : 'Error desconocido'}`);
     }
-};
-
-function determinarTipoDestino(ordenCompra: any): string {
+}; function determinarTipoDestino(ordenCompra: any): string {
     // Lógica para determinar el tipo de destino basado en los datos de la orden
     if (ordenCompra?.cliente) {
         return 'Cliente';

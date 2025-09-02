@@ -41,6 +41,9 @@ export const configureRoutes = async (app: Application): Promise<void> => {
   // Health check endpoint (sin autenticación)
   app.get('/api/health', healthCheck);
 
+  // Reportes HTML público (temporal para testing)
+  app.use('/api/reportes-public', reportesRoutes);
+
   app.use('/api/auth', authRoutes);
   // Configurar GraphQL como una ruta más
   // const graphqlMiddleware = await setupGraphQLRoutes();
