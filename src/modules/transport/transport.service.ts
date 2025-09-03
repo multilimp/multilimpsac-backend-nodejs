@@ -31,10 +31,25 @@ export const createTransport = (data: any): Promise<Transporte> => {
   return prisma.transporte.create({ data: mappedData });
 };
 
-export const updateTransport = (id: number, data: UpdateTransportData): Promise<Transporte> => {
+export const updateTransport = (id: number, data: any): Promise<Transporte> => {
+  // Mapeo explícito de snake_case a camelCase para Prisma
+  const mappedData = {
+    ...(data.ruc && { ruc: data.ruc }),
+    ...(data.razon_social && { razonSocial: data.razon_social }),
+    ...(data.razonSocial && { razonSocial: data.razonSocial }),
+    ...(data.direccion && { direccion: data.direccion }),
+    ...(data.telefono !== undefined && { telefono: data.telefono }),
+    ...(data.email !== undefined && { email: data.email }),
+    ...(data.estado !== undefined && { estado: data.estado }),
+    ...(data.cobertura && { cobertura: data.cobertura }),
+    ...(data.departamento && { departamento: data.departamento }),
+    ...(data.provincia && { provincia: data.provincia }),
+    ...(data.distrito && { distrito: data.distrito }),
+  };
+
   return prisma.transporte.update({
     where: { id },
-    data,
+    data: mappedData,
   });
 };
 

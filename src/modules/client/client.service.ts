@@ -31,10 +31,26 @@ export const createClient = (data: any): Promise<Cliente> => {
   return prisma.cliente.create({ data: mappedData });
 };
 
-export const updateClient = (id: number, data: UpdateClientData): Promise<Cliente> => {
+export const updateClient = (id: number, data: any): Promise<Cliente> => {
+  // Mapeo explícito de snake_case a camelCase para Prisma
+  const mappedData = {
+    ...(data.ruc && { ruc: data.ruc }),
+    ...(data.razon_social && { razonSocial: data.razon_social }),
+    ...(data.razonSocial && { razonSocial: data.razonSocial }),
+    ...(data.direccion && { direccion: data.direccion }),
+    ...(data.telefono !== undefined && { telefono: data.telefono }),
+    ...(data.email !== undefined && { email: data.email }),
+    ...(data.estado !== undefined && { estado: data.estado }),
+    ...(data.cod_unidad && { codigoUnidadEjecutora: data.cod_unidad }),
+    ...(data.codigoUnidadEjecutora && { codigoUnidadEjecutora: data.codigoUnidadEjecutora }),
+    ...(data.departamento && { departamento: data.departamento }),
+    ...(data.provincia && { provincia: data.provincia }),
+    ...(data.distrito && { distrito: data.distrito }),
+  };
+
   return prisma.cliente.update({
     where: { id },
-    data,
+    data: mappedData,
   });
 };
 
