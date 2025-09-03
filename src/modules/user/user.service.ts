@@ -250,3 +250,15 @@ export const adminChangePassword = async (id: number, newPassword: string): Prom
 
   return true;
 };
+
+export const updateProfilePhoto = async (userId: number, file: string): Promise<Omit<Usuario, 'password'>> => {
+  // Actualizar el usuario con la nueva URL de la foto
+  const updatedUser = await prisma.usuario.update({
+    where: { id: userId },
+    data: { foto: file }
+  });
+
+  // Retornar usuario sin contraseña
+  const { password, ...userWithoutPassword } = updatedUser;
+  return userWithoutPassword;
+};

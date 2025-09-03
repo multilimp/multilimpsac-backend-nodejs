@@ -324,3 +324,23 @@ export const adminChangeUserPassword = async (req: Request, res: Response) => {
     handleError({ res, error, msg: 'Error al cambiar contraseña' });
   }
 };
+
+export const uploadUserProfilePhoto = async (req: Request, res: Response) => {
+  try {
+    // Obtener userId desde el token de autenticación
+    const userId = (req as any).user?.id;
+    const photo = req.body.photo as string;
+    if (!userId) {
+      return res.status(401).json({ message: 'Usuario no autenticado' });
+    }
+
+    const updatedUser = await userService.updateProfilePhoto(userId, photo);
+
+    res.status(200).json({
+      message: 'Foto de perfil actualizada exitosamente',
+      user: updatedUser
+    });
+  } catch (error) {
+    handleError({ res, error, msg: 'Error al subir foto de perfil' });
+  }
+}
