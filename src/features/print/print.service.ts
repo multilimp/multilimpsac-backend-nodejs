@@ -308,6 +308,7 @@ interface OpCargosEntrega {
     contacto?: {
       nombre: string;
       telefono: string;
+      cargo?: string;
     };
   };
   transporteAsignado?: {
@@ -320,6 +321,7 @@ interface OpCargosEntrega {
     contactoTransporte?: {
       nombre: string;
       telefono: string;
+      cargo?: string;
     };
     codigoTransporte: string;
     direccion?: string;
@@ -343,6 +345,7 @@ interface OpCargosEntrega {
     contacto?: {
       nombre: string;
       telefono: string;
+      cargo?: string;
     };
   };
   observacion?: string;
@@ -450,7 +453,8 @@ export const generateCargosEntregaHtml = async (fechaInicio: Date, fechaFin: Dat
           razonSocial: op.proveedor?.razonSocial || '',
           contacto: op.contactoProveedor ? {
             nombre: op.contactoProveedor.nombre || '',
-            telefono: op.contactoProveedor.telefono || ''
+            telefono: op.contactoProveedor.telefono || '',
+            cargo: op.contactoProveedor.cargo || undefined
           } : undefined
         },
         transporteAsignado: op.transportesAsignados && op.transportesAsignados.length > 0 ? {
@@ -462,7 +466,8 @@ export const generateCargosEntregaHtml = async (fechaInicio: Date, fechaFin: Dat
           },
           contactoTransporte: op.transportesAsignados[0].contactoTransporte ? {
             nombre: op.transportesAsignados[0].contactoTransporte.nombre || '',
-            telefono: op.transportesAsignados[0].contactoTransporte.telefono || ''
+            telefono: op.transportesAsignados[0].contactoTransporte.telefono || '',
+            cargo: op.transportesAsignados[0].contactoTransporte.cargo || undefined
           } : undefined,
           codigoTransporte: op.transportesAsignados[0].codigoTransporte || '',
           direccion: op.transportesAsignados[0].direccion || undefined,
@@ -485,7 +490,8 @@ export const generateCargosEntregaHtml = async (fechaInicio: Date, fechaFin: Dat
           referencia: op.ordenCompra?.referenciaEntrega || undefined,
           contacto: op.ordenCompra?.contactoCliente ? {
             nombre: op.ordenCompra.contactoCliente.nombre || '',
-            telefono: op.ordenCompra.contactoCliente.telefono || ''
+            telefono: op.ordenCompra.contactoCliente.telefono || '',
+            cargo: op.ordenCompra.contactoCliente.cargo || undefined
           } : undefined
         },
         observacion: op.observaciones || undefined
