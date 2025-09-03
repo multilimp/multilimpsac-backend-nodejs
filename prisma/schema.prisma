@@ -67,6 +67,21 @@ model SaldoProveedor {
   @@map("saldos_proveedor")
 }
 
+model SaldoTransporte {
+  id             Int                  @id @default(autoincrement())
+  transporteId   Int
+  tipoMovimiento MovimientoTransporte @default(A_FAVOR)
+  monto          Decimal
+  descripcion    String?
+  fecha          DateTime             @default(now())
+  activo         Boolean              @default(true)
+  createdAt      DateTime             @default(now()) @map("created_at")
+  updatedAt      DateTime             @updatedAt @map("updated_at")
+  transporte     Transporte           @relation(fields: [transporteId], references: [id])
+
+  @@map("saldos_transporte")
+}
+
 model CuentaBancaria {
   id           Int                @id @default(autoincrement())
   referenciaId Int                @map("referencia_id")
@@ -107,6 +122,7 @@ model Transporte {
   contactos            Contacto[]
   cuentasBancarias     CuentaBancaria[]
   transportesAsignados TransporteAsignado[]
+  saldosTransporte     SaldoTransporte[]
 
   @@map("transportes")
 }
@@ -621,6 +637,11 @@ enum TipoPago {
 }
 
 enum MovimientoProveedor {
+  A_FAVOR
+  DEBE
+}
+
+enum MovimientoTransporte {
   A_FAVOR
   DEBE
 }

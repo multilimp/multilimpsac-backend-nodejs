@@ -33,6 +33,7 @@ import pagoOrdenProveedorRoutes from './modules/pagoOrdenProveedor/pagoOrdenProv
 import pagoTransporteAsignadoRoutes from './modules/pagoTransporteAsignado/pagoTransporteAsignado.routes';
 import paymentsRoutes from './modules/payments/payments.routes';
 import chatbotRoutes from './modules/chatbot/chatbot.routes';
+import saldosRoutes from './modules/saldos/saldos.routes';
 
 export const configureRoutes = async (app: Application): Promise<void> => {
   app.get('/api', (req: Request, res: Response) => res.json({ message: 'BACKEND MULTILIMP SAC' }));
@@ -83,6 +84,9 @@ export const configureRoutes = async (app: Application): Promise<void> => {
 
   // Controlador unificado de pagos
   app.use('/api/payments', paymentsRoutes);
+
+  // Saldos y información financiera
+  app.use('/api/saldos', saldosRoutes);
 
   // Chatbot/Asistente Virtual
   app.use('/api/chatbot', chatbotRoutes);
