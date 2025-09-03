@@ -1,12 +1,12 @@
 import prisma from '../../database/prisma';
-import { Prisma } from '@prisma/client';
+import { Prisma, EstadoCobranza } from '@prisma/client';
 
 // Tipos específicos para cobranza
 interface CobranzaFields {
   etapaSiaf?: string;
   fechaSiaf?: string | Date;
   penalidad?: string | number;
-  estadoCobranza?: string;
+  estadoCobranza?: EstadoCobranza;
   fechaEstadoCobranza?: string | Date;
 }
 
@@ -55,26 +55,26 @@ const processCobranzaFields = (data: CobranzaFields) => {
 export const updateCobranzaFields = async (ordenCompraId: number, data: CobranzaFields) => {
   // Filtrar campos undefined/null para el PATCH
   const processedData = processCobranzaFields(data);
-  
+
   // Construir objeto de actualización solo con campos definidos
   const updateData: any = {};
-  
+
   if (processedData.etapaSiaf !== undefined) {
     updateData.etapaSiaf = processedData.etapaSiaf;
   }
-  
+
   if (processedData.fechaSiaf !== undefined) {
     updateData.fechaSiaf = processedData.fechaSiaf;
   }
-  
+
   if (processedData.penalidad !== undefined) {
     updateData.penalidad = processedData.penalidad;
   }
-  
+
   if (processedData.estadoCobranza !== undefined) {
     updateData.estadoCobranza = processedData.estadoCobranza;
   }
-  
+
   if (processedData.fechaEstadoCobranza !== undefined) {
     updateData.fechaEstadoCobranza = processedData.fechaEstadoCobranza;
   }

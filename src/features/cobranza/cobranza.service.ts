@@ -1,5 +1,5 @@
 import prisma from '../../database/prisma';
-import { GestionCobranza, Prisma } from '@prisma/client';
+import { GestionCobranza, Prisma, EstadoCobranza } from '@prisma/client';
 
 // Tipos de Datos
 type CreateGestionData = Omit<GestionCobranza, 'id' | 'createdAt' | 'updatedAt' | 'ordenCompraId'>; // ordenCompraId will be provided
@@ -9,7 +9,7 @@ type UpdateGestionData = Partial<Omit<GestionCobranza, 'id' | 'createdAt' | 'upd
 type CobranzaData = {
   penalidad?: string | number | null;
   netoCobrado?: string | number | null;
-  estadoCobranza?: string | null;
+  estadoCobranza?: EstadoCobranza | null;
   fechaEstadoCobranza?: string | Date | null;
   fechaProximaGestion?: string | Date | null;
   gestiones?: (CreateGestionData | (UpdateGestionData & { id: number }))[];
@@ -25,7 +25,7 @@ const processCobranzaData = (data: CobranzaData) => {
     } else if (typeof processedData.penalidad === 'string') {
       processedData.penalidad = new Prisma.Decimal(processedData.penalidad);
     } else {
-        processedData.penalidad = new Prisma.Decimal(Number(processedData.penalidad));
+      processedData.penalidad = new Prisma.Decimal(Number(processedData.penalidad));
     }
   }
 
@@ -35,7 +35,7 @@ const processCobranzaData = (data: CobranzaData) => {
     } else if (typeof processedData.netoCobrado === 'string') {
       processedData.netoCobrado = new Prisma.Decimal(processedData.netoCobrado);
     } else {
-        processedData.netoCobrado = new Prisma.Decimal(Number(processedData.netoCobrado));
+      processedData.netoCobrado = new Prisma.Decimal(Number(processedData.netoCobrado));
     }
   }
 
@@ -53,11 +53,11 @@ const processCobranzaData = (data: CobranzaData) => {
   if (processedData.fechaProximaGestion) {
     if (typeof processedData.fechaProximaGestion === 'string' && processedData.fechaProximaGestion.trim() !== '') {
       processedData.fechaProximaGestion = new Date(processedData.fechaProximaGestion);
-    } else if (processedData.fechaProximaGestion === '' || processedData.fechaProximaGestion === null){
+    } else if (processedData.fechaProximaGestion === '' || processedData.fechaProximaGestion === null) {
       processedData.fechaProximaGestion = null;
     }
   } else {
-      processedData.fechaProximaGestion = null;
+    processedData.fechaProximaGestion = null;
   }
 
   return processedData;
@@ -66,21 +66,21 @@ const processCobranzaData = (data: CobranzaData) => {
 // Función auxiliar para procesar datos de gestión
 const processGestionData = (gestion: CreateGestionData | (UpdateGestionData & { id: number })) => {
   const processedGestion: any = { ...gestion };
-  
+
   if (processedGestion.fechaGestion) {
     if (typeof processedGestion.fechaGestion === 'string' && processedGestion.fechaGestion.trim() !== '') {
       processedGestion.fechaGestion = new Date(processedGestion.fechaGestion);
     } else if (processedGestion.fechaGestion === '' || processedGestion.fechaGestion === null) {
-        processedGestion.fechaGestion = null;
+      processedGestion.fechaGestion = null;
     }
   } else {
-      processedGestion.fechaGestion = null;
+    processedGestion.fechaGestion = null;
   }
   if (processedGestion.estadoCobranza === undefined && !('id' in gestion && gestion.id)) {
-    processedGestion.estadoCobranza = "PENDIENTE"; 
+    processedGestion.estadoCobranza = EstadoCobranza.REQ;
   }
-    const dataToUpsert: any = {};
-  
+  const dataToUpsert: any = {};
+
   if (processedGestion.notaGestion !== undefined) dataToUpsert.notaGestion = processedGestion.notaGestion;
   if (processedGestion.estadoCobranza !== undefined) dataToUpsert.estadoCobranza = processedGestion.estadoCobranza;
   if (processedGestion.fechaGestion !== undefined) dataToUpsert.fechaGestion = processedGestion.fechaGestion;
@@ -100,7 +100,7 @@ const processGestionData = (gestion: CreateGestionData | (UpdateGestionData & { 
 export const cobranzaService = {
   async updateCobranza(ordenCompraId: number, data: CobranzaData) {
     const { gestiones, ...cobranzaData } = data;
-    
+
     const processedCobranzaData = processCobranzaData(cobranzaData);
 
     return await prisma.$transaction(async (tx) => {
@@ -118,11 +118,11 @@ export const cobranzaService = {
       if (gestiones && gestiones.length > 0) {
         for (const gestion of gestiones) {
           const processedGestionData = processGestionData(gestion);
-          
+
           if ('id' in gestion && gestion.id) {
             await tx.gestionCobranza.update({
               where: { id: gestion.id },
-              data: processedGestionData 
+              data: processedGestionData
             });
           } else {
             await tx.gestionCobranza.create({
@@ -136,12 +136,12 @@ export const cobranzaService = {
       }
 
       return tx.ordenCompra.findUnique({
-          where: { id: ordenCompraId },
-          include: {
-              gestionCobranzas: {
-                  orderBy: { fechaGestion: 'desc' }
-              }
+        where: { id: ordenCompraId },
+        include: {
+          gestionCobranzas: {
+            orderBy: { fechaGestion: 'desc' }
           }
+        }
       });
     });
   },
@@ -155,7 +155,7 @@ export const cobranzaService = {
 
   async createGestion(ordenCompraId: number, data: CreateGestionData) {
     const processedData = processGestionData(data);
-    
+
     return prisma.gestionCobranza.create({
       data: {
         ...(processedData as CreateGestionData),
@@ -166,7 +166,7 @@ export const cobranzaService = {
 
   async updateGestion(gestionId: number, data: UpdateGestionData) {
     const processedData = processGestionData({ ...data, id: gestionId });
-    
+
     return prisma.gestionCobranza.update({
       where: { id: gestionId },
       data: processedData

@@ -253,7 +253,7 @@ model OrdenCompra {
   fechaEntregaOc        DateTime?             @map("fecha_entrega_oc") @db.Date
   penalidad             Decimal?              @db.Decimal(10, 2)
   netoCobrado           Decimal?              @map("neto_cobrado") @db.Decimal(10, 2)
-  estadoCobranza        String?               @map("estado_cobranza")
+  estadoCobranza        EstadoCobranza?       @map("estado_cobranza")
   fechaEstadoCobranza   DateTime?             @map("fecha_estado_cobranza") @db.Date
   fechaProximaGestion   DateTime?             @map("fecha_proxima_gestion") @db.Date
   etapaActual           String                @default("creacion") @map("etapa_actual")
@@ -523,13 +523,13 @@ model Facturacion {
 }
 
 model GestionCobranza {
-  id                   Int      @id @default(autoincrement())
-  ordenCompraId        Int?     @map("orden_compra_id")
-  ordenCompraPrivadaId Int?     @map("orden_compra_privada_id")
-  usuarioId            Int      @map("usuario_id")
-  fechaGestion         DateTime @map("fecha_gestion")
-  notaGestion          String?  @map("nota_gestion")
-  estadoCobranza       String?  @map("estado_cobranza")
+  id                   Int             @id @default(autoincrement())
+  ordenCompraId        Int?            @map("orden_compra_id")
+  ordenCompraPrivadaId Int?            @map("orden_compra_privada_id")
+  usuarioId            Int             @map("usuario_id")
+  fechaGestion         DateTime        @map("fecha_gestion")
+  notaGestion          String?         @map("nota_gestion")
+  estadoCobranza       EstadoCobranza? @map("estado_cobranza")
 
   tipoCobranza                 TipoCobranza? @map("tipo_cobranza")
   voucherPagoUrl               String?       @map("voucher_pago_url")
@@ -662,6 +662,17 @@ enum TipoProgramacionOp {
 }
 
 // Estados de programación de entrega
+enum EstadoCobranza {
+  REQ
+  REIT1
+  REIT2
+  OCI
+  PC
+  MAXIMA_AUTORIDAD
+  CARTA_NOTARIAL
+  DENUNCIA_JUDICIAL
+}
+
 enum EstadoProgramacionOp {
   PENDIENTE
   EN_PROCESO
