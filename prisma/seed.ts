@@ -57,26 +57,6 @@ async function main() {
         permisos: adminPermissions,
       },
     }),
-    prisma.usuario.create({
-      data: {
-        nombre: 'Ana García',
-        email: 'ana.garcia@multilimpsac.com',
-        password: userPassword,
-        role: Role.USER,
-        estado: true,
-        permisos: userPermissions,
-      },
-    }),
-    prisma.usuario.create({
-      data: {
-        nombre: 'Carlos López',
-        email: 'carlos.lopez@multilimpsac.com',
-        password: userPassword,
-        role: Role.USER,
-        estado: true,
-        permisos: userPermissions,
-      },
-    }),
   ]);
 
   // 2. Crear empresas
@@ -97,7 +77,7 @@ async function main() {
     }),
     prisma.empresa.create({
       data: {
-        razonSocial: 'CREDITOS Y FINANZAS S.A.C.',
+        razonSocial: 'GRUPO ECOLIMP E.I.R.L.',
         ruc: '20987654321',
         direccion: 'Av. Norte 456, Trujillo',
         telefono: '+51 999 654 321',
