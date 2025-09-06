@@ -5,7 +5,9 @@ import {
     createProviderSaldo,
     createTransportSaldo,
     updateSaldo,
-    deleteSaldo
+    deleteSaldo,
+    updateTransportSaldo,
+    deleteTransportSaldo
 } from './saldos.controller';
 
 const router = Router();
@@ -21,5 +23,9 @@ router.post('/transports/:transportId/saldos', createTransportSaldo);
 // Rutas para gestionar saldos
 router.put('/saldos/:saldoId', updateSaldo);
 router.delete('/saldos/:saldoId', deleteSaldo);
+
+// Rutas para gestionar saldos de transporte
+router.put('/transport-saldos/:saldoId', updateTransportSaldo);
+router.delete('/transport-saldos/:saldoId', deleteTransportSaldo);
 
 export default router;

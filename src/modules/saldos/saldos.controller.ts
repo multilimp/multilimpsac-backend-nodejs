@@ -126,7 +126,7 @@ export const getTransportFinancialData = async (req: Request, res: Response) => 
 export const createProviderSaldo = async (req: Request, res: Response) => {
     try {
         const providerId = parseInt(req.params.providerId, 10);
-        const { tipoMovimiento, monto, descripcion } = req.body;
+        const { tipoMovimiento, monto, descripcion, banco, fecha } = req.body;
 
         if (isNaN(providerId)) {
             return res.status(400).json({
@@ -147,7 +147,9 @@ export const createProviderSaldo = async (req: Request, res: Response) => {
                 proveedorId: providerId,
                 tipoMovimiento,
                 monto,
-                descripcion
+                descripcion,
+                banco,
+                fecha: fecha ? new Date(fecha) : undefined
             }
         });
 
@@ -170,7 +172,7 @@ export const createProviderSaldo = async (req: Request, res: Response) => {
 export const createTransportSaldo = async (req: Request, res: Response) => {
     try {
         const { transportId } = req.params;
-        const { tipoMovimiento, monto, descripcion } = req.body;
+        const { tipoMovimiento, monto, descripcion, banco, fecha } = req.body;
 
         // Validar que el transporte existe
         const transporte = await prisma.transporte.findUnique({
@@ -187,7 +189,9 @@ export const createTransportSaldo = async (req: Request, res: Response) => {
                 transporteId: parseInt(transportId),
                 tipoMovimiento,
                 monto,
-                descripcion
+                descripcion,
+                banco,
+                fecha: fecha ? new Date(fecha) : undefined
             }
         });
 
@@ -202,7 +206,7 @@ export const createTransportSaldo = async (req: Request, res: Response) => {
 export const updateSaldo = async (req: Request, res: Response) => {
     try {
         const saldoId = parseInt(req.params.saldoId, 10);
-        const { tipoMovimiento, monto, descripcion, activo } = req.body;
+        const { tipoMovimiento, monto, descripcion, activo, banco, fecha } = req.body;
 
         if (isNaN(saldoId)) {
             return res.status(400).json({
@@ -217,6 +221,8 @@ export const updateSaldo = async (req: Request, res: Response) => {
                 ...(tipoMovimiento && { tipoMovimiento }),
                 ...(monto && { monto }),
                 ...(descripcion !== undefined && { descripcion }),
+                ...(banco !== undefined && { banco }),
+                ...(fecha && { fecha: new Date(fecha) }),
                 ...(activo !== undefined && { activo })
             }
         });
@@ -236,7 +242,79 @@ export const updateSaldo = async (req: Request, res: Response) => {
     }
 };
 
-// Eliminar saldo
+// Actualizar saldo de transporte
+export const updateTransportSaldo = async (req: Request, res: Response) => {
+    try {
+        const saldoId = parseInt(req.params.saldoId, 10);
+        const { tipoMovimiento, monto, descripcion, activo, banco, fecha } = req.body;
+
+        if (isNaN(saldoId)) {
+            return res.status(400).json({
+                success: false,
+                message: 'ID de saldo inválido'
+            });
+        }
+
+        const saldoActualizado = await prisma.saldoTransporte.update({
+            where: { id: saldoId },
+            data: {
+                ...(tipoMovimiento && { tipoMovimiento }),
+                ...(monto && { monto }),
+                ...(descripcion !== undefined && { descripcion }),
+                ...(banco !== undefined && { banco }),
+                ...(fecha && { fecha: new Date(fecha) }),
+                ...(activo !== undefined && { activo })
+            }
+        });
+
+        res.status(200).json({
+            success: true,
+            message: 'Saldo de transporte actualizado correctamente',
+            data: saldoActualizado
+        });
+
+    } catch (error) {
+        handleError({
+            res,
+            error,
+            msg: 'Error al actualizar saldo de transporte'
+        });
+    }
+};
+
+// Eliminar saldo de transporte
+export const deleteTransportSaldo = async (req: Request, res: Response) => {
+    try {
+        const saldoId = parseInt(req.params.saldoId, 10);
+
+        if (isNaN(saldoId)) {
+            return res.status(400).json({
+                success: false,
+                message: 'ID de saldo inválido'
+            });
+        }
+
+        // Soft delete - marcar como inactivo
+        await prisma.saldoTransporte.update({
+            where: { id: saldoId },
+            data: { activo: false }
+        });
+
+        res.status(200).json({
+            success: true,
+            message: 'Saldo de transporte eliminado correctamente'
+        });
+
+    } catch (error) {
+        handleError({
+            res,
+            error,
+            msg: 'Error al eliminar saldo de transporte'
+        });
+    }
+};
+
+// Eliminar saldo de proveedor
 export const deleteSaldo = async (req: Request, res: Response) => {
     try {
         const saldoId = parseInt(req.params.saldoId, 10);

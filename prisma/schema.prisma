@@ -58,6 +58,7 @@ model SaldoProveedor {
   tipoMovimiento MovimientoProveedor @default(A_FAVOR)
   monto          Decimal
   descripcion    String?
+  banco          String?
   fecha          DateTime            @default(now())
   activo         Boolean             @default(true)
   createdAt      DateTime            @default(now()) @map("created_at")
@@ -73,6 +74,7 @@ model SaldoTransporte {
   tipoMovimiento MovimientoTransporte @default(A_FAVOR)
   monto          Decimal
   descripcion    String?
+  banco          String?
   fecha          DateTime             @default(now())
   activo         Boolean              @default(true)
   createdAt      DateTime             @default(now()) @map("created_at")
