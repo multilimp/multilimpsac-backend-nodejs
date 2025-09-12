@@ -1,7 +1,6 @@
 import { PutObjectCommand } from '@aws-sdk/client-s3';
 import fs from 'fs';
 import { File } from 'formidable';
-import { nanoid } from 'nanoid';
 import { config } from '../config/env';
 import logger from '../config/logger';
 import { r2Client } from '../api/r2Client';

@@ -1,5 +1,0 @@
-# Definición del tipo escalar JSON
-scalar JSON
-
-# Directivas para campos especiales
-directive @jsonField on FIELD_DEFINITION

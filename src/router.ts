@@ -32,7 +32,7 @@ import pagoOrdenCompraPrivadaRoutes from './modules/pagoOrdenCompraPrivada/pagoO
 import pagoOrdenProveedorRoutes from './modules/pagoOrdenProveedor/pagoOrdenProveedor.routes';
 import pagoTransporteAsignadoRoutes from './modules/pagoTransporteAsignado/pagoTransporteAsignado.routes';
 import paymentsRoutes from './modules/payments/payments.routes';
-import chatbotRoutes from './modules/chatbot/chatbot.routes';
+import chatbotRoutes from './routes/chatbot.routes';
 import saldosRoutes from './modules/saldos/saldos.routes';
 
 export const configureRoutes = async (app: Application): Promise<void> => {
@@ -42,11 +42,6 @@ export const configureRoutes = async (app: Application): Promise<void> => {
   app.get('/api/health', healthCheck);
 
   app.use('/api/auth', authRoutes);
-  // Configurar GraphQL como una ruta más
-  // const graphqlMiddleware = await setupGraphQLRoutes();
-  // Aplicar middleware personalizado para simplificar respuestas GraphQL
-  //app.use('/graphqlk', express.json(), cors(), simplifyResponseMiddleware, graphqlMiddleware);
-
 
   app.use(authenticateToken);
 
