@@ -27,6 +27,7 @@ export const createClient = (data: any): Promise<Cliente> => {
     departamento: data.departamento,
     provincia: data.provincia,
     distrito: data.distrito,
+    sede: data.sede,
   };
   return prisma.cliente.create({ data: mappedData });
 };
@@ -46,6 +47,7 @@ export const updateClient = (id: number, data: any): Promise<Cliente> => {
     ...(data.departamento && { departamento: data.departamento }),
     ...(data.provincia && { provincia: data.provincia }),
     ...(data.distrito && { distrito: data.distrito }),
+    ...(data.sede !== undefined && { sede: data.sede }),
   };
 
   return prisma.cliente.update({

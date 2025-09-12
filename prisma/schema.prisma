@@ -12,7 +12,7 @@ datasource db {
 model Cliente {
   id                    Int              @id @default(autoincrement())
   razonSocial           String           @map("razon_social")
-  ruc                   String           @unique
+  ruc                   String
   direccion             String?
   telefono              String?
   email                 String?
@@ -21,6 +21,7 @@ model Cliente {
   departamento          String?
   provincia             String?
   distrito              String?
+  sede                  String?
   createdAt             DateTime         @default(now()) @map("created_at")
   updatedAt             DateTime         @updatedAt @map("updated_at")
   contactos             Contacto[]
