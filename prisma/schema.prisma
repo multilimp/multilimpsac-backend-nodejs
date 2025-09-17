@@ -242,54 +242,55 @@ model CotizacionProducto {
 }
 
 model OrdenCompra {
-  id                    Int                   @id @default(autoincrement())
-  codigoVenta           String                @unique @map("codigo_venta")
-  fechaEmision          DateTime?             @map("fecha_emision") @db.Date
-  archivoOc             String?               @map("archivo_oc")
-  empresaId             Int?                  @map("empresa_id")
-  clienteId             Int?                  @map("cliente_id")
-  contactoClienteId     Int?                  @map("contacto_cliente_id")
-  catalogoEmpresaId     Int?                  @map("catalogo_empresa_id")
-  ventaPrivada          Boolean               @default(false) @map("venta_privada")
-  provinciaEntrega      String?               @map("provincia_entrega")
-  distritoEntrega       String?               @map("distrito_entrega")
-  departamentoEntrega   String?               @map("departamento_entrega")
-  direccionEntrega      String?               @map("direccion_entrega")
-  referenciaEntrega     String?               @map("referencia_entrega")
-  fechaEntrega          DateTime?             @map("fecha_entrega") @db.Date
-  montoVenta            Decimal?              @map("monto_venta") @db.Decimal(10, 2)
-  fechaForm             DateTime?             @map("fecha_form") @db.Date
-  fechaMaxForm          DateTime?             @map("fecha_max_form") @db.Date
-  productos             Json?
-  documentoOce          String?               @map("documento_oce")
-  documentoOcf          String?               @map("documento_ocf")
-  codigoOcf             String?               @map("codigo_ocf") // Código manual de orden de compra física
-  siaf                  String?
-  etapaSiaf             String?               @map("etapa_siaf")
-  fechaSiaf             DateTime?             @map("fecha_siaf") @db.Date
-  documentoPeruCompras  String?               @map("documento_peru_compras")
-  fechaPeruCompras      DateTime?             @map("fecha_peru_compras") @db.Date
-  fechaEntregaOc        DateTime?             @map("fecha_entrega_oc") @db.Date
-  penalidad             Decimal?              @db.Decimal(10, 2)
-  netoCobrado           Decimal?              @map("neto_cobrado") @db.Decimal(10, 2)
-  estadoCobranza        EstadoCobranza?       @map("estado_cobranza")
-  fechaEstadoCobranza   DateTime?             @map("fecha_estado_cobranza") @db.Date
-  fechaProximaGestion   DateTime?             @map("fecha_proxima_gestion") @db.Date
-  etapaActual           String                @default("creacion") @map("etapa_actual")
-  estadoVenta           String                @default("incompleto") @map("estado_venta")
-  estadoActivo          Boolean               @default(true) @map("estado_activo")
-  createdAt             DateTime              @default(now()) @map("created_at")
-  updatedAt             DateTime              @updatedAt @map("updated_at")
-  facturaciones         Facturacion[]
-  gestionCobranzas      GestionCobranza[]
-  catalogoEmpresa       Catalogo?             @relation(fields: [catalogoEmpresaId], references: [id])
-  cliente               Cliente?              @relation(fields: [clienteId], references: [id])
-  contactoCliente       Contacto?             @relation(fields: [contactoClienteId], references: [id])
-  empresa               Empresa?              @relation(fields: [empresaId], references: [id])
-  OrdenCompraAgrupada   OrdenCompraAgrupada[]
-  ordenCompraPrivada    OrdenCompraPrivada?
-  ordenesProveedor      OrdenProveedor[]
-  programacionesEntrega ProgramacionEntrega[]
+  id                            Int                   @id @default(autoincrement())
+  codigoVenta                   String                @unique @map("codigo_venta")
+  fechaEmision                  DateTime?             @map("fecha_emision") @db.Date
+  archivoOc                     String?               @map("archivo_oc")
+  empresaId                     Int?                  @map("empresa_id")
+  clienteId                     Int?                  @map("cliente_id")
+  contactoClienteId             Int?                  @map("contacto_cliente_id")
+  catalogoEmpresaId             Int?                  @map("catalogo_empresa_id")
+  ventaPrivada                  Boolean               @default(false) @map("venta_privada")
+  multipleFuentesFinanciamiento Boolean               @default(false) @map("multiple_fuentes_financiamiento")
+  provinciaEntrega              String?               @map("provincia_entrega")
+  distritoEntrega               String?               @map("distrito_entrega")
+  departamentoEntrega           String?               @map("departamento_entrega")
+  direccionEntrega              String?               @map("direccion_entrega")
+  referenciaEntrega             String?               @map("referencia_entrega")
+  fechaEntrega                  DateTime?             @map("fecha_entrega") @db.Date
+  montoVenta                    Decimal?              @map("monto_venta") @db.Decimal(10, 2)
+  fechaForm                     DateTime?             @map("fecha_form") @db.Date
+  fechaMaxForm                  DateTime?             @map("fecha_max_form") @db.Date
+  productos                     Json?
+  documentoOce                  String?               @map("documento_oce")
+  documentoOcf                  String?               @map("documento_ocf")
+  codigoOcf                     String?               @map("codigo_ocf") // Código manual de orden de compra física
+  siaf                          String?
+  etapaSiaf                     String?               @map("etapa_siaf")
+  fechaSiaf                     DateTime?             @map("fecha_siaf") @db.Date
+  documentoPeruCompras          String?               @map("documento_peru_compras")
+  fechaPeruCompras              DateTime?             @map("fecha_peru_compras") @db.Date
+  fechaEntregaOc                DateTime?             @map("fecha_entrega_oc") @db.Date
+  penalidad                     Decimal?              @db.Decimal(10, 2)
+  netoCobrado                   Decimal?              @map("neto_cobrado") @db.Decimal(10, 2)
+  estadoCobranza                EstadoCobranza?       @map("estado_cobranza")
+  fechaEstadoCobranza           DateTime?             @map("fecha_estado_cobranza") @db.Date
+  fechaProximaGestion           DateTime?             @map("fecha_proxima_gestion") @db.Date
+  etapaActual                   String                @default("creacion") @map("etapa_actual")
+  estadoVenta                   String                @default("incompleto") @map("estado_venta")
+  estadoActivo                  Boolean               @default(true) @map("estado_activo")
+  createdAt                     DateTime              @default(now()) @map("created_at")
+  updatedAt                     DateTime              @updatedAt @map("updated_at")
+  facturaciones                 Facturacion[]
+  gestionCobranzas              GestionCobranza[]
+  catalogoEmpresa               Catalogo?             @relation(fields: [catalogoEmpresaId], references: [id])
+  cliente                       Cliente?              @relation(fields: [clienteId], references: [id])
+  contactoCliente               Contacto?             @relation(fields: [contactoClienteId], references: [id])
+  empresa                       Empresa?              @relation(fields: [empresaId], references: [id])
+  OrdenCompraAgrupada           OrdenCompraAgrupada[]
+  ordenCompraPrivada            OrdenCompraPrivada?
+  ordenesProveedor              OrdenProveedor[]
+  programacionesEntrega         ProgramacionEntrega[]
 
   @@map("ordenes_compra")
 }
