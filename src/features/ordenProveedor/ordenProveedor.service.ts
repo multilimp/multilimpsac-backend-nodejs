@@ -36,7 +36,7 @@ const processOrdenProveedorData = (data: any) => {
 const generateCodigoOp = async (id: number): Promise<string> => {
   const oc = await prisma.ordenCompra.findUnique({
     where: { id },
-    select: { 
+    select: {
       codigoVenta: true,
       empresa: {
         select: {
@@ -49,6 +49,14 @@ const generateCodigoOp = async (id: number): Promise<string> => {
   if (!oc) throw new Error('Orden de compra no encontrada');
   if (!oc.empresa) throw new Error('La orden de compra no tiene empresa asociada');
 
+  // ✅ CORRECCIÓN: Extraer el número del código OC en lugar de usar el ID interno
+  // Ejemplo: "OCGRU5" → extraer "5"
+  const ocNumberMatch = oc.codigoVenta.match(/(\d+)$/);
+  if (!ocNumberMatch) {
+    throw new Error('No se pudo extraer el número del código de orden de compra');
+  }
+  const ocNumber = ocNumberMatch[1]; // Ej: "5" de "OCGRU5"
+
   // ✅ CORRECCIÓN: Manejar el formato real del sistema OC-2025-001, OCP-2025-001, etc.
   // Extraer las 3 primeras letras de la razón social de la empresa
   const empresaPrefix = oc.empresa.razonSocial
@@ -57,9 +65,10 @@ const generateCodigoOp = async (id: number): Promise<string> => {
     .toUpperCase()
     .substring(0, 3);
 
-  // ✅ CORRECCIÓN: Buscar OPs existentes con el patrón OP[EMP][ID]-
-  const basePattern = `OP${empresaPrefix}${id}-`;
-  
+  // ✅ CORRECCIÓN: Buscar OPs existentes con el patrón OP[EMP][NUM_OC]-
+  // Ahora usa el número del código OC, no el ID interno
+  const basePattern = `OP${empresaPrefix}${ocNumber}-`;
+
   const existingOps = await prisma.ordenProveedor.findMany({
     where: {
       codigoOp: {
@@ -79,7 +88,7 @@ const generateCodigoOp = async (id: number): Promise<string> => {
     }
   }
 
-  // ✅ RESULTADO: OPMUL1-1, OPMUL1-2, OPMUL2-1, etc.
+  // ✅ RESULTADO: OPMUL5-1, OPMUL5-2, OPGRU5-1, etc. (usa el número del código OC)
   const newSuffix = maxSuffix + 1;
   return `${basePattern}${newSuffix}`;
 };
@@ -96,13 +105,13 @@ const generateCodigoTransporte = async (ordenProveedorId: number): Promise<strin
   }
 
   const codigoOp = ordenProveedor.codigoOp;
-  
+
   // ✅ NUEVO: Buscar transportes existentes para esta OP con el patrón [CODIGO_OP]-T[N]
   const existing = await prisma.transporteAsignado.findMany({
     where: { ordenProveedorId: ordenProveedorId },
     select: { codigoTransporte: true },
   });
-  
+
   let maxSuffix = 0;
   for (const t of existing) {
     // ✅ NUEVO: Buscar patrón [CODIGO_OP]-T[NUMERO]
@@ -112,7 +121,7 @@ const generateCodigoTransporte = async (ordenProveedorId: number): Promise<strin
       if (num > maxSuffix) maxSuffix = num;
     }
   }
-  
+
   // ✅ RESULTADO: OPMUL4-1-T1, OPMUL4-1-T2, OPMUL4-1-T3, etc.
   const newSuffix = maxSuffix + 1;
   return `${codigoOp}-T${newSuffix}`;
@@ -190,7 +199,7 @@ export const getOrdenProveedorById = (id: number): Promise<OrdenProveedor | null
 export const createOrdenProveedor = async (id: number, data: CreateOrdenProveedorData): Promise<OrdenProveedor> => {
   const codigoOp = await generateCodigoOp(id);
   const processedData = processOrdenProveedorData({ ...data, codigoOp });
-  
+
   // ✅ CORRECCIÓN: Generar códigos únicos para cada transporte
   if (processedData.transportesAsignados && Array.isArray(processedData.transportesAsignados.create)) {
     // Obtener el número máximo actual de transportes para esta OP
@@ -198,7 +207,7 @@ export const createOrdenProveedor = async (id: number, data: CreateOrdenProveedo
       where: { ordenProveedorId: id },
       select: { codigoTransporte: true },
     });
-    
+
     let currentMaxSuffix = 0;
     for (const t of existing) {
       const match = t.codigoTransporte.match(new RegExp(`^${codigoOp.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}-T(\\d+)$`));
@@ -207,14 +216,14 @@ export const createOrdenProveedor = async (id: number, data: CreateOrdenProveedo
         if (num > currentMaxSuffix) currentMaxSuffix = num;
       }
     }
-    
+
     // Asignar códigos secuenciales únicos
     for (let i = 0; i < processedData.transportesAsignados.create.length; i++) {
       const newSuffix = currentMaxSuffix + i + 1;
       processedData.transportesAsignados.create[i].codigoTransporte = `${codigoOp}-T${newSuffix}`;
     }
   }
-  
+
   return prisma.ordenProveedor.create({
     data: processedData as CreateOrdenProveedorData,
     include: {
@@ -238,11 +247,11 @@ export const updateOrdenProveedor = async (id: number, data: UpdateOrdenProveedo
   }
 
   const processedData = processOrdenProveedorData(data);
-  
+
   // ✅ NUEVA LÓGICA: Solo generar códigos para transportes REALMENTE NUEVOS
   if (processedData.transportesAsignados) {
     const codigoOp = existing.codigoOp;
-    
+
     // Si hay operaciones de creación (transportes realmente nuevos)
     if (processedData.transportesAsignados.create && Array.isArray(processedData.transportesAsignados.create)) {
       // Obtener todos los transportes existentes (incluye los que se van a mantener)
@@ -250,7 +259,7 @@ export const updateOrdenProveedor = async (id: number, data: UpdateOrdenProveedo
         where: { ordenProveedorId: id },
         select: { codigoTransporte: true },
       });
-      
+
       let currentMaxSuffix = 0;
       for (const t of allExistingTransports) {
         const match = t.codigoTransporte.match(new RegExp(`^${codigoOp.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}-T(\\d+)$`));
@@ -259,7 +268,7 @@ export const updateOrdenProveedor = async (id: number, data: UpdateOrdenProveedo
           if (num > currentMaxSuffix) currentMaxSuffix = num;
         }
       }
-      
+
       // ✅ SOLO generar códigos para los NUEVOS transportes
       for (let i = 0; i < processedData.transportesAsignados.create.length; i++) {
         // Verificar si realmente es nuevo (no tiene codigoTransporte)
@@ -270,7 +279,7 @@ export const updateOrdenProveedor = async (id: number, data: UpdateOrdenProveedo
       }
     }
   }
-  
+
   return prisma.ordenProveedor.update({
     where: { id },
     data: processedData as any,
@@ -292,7 +301,7 @@ export const patchOrdenProveedor = async (id: number, data: Partial<UpdateOrdenP
   }
 
   const processedData = processOrdenProveedorData(data);
-  
+
   return prisma.ordenProveedor.update({
     where: { id },
     data: processedData as any,
