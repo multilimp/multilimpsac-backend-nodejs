@@ -35,7 +35,7 @@ model Cliente {
 model Proveedor {
   id               Int              @id @default(autoincrement())
   razonSocial      String           @map("razon_social")
-  ruc              String           @unique
+  ruc              String
   direccion        String?
   telefono         String?
   email            String?
@@ -111,7 +111,7 @@ model CuentaBancaria {
 model Transporte {
   id                   Int                  @id @default(autoincrement())
   razonSocial          String               @map("razon_social")
-  ruc                  String               @unique
+  ruc                  String
   direccion            String?
   telefono             String?
   email                String?
