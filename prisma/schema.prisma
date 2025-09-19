@@ -277,7 +277,8 @@ model OrdenCompra {
   fechaEstadoCobranza           DateTime?             @map("fecha_estado_cobranza") @db.Date
   fechaProximaGestion           DateTime?             @map("fecha_proxima_gestion") @db.Date
   etapaActual                   String                @default("creacion") @map("etapa_actual")
-  estadoVenta                   String                @default("incompleto") @map("estado_venta")
+  estadoVenta                   EstadoRol             @default(PENDIENTE) @map("estado_venta")
+  estadoRolSeguimiento          EstadoRol             @default(PENDIENTE) @map("estado_rol_seguimiento")
   estadoActivo                  Boolean               @default(true) @map("estado_activo")
   createdAt                     DateTime              @default(now()) @map("created_at")
   updatedAt                     DateTime              @updatedAt @map("updated_at")
@@ -378,6 +379,8 @@ model OrdenProveedor {
   tipoEntrega             String?                     @map("tipo_entrega")
   retornoMercaderia       String?                     @map("retorno_mercaderia")
   estadoOp                String?                     @map("estado_op")
+  estadoRolSeguimiento    EstadoRol                   @default(PENDIENTE) @map("estado_rol_seguimiento")
+  estadoRolOp             EstadoRol                   @default(PENDIENTE) @map("estado_rol_op")
   fechaEntrega            String?                     @map("fecha_entrega")
   cargoOea                String?                     @map("cargo_oea")
   etiquetado              String?
@@ -526,18 +529,20 @@ model Almacen {
 }
 
 model Facturacion {
-  id                Int         @id @default(autoincrement())
-  ordenCompraId     Int         @map("orden_compra_id")
-  factura           String?
-  fechaFactura      DateTime?   @map("fecha_factura") @db.Date
-  grr               String?
-  retencion         Decimal?    @db.Decimal(10, 2)
-  detraccion        Decimal?    @db.Decimal(10, 2)
-  formaEnvioFactura String?     @map("forma_envio_factura")
-  estado            Int?        @default(1)
-  createdAt         DateTime    @default(now()) @map("created_at")
-  updatedAt         DateTime    @updatedAt @map("updated_at")
-  ordenCompra       OrdenCompra @relation(fields: [ordenCompraId], references: [id])
+  id                 Int         @id @default(autoincrement())
+  ordenCompraId      Int         @map("orden_compra_id")
+  factura            String?
+  fechaFactura       DateTime?   @map("fecha_factura") @db.Date
+  grr                String?
+  retencion          Decimal?    @db.Decimal(10, 2)
+  detraccion         Decimal?    @db.Decimal(10, 2)
+  formaEnvioFactura  String?     @map("forma_envio_factura")
+  estado             Int?        @default(1)
+  notaCreditoArchivo String?     @map("nota_credito_archivo")
+  notaCreditoTexto   String?     @map("nota_credito_texto")
+  createdAt          DateTime    @default(now()) @map("created_at")
+  updatedAt          DateTime    @updatedAt @map("updated_at")
+  ordenCompra        OrdenCompra @relation(fields: [ordenCompraId], references: [id])
 
   @@map("facturaciones")
 }
@@ -643,6 +648,13 @@ enum TipoPago {
 enum MovimientoProveedor {
   A_FAVOR
   DEBE
+}
+
+enum EstadoRol {
+  PENDIENTE
+  COMPLETADO
+  CANCELADO
+  EN_PROCESO
 }
 
 enum MovimientoTransporte {

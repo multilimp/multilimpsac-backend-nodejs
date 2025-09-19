@@ -106,7 +106,7 @@ export const createVenta = async (data: CreateVentaType): Promise<OrdenCompra> =
       // Productos y estado
       productos: directSaleBody.productos,
       etapaActual: 'creacion',
-      estadoVenta: directSaleBody.estadoVenta || 'incompleto',
+      estadoVenta: directSaleBody.estadoVenta || 'PENDIENTE',
       estadoActivo: true,
       fechaEmision: new Date(),
     };
