@@ -29,3 +29,24 @@ export const partialUpdateFacturacion = (id: number, data: Partial<Facturacion>)
 export const deleteFacturacion = (id: number): Promise<Facturacion> => {
   return prisma.facturacion.delete({ where: { id } });
 };
+
+export const refacturarFacturacion = async (idFactura: number, data: { notaCreditoTexto?: string; notaCreditoArchivo?: string;[key: string]: any }): Promise<Facturacion> => {
+  // Verificar que la factura existe
+  const factura = await prisma.facturacion.findUnique({
+    where: { id: idFactura }
+  });
+
+  if (!factura) {
+    throw new Error('Factura no encontrada');
+  }
+
+  // Actualizar la facturación con campos de refacturación
+  return prisma.facturacion.update({
+    where: { id: idFactura },
+    data: {
+      esRefacturacion: true,
+      notaCreditoTexto: data.notaCreditoTexto,
+      notaCreditoArchivo: data.notaCreditoArchivo
+    }
+  });
+};

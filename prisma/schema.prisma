@@ -529,20 +529,24 @@ model Almacen {
 }
 
 model Facturacion {
-  id                 Int         @id @default(autoincrement())
-  ordenCompraId      Int         @map("orden_compra_id")
+  id                 Int           @id @default(autoincrement())
+  ordenCompraId      Int           @map("orden_compra_id")
   factura            String?
-  fechaFactura       DateTime?   @map("fecha_factura") @db.Date
+  fechaFactura       DateTime?     @map("fecha_factura") @db.Date
   grr                String?
-  retencion          Decimal?    @db.Decimal(10, 2)
-  detraccion         Decimal?    @db.Decimal(10, 2)
-  formaEnvioFactura  String?     @map("forma_envio_factura")
-  estado             Int?        @default(1)
-  notaCreditoArchivo String?     @map("nota_credito_archivo")
-  notaCreditoTexto   String?     @map("nota_credito_texto")
-  createdAt          DateTime    @default(now()) @map("created_at")
-  updatedAt          DateTime    @updatedAt @map("updated_at")
-  ordenCompra        OrdenCompra @relation(fields: [ordenCompraId], references: [id])
+  retencion          Decimal?      @db.Decimal(10, 2)
+  detraccion         Decimal?      @db.Decimal(10, 2)
+  formaEnvioFactura  String?       @map("forma_envio_factura")
+  estado             Int?          @default(1)
+  notaCreditoArchivo String?       @map("nota_credito_archivo")
+  notaCreditoTexto   String?       @map("nota_credito_texto")
+  esRefacturacion    Boolean       @default(false) @map("es_refacturacion")
+  idFacturaOriginal  Int?          @map("id_factura_original")
+  createdAt          DateTime      @default(now()) @map("created_at")
+  updatedAt          DateTime      @updatedAt @map("updated_at")
+  ordenCompra        OrdenCompra   @relation(fields: [ordenCompraId], references: [id])
+  facturaOriginal    Facturacion?  @relation("Refacturacion", fields: [idFacturaOriginal], references: [id])
+  refacturaciones    Facturacion[] @relation("Refacturacion")
 
   @@map("facturaciones")
 }

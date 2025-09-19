@@ -6,6 +6,7 @@ router.get('/', ctrl.listFacturacion);
 router.get('/orden-compra/:ordenCompraId', ctrl.getFacturacionesByOrdenCompraId);
 router.get('/:id', ctrl.getFacturacion);
 router.post('/', ctrl.createFacturacion);
+router.post('/:id/refacturar', ctrl.refacturarFacturacion);
 router.put('/:id', ctrl.updateFacturacion);
 router.patch('/:id', ctrl.partialUpdateFacturacion);
 router.delete('/:id', ctrl.deleteFacturacion);

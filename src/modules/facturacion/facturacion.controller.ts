@@ -71,3 +71,14 @@ export const deleteFacturacion = async (req: Request, res: Response) => {
     handleError({ res, error, msg: 'Error al eliminar facturacion' });
   }
 };
+
+export const refacturarFacturacion = async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    if (isNaN(id)) return res.status(400).json({ message: 'ID inválido' });
+    const item = await service.refacturarFacturacion(id, req.body);
+    res.status(200).json(item);
+  } catch (error) {
+    handleError({ res, error, msg: 'Error al refacturar facturacion' });
+  }
+};
