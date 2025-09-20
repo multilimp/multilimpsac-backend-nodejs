@@ -343,6 +343,7 @@ model OrdenCompraPrivada {
   pagos            PagoOrdenCompraPrivada[] // Relación inversa
   gestionCobranzas GestionCobranza[] // Relación inversa añadida
 
+  @@index([estadoPago], name: "idx_estado_pago_privada")
   @@map("ordenes_compra_privadas")
 }
 
@@ -402,6 +403,7 @@ model OrdenProveedor {
   programacionesEntrega   ProgramacionEntrega[]
   costosAdicionales       CostoAdicionalOp[]
 
+  @@index([tipoPago], name: "idx_tipo_pago")
   @@map("ordenes_proveedor")
 }
 
@@ -450,6 +452,7 @@ model TransporteAsignado {
   transporte           Transporte               @relation(fields: [transporteId], references: [id])
   almacen              Almacen?                 @relation(fields: [almacenId], references: [id])
 
+  @@index([estadoPago], name: "idx_estado_pago")
   @@map("transportes_asignados")
 }
 

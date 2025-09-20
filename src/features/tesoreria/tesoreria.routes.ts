@@ -3,10 +3,8 @@ import {
   createOrUpdatePagoOp,
   createOrUpdatePagoTransporte,
   createOrUpdatePagoVentaPrivada,
-  getTransporteAsignadoForTesoreria,
-  getTransportesByOrdenCompraForTesoreria,
   getPagosUrgentesController,
-  getPagosPorEstadoController
+  getPagosPendientesController
 } from './tesoreria.controller';
 
 const router = Router();
@@ -16,14 +14,8 @@ router.post('/op', createOrUpdatePagoOp);
 router.post('/transporte', createOrUpdatePagoTransporte);
 router.post('/venta-privada', createOrUpdatePagoVentaPrivada);
 
-// ✅ NUEVAS rutas para consultar transportes desde tesorería
-router.get('/transporte/:transporteAsignadoId', getTransporteAsignadoForTesoreria);
-router.get('/transportes/orden-compra/:ordenCompraId', getTransportesByOrdenCompraForTesoreria);
-
-// ✅ NUEVA ruta para obtener pagos urgentes (notificaciones)
+// Rutas para consultar pagos
 router.get('/pagos-urgentes', getPagosUrgentesController);
-
-// ✅ NUEVA ruta para obtener todos los pagos por estado (dashboard tesorería)
-router.get('/pagos-por-estado', getPagosPorEstadoController);
+router.get('/pagos-pendientes', getPagosPendientesController);
 
 export default router;
