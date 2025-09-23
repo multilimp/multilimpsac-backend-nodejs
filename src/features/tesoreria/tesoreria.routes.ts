@@ -4,7 +4,8 @@ import {
   createOrUpdatePagoTransporte,
   createOrUpdatePagoVentaPrivada,
   getPagosUrgentesController,
-  getPagosPendientesController
+  getPagosPendientesController,
+  getPagosPorEstadoController
 } from './tesoreria.controller';
 
 const router = Router();
@@ -17,5 +18,6 @@ router.post('/venta-privada', createOrUpdatePagoVentaPrivada);
 // Rutas para consultar pagos
 router.get('/pagos-urgentes', getPagosUrgentesController);
 router.get('/pagos-pendientes', getPagosPendientesController);
+router.get('/pagos-por-estado', getPagosPorEstadoController);
 
 export default router;

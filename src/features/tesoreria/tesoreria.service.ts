@@ -180,3 +180,100 @@ export const getPagosPendientes = async () => {
     throw new Error('Error al obtener pagos pendientes');
   }
 };
+
+export const getPagosPorEstado = async (estado: 'URGENTE' | 'PENDIENTE') => {
+  const startTime = Date.now();
+
+  try {
+    console.log(`🔍 Consultando pagos por estado: ${estado}...`);
+
+    const estadoPagoEnum = estado === 'URGENTE' ? EstadoPago.URGENTE : EstadoPago.PENDIENTE;
+
+    const [transportes, ordenesProveedor] = await Promise.all([
+      prisma.transporteAsignado.findMany({
+        where: {
+          estadoPago: estadoPagoEnum
+        },
+        select: {
+          id: true,
+          codigoTransporte: true,
+          montoFlete: true,
+          createdAt: true,
+          updatedAt: true,
+          estadoPago: true,
+          notaPago: true,
+          ordenProveedor: {
+            select: {
+              id: true,
+              codigoOp: true,
+              proveedorId: true,
+              ordenCompra: {
+                select: {
+                  cliente: {
+                    select: {
+                      id: true,
+                      razonSocial: true,
+                      ruc: true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        take: estado === 'URGENTE' ? 50 : 100
+      }),
+      prisma.ordenProveedor.findMany({
+        where: {
+          tipoPago: estadoPagoEnum
+        },
+        select: {
+          id: true,
+          ordenCompra: {
+            select: {
+              id: true,
+              codigoVenta: true,
+              cliente: {
+                select: {
+                  id: true,
+                  razonSocial: true,
+                  ruc: true
+                }
+              }
+            }
+          },
+          createdAt: true,
+          updatedAt: true,
+          estadoOp: true,
+          notaPago: true
+        },
+        take: estado === 'URGENTE' ? 50 : 100
+      })
+    ]);
+
+    const tiempoRespuesta = Date.now() - startTime;
+    console.log(`⏱️  Pagos ${estado}: ${tiempoRespuesta}ms - ${transportes.length} transportes, ${ordenesProveedor.length} órdenes proveedor`);
+
+    return {
+      success: true,
+      data: {
+        transportes,
+        ordenesProveedor
+      },
+      estadisticas: {
+        total: transportes.length + ordenesProveedor.length,
+        totalTransportes: transportes.length,
+        totalOrdenesProveedor: ordenesProveedor.length,
+        montoTotal: transportes.reduce((sum, t) => sum + Number(t.montoFlete || 0), 0),
+        montoTotalTransportes: transportes.reduce((sum, t) => sum + Number(t.montoFlete || 0), 0),
+        montoTotalOrdenesProveedor: 0,
+        estado
+      },
+      tiempoRespuesta
+    };
+
+  } catch (error) {
+    console.error(`❌ Error en getPagosPorEstado (${estado}):`, error);
+    throw new Error(`Error al obtener pagos ${estado.toLowerCase()}`);
+  }
+};
