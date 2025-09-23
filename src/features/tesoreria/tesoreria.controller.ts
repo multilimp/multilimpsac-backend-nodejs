@@ -73,7 +73,7 @@ export const getPagosPendientesController = async (req: Request, res: Response) 
 export const getPagosPorEstadoController = async (req: Request, res: Response) => {
   try {
     const { estado } = req.query;
-    
+
     if (!estado || (estado !== 'URGENTE' && estado !== 'PENDIENTE')) {
       return res.status(400).json({
         success: false,
