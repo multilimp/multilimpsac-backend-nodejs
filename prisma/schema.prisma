@@ -545,6 +545,8 @@ model Facturacion {
   notaCreditoTexto   String?       @map("nota_credito_texto")
   esRefacturacion    Boolean       @default(false) @map("es_refacturacion")
   idFacturaOriginal  Int?          @map("id_factura_original")
+  facturaArchivo     String?       @map("factura_archivo")
+  grrArchivo         String?       @map("grr_archivo")
   createdAt          DateTime      @default(now()) @map("created_at")
   updatedAt          DateTime      @updatedAt @map("updated_at")
   ordenCompra        OrdenCompra   @relation(fields: [ordenCompraId], references: [id])
