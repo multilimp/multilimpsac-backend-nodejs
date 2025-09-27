@@ -40,13 +40,26 @@ export const refacturarFacturacion = async (idFactura: number, data: { notaCredi
     throw new Error('Factura no encontrada');
   }
 
-  // Actualizar la facturación con campos de refacturación
+  // Preparar los datos para actualizar
+  const updateData: any = {
+    esRefacturacion: true,
+    notaCreditoTexto: data.notaCreditoTexto,
+    notaCreditoArchivo: data.notaCreditoArchivo
+  };
+
+  // Agregar otros campos si están presentes
+  if (data.factura !== undefined) updateData.factura = data.factura;
+  if (data.fechaFactura !== undefined) updateData.fechaFactura = data.fechaFactura ? new Date(data.fechaFactura) : null;
+  if (data.grr !== undefined) updateData.grr = data.grr;
+  if (data.retencion !== undefined) updateData.retencion = data.retencion;
+  if (data.detraccion !== undefined) updateData.detraccion = data.detraccion;
+  if (data.formaEnvioFactura !== undefined) updateData.formaEnvioFactura = data.formaEnvioFactura;
+  if (data.facturaArchivo !== undefined) updateData.facturaArchivo = data.facturaArchivo;
+  if (data.grrArchivo !== undefined) updateData.grrArchivo = data.grrArchivo;
+
+  // Actualizar la facturación con todos los campos
   return prisma.facturacion.update({
     where: { id: idFactura },
-    data: {
-      esRefacturacion: true,
-      notaCreditoTexto: data.notaCreditoTexto,
-      notaCreditoArchivo: data.notaCreditoArchivo
-    }
+    data: updateData
   });
 };
