@@ -292,6 +292,7 @@ model OrdenCompra {
   ordenCompraPrivada            OrdenCompraPrivada?
   ordenesProveedor              OrdenProveedor[]
   programacionesEntrega         ProgramacionEntrega[]
+  archivosAdjuntos              ArchivoAdjunto[]
 
   @@map("ordenes_compra")
 }
@@ -786,4 +787,20 @@ model CostoAdicionalOp {
   ordenProveedor OrdenProveedor @relation(fields: [ordenProveedorId], references: [id])
 
   @@map("costos_adicionales_op")
+}
+
+model ArchivoAdjunto {
+  id            Int      @id @default(autoincrement())
+  ordenCompraId Int      @map("orden_compra_id")
+  nombre        String // Nombre personalizado del archivo
+  url           String // URL del archivo subido
+  tipo          String // Tipo MIME del archivo
+  tamano        Int // Tamaño en bytes
+  descripcion   String? // Descripción opcional
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  ordenCompra OrdenCompra @relation(fields: [ordenCompraId], references: [id])
+
+  @@map("archivos_adjuntos")
 }
