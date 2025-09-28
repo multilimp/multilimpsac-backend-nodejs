@@ -40,26 +40,37 @@ export const refacturarFacturacion = async (idFactura: number, data: { notaCredi
     throw new Error('Factura no encontrada');
   }
 
-  // Preparar los datos para actualizar
-  const updateData: any = {
+  // Preparar los datos para crear una nueva facturación
+  const createData: any = {
+    ordenCompraId: factura.ordenCompraId,
     esRefacturacion: true,
+    idFacturaOriginal: idFactura,
     notaCreditoTexto: data.notaCreditoTexto,
     notaCreditoArchivo: data.notaCreditoArchivo
   };
 
-  // Agregar otros campos si están presentes
-  if (data.factura !== undefined) updateData.factura = data.factura;
-  if (data.fechaFactura !== undefined) updateData.fechaFactura = data.fechaFactura ? new Date(data.fechaFactura) : null;
-  if (data.grr !== undefined) updateData.grr = data.grr;
-  if (data.retencion !== undefined) updateData.retencion = data.retencion;
-  if (data.detraccion !== undefined) updateData.detraccion = data.detraccion;
-  if (data.formaEnvioFactura !== undefined) updateData.formaEnvioFactura = data.formaEnvioFactura;
-  if (data.facturaArchivo !== undefined) updateData.facturaArchivo = data.facturaArchivo;
-  if (data.grrArchivo !== undefined) updateData.grrArchivo = data.grrArchivo;
+  // Copiar otros campos de la factura original si están presentes en data
+  if (data.factura !== undefined) createData.factura = data.factura;
+  if (data.fechaFactura !== undefined) createData.fechaFactura = data.fechaFactura ? new Date(data.fechaFactura) : null;
+  if (data.grr !== undefined) createData.grr = data.grr;
+  if (data.retencion !== undefined) createData.retencion = data.retencion;
+  if (data.detraccion !== undefined) createData.detraccion = data.detraccion;
+  if (data.formaEnvioFactura !== undefined) createData.formaEnvioFactura = data.formaEnvioFactura;
+  if (data.facturaArchivo !== undefined) createData.facturaArchivo = data.facturaArchivo;
+  if (data.grrArchivo !== undefined) createData.grrArchivo = data.grrArchivo;
 
-  // Actualizar la facturación con todos los campos
-  return prisma.facturacion.update({
-    where: { id: idFactura },
-    data: updateData
+  // Si no se proporcionan valores, copiar de la factura original
+  if (createData.factura === undefined) createData.factura = factura.factura;
+  if (createData.fechaFactura === undefined) createData.fechaFactura = factura.fechaFactura;
+  if (createData.grr === undefined) createData.grr = factura.grr;
+  if (createData.retencion === undefined) createData.retencion = factura.retencion;
+  if (createData.detraccion === undefined) createData.detraccion = factura.detraccion;
+  if (createData.formaEnvioFactura === undefined) createData.formaEnvioFactura = factura.formaEnvioFactura;
+  if (createData.facturaArchivo === undefined) createData.facturaArchivo = factura.facturaArchivo;
+  if (createData.grrArchivo === undefined) createData.grrArchivo = factura.grrArchivo;
+
+  // Crear la nueva facturación
+  return prisma.facturacion.create({
+    data: createData
   });
 };
