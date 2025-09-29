@@ -14,7 +14,15 @@ export const getAllVentas = async (): Promise<OrdenCompra[]> => {
   return prisma.ordenCompra.findMany({
     include: {
       empresa: true,
-      cliente: true,
+      cliente: {
+        select: {
+          id: true,
+          razonSocial: true,
+          ruc: true,
+          codigoUnidadEjecutora: true,
+          promedioCobranza: true,
+        }
+      },
       contactoCliente: true,
       catalogoEmpresa: true,
     },
@@ -29,7 +37,15 @@ export const getVentaById = (id: number): Promise<OrdenCompra | null> => {
     where: { id },
     include: {
       empresa: true,
-      cliente: true,
+      cliente: {
+        select: {
+          id: true,
+          razonSocial: true,
+          ruc: true,
+          codigoUnidadEjecutora: true,
+          promedioCobranza: true,
+        }
+      },
       contactoCliente: true,
       catalogoEmpresa: true,
       ordenesProveedor: true,
@@ -344,4 +360,84 @@ export const createOrdenCompraPrivada = async (
     }
   }
   return orden;
+};
+
+export const calcularPromedioCobranzaCliente = async (clienteId: number): Promise<number | null> => {
+  try {
+    // Obtener todas las órdenes de compra del cliente
+    const ordenesCompra = await prisma.ordenCompra.findMany({
+      where: {
+        clienteId: clienteId,
+        estadoActivo: true,
+      },
+      include: {
+        gestionCobranzas: true,
+        facturaciones: true,
+      },
+    });
+
+    if (ordenesCompra.length === 0) {
+      return null;
+    }
+
+    let totalDiasCobranza = 0;
+    let ordenesConCobranzaCompleta = 0;
+
+    for (const orden of ordenesCompra) {
+      // Verificar si la orden tiene netoCobrado (indica que la cobranza está completa)
+      if (orden.netoCobrado && Number(orden.netoCobrado) > 0) {
+        // Buscar la fecha de la última gestión de cobranza
+        const gestionesOrdenadas = orden.gestionCobranzas.sort((a, b) =>
+          new Date(b.fechaGestion).getTime() - new Date(a.fechaGestion).getTime()
+        );
+
+        if (gestionesOrdenadas.length > 0) {
+          const fechaUltimaGestion = gestionesOrdenadas[0].fechaGestion;
+
+          // Calcular días desde la fecha de entrega OC hasta la fecha de última gestión
+          const fechaEntrega = orden.fechaEntregaOc || orden.fechaEntrega;
+          if (fechaEntrega) {
+            const diasCobranza = Math.ceil(
+              (new Date(fechaUltimaGestion).getTime() - new Date(fechaEntrega).getTime()) / (1000 * 60 * 60 * 24)
+            );
+            // Solo contar si los días son positivos y razonables (máximo 365 días)
+            if (diasCobranza > 0 && diasCobranza <= 365) {
+              totalDiasCobranza += diasCobranza;
+              ordenesConCobranzaCompleta++;
+            }
+          }
+        }
+      }
+    }
+
+    if (ordenesConCobranzaCompleta === 0) {
+      return null;
+    }
+
+    // Calcular promedio en días
+    const promedioDias = totalDiasCobranza / ordenesConCobranzaCompleta;
+
+    // Actualizar el promedio en la tabla cliente
+    await prisma.cliente.update({
+      where: { id: clienteId },
+      data: { promedioCobranza: promedioDias },
+    });
+
+    return promedioDias;
+  } catch (error) {
+    logger.error('Error calculando promedio de cobranza:', error);
+    return null;
+  }
+};
+
+export const updatePromedioCobranzaCliente = async (clienteId: number, promedioCobranza: number): Promise<void> => {
+  try {
+    await prisma.cliente.update({
+      where: { id: clienteId },
+      data: { promedioCobranza },
+    });
+  } catch (error) {
+    logger.error('Error actualizando promedio de cobranza:', error);
+    throw error;
+  }
 };

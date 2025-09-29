@@ -8,6 +8,18 @@ import logger from '../../shared/config/logger';
 export const listVentas = async (req: Request, res: Response) => {
   try {
     const result = await ventasService.getAllVentas();
+
+    // Obtener usuario de la request (agregado por middleware de auth)
+    const user = (req as any).user;
+
+    // Si el usuario tiene permiso JEFECOBRANZAS, mostrar todas las ventas
+    if (user?.permisos?.includes('jefecobranzas')) {
+      res.status(200).json(result);
+      return;
+    }
+
+    // Para otros usuarios, aplicar filtrado normal (si existe)
+    // Por ahora, devolver todas las ventas para mantener compatibilidad
     res.status(200).json(result);
   } catch (error) {
     handleError({ res, error, msg: 'Error al listar las ventas' });
@@ -142,5 +154,39 @@ export const addOrdenCompraPrivada = async (req: Request, res: Response) => {
     res.status(201).json(nuevaOrdenPrivada);
   } catch (error) {
     handleError({ res, error, msg: 'Error al crear la orden de compra privada' });
+  }
+};
+
+export const calcularPromedioCobranza = async (req: Request, res: Response) => {
+  try {
+    const clienteId = parseInt(req.params.clienteId, 10);
+    if (isNaN(clienteId)) throw new Error('NOT_FOUND');
+
+    const promedio = await ventasService.calcularPromedioCobranzaCliente(clienteId);
+    res.status(200).json({
+      clienteId,
+      promedioCobranzaDias: promedio
+    });
+  } catch (error) {
+    handleError({ res, error, msg: 'Error al calcular promedio de cobranza' });
+  }
+};
+
+export const updatePromedioCobranza = async (req: Request, res: Response) => {
+  try {
+    const clienteId = parseInt(req.params.clienteId, 10);
+    const { promedioCobranza } = req.body;
+    if (isNaN(clienteId)) throw new Error('NOT_FOUND');
+    if (typeof promedioCobranza !== 'number' || promedioCobranza < 0) {
+      throw new Error('INVALID_DATA');
+    }
+
+    await ventasService.updatePromedioCobranzaCliente(clienteId, promedioCobranza);
+    res.status(200).json({
+      clienteId,
+      promedioCobranza
+    });
+  } catch (error) {
+    handleError({ res, error, msg: 'Error al actualizar promedio de cobranza' });
   }
 };
