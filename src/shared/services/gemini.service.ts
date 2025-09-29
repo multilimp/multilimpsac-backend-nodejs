@@ -37,7 +37,7 @@ export class GeminiService {
     }
 
     this.baseUrl = process.env.GEMINI_BASE_URL || 'https://generativelanguage.googleapis.com/v1beta';
-    this.model = process.env.GEMINI_MODEL || 'gemini-1.5-flash-latest'; // Asegúrate que el modelo soporta la entrada de archivos y JSON.
+    this.model = process.env.GEMINI_MODEL || 'gemini-2.0-flash'; // Asegúrate que el modelo soporta la entrada de archivos y JSON.
 
     this.client = axios.create({
       timeout: 120000, // Aumentado el timeout por si el análisis del PDF toma tiempo
@@ -154,21 +154,21 @@ No incluyas comentarios como "EXTRAER_VALOR_O_NULL" en el JSON final; reempláza
       if (response.data.candidates && response.data.candidates.length > 0) {
         const candidate = response.data.candidates[0];
         if (candidate.content && candidate.content.parts && candidate.content.parts.length > 0) {
-            const part = candidate.content.parts[0];
-            if (part.text) {
-                try {
-                    const jsonData = JSON.parse(part.text);
-                    return { success: true, data: jsonData };
-                } catch (parseError) {
-                    logger.error('Error parsing JSON response from Gemini:', parseError);
-                    logger.error('Gemini raw response text:', part.text);
-                    throw new GeminiServiceException('Error parsing JSON response from Gemini. Raw text: ' + part.text, 500, parseError as Error);
-                }
-            } else {
-                 logger.error('No text found in Gemini response part .');
-                 logger.error('Gemini full candidate:', candidate);
-                 throw new GeminiServiceException('No text found in Gemini response part.', 500);
+          const part = candidate.content.parts[0];
+          if (part.text) {
+            try {
+              const jsonData = JSON.parse(part.text);
+              return { success: true, data: jsonData };
+            } catch (parseError) {
+              logger.error('Error parsing JSON response from Gemini:', parseError);
+              logger.error('Gemini raw response text:', part.text);
+              throw new GeminiServiceException('Error parsing JSON response from Gemini. Raw text: ' + part.text, 500, parseError as Error);
             }
+          } else {
+            logger.error('No text found in Gemini response part .');
+            logger.error('Gemini full candidate:', candidate);
+            throw new GeminiServiceException('No text found in Gemini response part.', 500);
+          }
         } else {
           logger.error('No content parts returned from Gemini API candidate.');
           logger.error('Gemini full response:', response.data);

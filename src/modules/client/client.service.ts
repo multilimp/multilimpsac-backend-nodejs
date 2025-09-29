@@ -28,6 +28,7 @@ export const createClient = (data: any): Promise<Cliente> => {
     provincia: data.provincia,
     distrito: data.distrito,
     sede: data.sede,
+    promedioCobranza: data.promedio_cobranza ? parseFloat(data.promedio_cobranza) : null,
   };
   return prisma.cliente.create({ data: mappedData });
 };
@@ -48,6 +49,7 @@ export const updateClient = (id: number, data: any): Promise<Cliente> => {
     ...(data.provincia && { provincia: data.provincia }),
     ...(data.distrito && { distrito: data.distrito }),
     ...(data.sede !== undefined && { sede: data.sede }),
+    ...(data.promedio_cobranza !== undefined && { promedioCobranza: data.promedio_cobranza ? parseFloat(data.promedio_cobranza) : null }),
   };
 
   return prisma.cliente.update({
