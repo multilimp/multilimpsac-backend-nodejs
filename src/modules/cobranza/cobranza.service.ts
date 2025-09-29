@@ -147,6 +147,7 @@ export const getCobranzaByOrdenCompra = async (ordenCompraId: number) => {
       penalidad: true,
       estadoCobranza: true,
       fechaEstadoCobranza: true,
+      cobradorId: true,
       montoVenta: true,
       netoCobrado: true,
       cliente: {

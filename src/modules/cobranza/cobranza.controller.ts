@@ -18,7 +18,7 @@ export const updateCobranzaFields = async (req: Request, res: Response) => {
     }
 
     // Validar que solo se envíen los campos permitidos
-    const allowedFields = ['etapaSiaf', 'fechaSiaf', 'penalidad', 'estadoCobranza', 'fechaEstadoCobranza'];
+    const allowedFields = ['etapaSiaf', 'fechaSiaf', 'penalidad', 'estadoCobranza', 'fechaEstadoCobranza', 'cobradorId'];
     const receivedFields = Object.keys(req.body);
     const invalidFields = receivedFields.filter(field => !allowedFields.includes(field));
 
