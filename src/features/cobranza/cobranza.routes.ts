@@ -1,16 +1,17 @@
 import { Router } from 'express';
-import { 
-  handleUpdateCobranza, 
+import {
+  handleUpdateCobranza,
   handleGetGestionesCobranza,
   handleCreateGestionCobranza,
   handleUpdateGestionCobranza,
   handleDeleteGestionCobranza
 } from './cobranza.controller';
+import { requireJefeCobranzasForCobradorAssignment } from '../../shared/middleware/auth.middleware';
 
 const cobranzaRoutes = Router();
 
 // Rutas para cobranza general
-cobranzaRoutes.post('/:ordenCompraId/cobranzas', handleUpdateCobranza);
+cobranzaRoutes.post('/:ordenCompraId/cobranzas', requireJefeCobranzasForCobradorAssignment, handleUpdateCobranza);
 cobranzaRoutes.get('/:ordenCompraId/cobranzas', handleGetGestionesCobranza);
 
 // Rutas para gestiones individuales

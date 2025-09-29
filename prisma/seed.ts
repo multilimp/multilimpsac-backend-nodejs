@@ -43,7 +43,7 @@ async function main() {
   const adminPassword = await bcrypt.hash('admin123', 10);
   const userPassword = await bcrypt.hash('jose123', 10);
 
-  const adminPermissions = ['dashboard', 'profile', 'users', 'providers', 'sales', 'treasury', 'companies', 'transports', 'provider_orders', 'billing', 'clients', 'quotes', 'tracking', 'collections'];
+  const adminPermissions = ['dashboard', 'profile', 'users', 'providers', 'sales', 'treasury', 'companies', 'transports', 'provider_orders', 'billing', 'clients', 'quotes', 'tracking', 'collections', 'jefecobranzas'];
   const userPermissions = ['dashboard', 'profile', 'providers', 'sales', 'clients', 'quotes'];
 
   const usuarios = await Promise.all([
