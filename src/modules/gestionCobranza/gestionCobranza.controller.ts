@@ -24,9 +24,9 @@ export const listGestionCobranzaByOrdenCompra = async (req: Request, res: Respon
   try {
     const ordenCompraId = parseInt(req.params.ordenCompraId, 10);
     if (isNaN(ordenCompraId)) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'ID de orden de compra inválido' 
+      return res.status(400).json({
+        success: false,
+        message: 'ID de orden de compra inválido'
       });
     }
 
@@ -47,17 +47,17 @@ export const getGestionCobranza = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'ID inválido' 
+      return res.status(400).json({
+        success: false,
+        message: 'ID inválido'
       });
     }
 
     const item = await service.getGestionCobranzaById(id);
     if (!item) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Gestión de cobranza no encontrada' 
+      return res.status(404).json({
+        success: false,
+        message: 'Gestión de cobranza no encontrada'
       });
     }
 
@@ -76,21 +76,26 @@ export const getGestionCobranza = async (req: Request, res: Response) => {
 export const createGestionCobranza = async (req: Request, res: Response) => {
   try {
     // Validar campos requeridos
-    const { ordenCompraId, fechaGestion, notaGestion, estadoCobranza, tipoCobranza } = req.body;
-    
-    if (!ordenCompraId || !fechaGestion || !notaGestion || !estadoCobranza || !tipoCobranza) {
+    const { ordenCompraId, fechaGestion, notaGestion } = req.body;
+
+    if (!ordenCompraId || !fechaGestion || !notaGestion) {
       return res.status(400).json({
         success: false,
-        message: 'Campos requeridos: ordenCompraId, fechaGestion, notaGestion, estadoCobranza, tipoCobranza'
+        message: 'Campos requeridos: ordenCompraId, fechaGestion, notaGestion'
       });
     }
 
     // Obtener usuario del token JWT (añadido por middleware de autenticación)
     const usuarioId = (req as any).user?.id || 1; // Default a ID 1 si no hay usuario
-    
+
+    // Establecer valores por defecto si no se proporcionan
     const gestionData = {
       ...req.body,
-      usuarioId // Asignar automáticamente el usuario del token
+      usuarioId, // Asignar automáticamente el usuario del token
+      estadoCobranza: req.body.estadoCobranza || 'REQ', // Valor por defecto
+      tipoCobranza: req.body.tipoCobranza || 'NORMAL', // Valor por defecto
+      archivosAdjuntosNotasGestion: req.body.archivosAdjuntosNotasGestion || [],
+      documentosRegistrados: req.body.documentosRegistrados || []
     };
 
     const item = await service.createGestionCobranza(gestionData);
@@ -111,9 +116,9 @@ export const updateGestionCobranza = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'ID inválido' 
+      return res.status(400).json({
+        success: false,
+        message: 'ID inválido'
       });
     }
 
@@ -135,9 +140,9 @@ export const deleteGestionCobranza = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'ID inválido' 
+      return res.status(400).json({
+        success: false,
+        message: 'ID inválido'
       });
     }
 
