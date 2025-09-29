@@ -12,6 +12,7 @@ type CobranzaData = {
   estadoCobranza?: EstadoCobranza | null;
   fechaEstadoCobranza?: string | Date | null;
   fechaProximaGestion?: string | Date | null;
+  cobradorId?: number | null;
   gestiones?: (CreateGestionData | (UpdateGestionData & { id: number }))[];
 };
 
@@ -58,6 +59,14 @@ const processCobranzaData = (data: CobranzaData) => {
     }
   } else {
     processedData.fechaProximaGestion = null;
+  }
+
+  if (processedData.cobradorId !== undefined) {
+    if (processedData.cobradorId === '' || processedData.cobradorId === null) {
+      processedData.cobradorId = null;
+    } else {
+      processedData.cobradorId = Number(processedData.cobradorId);
+    }
   }
 
   return processedData;

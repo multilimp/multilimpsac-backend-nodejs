@@ -5,6 +5,7 @@ const router = Router();
 
 // Rutas para gestión de campos de cobranza
 router.patch('/:ordenCompraId/cobranza', cobranzaController.updateCobranzaFields);
+router.patch('/:ordenCompraId/cobranza/cobrador', cobranzaController.assignCobrador);
 router.get('/:ordenCompraId/cobranza', cobranzaController.getCobranzaByOrdenCompra);
 
 export default router;

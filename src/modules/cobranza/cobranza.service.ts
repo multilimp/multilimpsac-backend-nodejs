@@ -8,6 +8,7 @@ interface CobranzaFields {
   penalidad?: string | number;
   estadoCobranza?: EstadoCobranza;
   fechaEstadoCobranza?: string | Date;
+  cobradorId?: number;
 }
 
 /**
@@ -45,6 +46,15 @@ const processCobranzaFields = (data: CobranzaFields) => {
     }
   }
 
+  // Procesar cobradorId
+  if (processedData.cobradorId !== undefined) {
+    if (processedData.cobradorId === '' || processedData.cobradorId === null) {
+      processedData.cobradorId = null;
+    } else {
+      processedData.cobradorId = Number(processedData.cobradorId);
+    }
+  }
+
   return processedData;
 };
 
@@ -79,6 +89,10 @@ export const updateCobranzaFields = async (ordenCompraId: number, data: Cobranza
     updateData.fechaEstadoCobranza = processedData.fechaEstadoCobranza;
   }
 
+  if (processedData.cobradorId !== undefined) {
+    updateData.cobradorId = processedData.cobradorId;
+  }
+
   // Si no hay campos para actualizar, retornar la orden actual
   if (Object.keys(updateData).length === 0) {
     return await getCobranzaByOrdenCompra(ordenCompraId);
@@ -97,6 +111,7 @@ export const updateCobranzaFields = async (ordenCompraId: number, data: Cobranza
       penalidad: true,
       estadoCobranza: true,
       fechaEstadoCobranza: true,
+      cobradorId: true,
       montoVenta: true,
       netoCobrado: true,
       updatedAt: true,

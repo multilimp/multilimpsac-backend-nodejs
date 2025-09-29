@@ -9,11 +9,11 @@ import * as cobranzaService from './cobranza.service';
 export const updateCobranzaFields = async (req: Request, res: Response) => {
   try {
     const ordenCompraId = parseInt(req.params.ordenCompraId, 10);
-    
+
     if (isNaN(ordenCompraId)) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'ID de orden de compra inválido.' 
+      return res.status(400).json({
+        success: false,
+        message: 'ID de orden de compra inválido.'
       });
     }
 
@@ -21,7 +21,7 @@ export const updateCobranzaFields = async (req: Request, res: Response) => {
     const allowedFields = ['etapaSiaf', 'fechaSiaf', 'penalidad', 'estadoCobranza', 'fechaEstadoCobranza'];
     const receivedFields = Object.keys(req.body);
     const invalidFields = receivedFields.filter(field => !allowedFields.includes(field));
-    
+
     if (invalidFields.length > 0) {
       return res.status(400).json({
         success: false,
@@ -45,12 +45,12 @@ export const updateCobranzaFields = async (req: Request, res: Response) => {
       fieldsUpdated: receivedFields,
       data: updatedCobranza
     });
-    
+
   } catch (error) {
-    handleError({ 
-      res, 
-      error, 
-      msg: 'Error al actualizar la información de cobranza.' 
+    handleError({
+      res,
+      error,
+      msg: 'Error al actualizar la información de cobranza.'
     });
   }
 };
@@ -61,11 +61,11 @@ export const updateCobranzaFields = async (req: Request, res: Response) => {
 export const getCobranzaByOrdenCompra = async (req: Request, res: Response) => {
   try {
     const ordenCompraId = parseInt(req.params.ordenCompraId, 10);
-    
+
     if (isNaN(ordenCompraId)) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'ID de orden de compra inválido.' 
+      return res.status(400).json({
+        success: false,
+        message: 'ID de orden de compra inválido.'
       });
     }
 
@@ -82,12 +82,61 @@ export const getCobranzaByOrdenCompra = async (req: Request, res: Response) => {
       success: true,
       data: cobranza
     });
-    
+
   } catch (error) {
-    handleError({ 
-      res, 
-      error, 
-      msg: 'Error al obtener la información de cobranza.' 
+    handleError({
+      res,
+      error,
+      msg: 'Error al obtener la información de cobranza.'
+    });
+  }
+};
+
+/**
+ * Asigna un cobrador específico a una orden de compra
+ */
+export const assignCobrador = async (req: Request, res: Response) => {
+  try {
+    const ordenCompraId = parseInt(req.params.ordenCompraId, 10);
+
+    if (isNaN(ordenCompraId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'ID de orden de compra inválido.'
+      });
+    }
+
+    const { cobradorId } = req.body;
+
+    // Validar que se envió cobradorId
+    if (cobradorId === undefined) {
+      return res.status(400).json({
+        success: false,
+        message: 'Se requiere el campo cobradorId'
+      });
+    }
+
+    // Validar que cobradorId sea un número válido o null
+    if (cobradorId !== null && (isNaN(Number(cobradorId)) || Number(cobradorId) <= 0)) {
+      return res.status(400).json({
+        success: false,
+        message: 'cobradorId debe ser un número válido o null'
+      });
+    }
+
+    const updatedCobranza = await cobranzaService.updateCobranzaFields(ordenCompraId, { cobradorId: cobradorId === null ? undefined : Number(cobradorId) });
+
+    res.status(200).json({
+      success: true,
+      message: cobradorId ? 'Cobrador asignado correctamente' : 'Cobrador removido correctamente',
+      data: updatedCobranza
+    });
+
+  } catch (error) {
+    handleError({
+      res,
+      error,
+      msg: 'Error al asignar el cobrador.'
     });
   }
 };

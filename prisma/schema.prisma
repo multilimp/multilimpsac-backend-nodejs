@@ -282,6 +282,7 @@ model OrdenCompra {
   multipleFuentesFinanciamiento Boolean               @default(false) @map("multiple_fuentes_financiamiento")
   estadoRolSeguimiento          EstadoRol             @default(PENDIENTE) @map("estado_rol_seguimiento")
   estadoVenta                   EstadoRol             @default(PENDIENTE) @map("estado_venta")
+  cobradorId                    Int?                  @map("cobrador_id")
   facturaciones                 Facturacion[]
   gestionCobranzas              GestionCobranza[]
   archivosAdjuntos              ArchivoAdjunto[]
@@ -289,6 +290,7 @@ model OrdenCompra {
   cliente                       Cliente?              @relation(fields: [clienteId], references: [id])
   contactoCliente               Contacto?             @relation(fields: [contactoClienteId], references: [id])
   empresa                       Empresa?              @relation(fields: [empresaId], references: [id])
+  cobrador                      Usuario?              @relation("CobradorOrdenCompra", fields: [cobradorId], references: [id])
   OrdenCompraAgrupada           OrdenCompraAgrupada[]
   ordenCompraPrivada            OrdenCompraPrivada?
   ordenesProveedor              OrdenProveedor[]
@@ -595,6 +597,7 @@ model Usuario {
   gestionCobranzas        GestionCobranza[]
   historialModificaciones HistorialModificacionesOp[]
   programacionesEntrega   ProgramacionEntrega[]       @relation("ResponsableProgramacion")
+  ordenesCompra           OrdenCompra[]               @relation("CobradorOrdenCompra")
 
   @@map("usuarios")
 }
