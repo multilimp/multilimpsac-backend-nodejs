@@ -286,6 +286,7 @@ model OrdenCompra {
   cobradorId                    Int?                  @map("cobrador_id")
   cartaCci                      String?               @map("carta_cci")
   cartaGarantia                 String?               @map("carta_garantia")
+  cartaAmpliacion               String?               @map("carta_ampliacion")
   facturaciones                 Facturacion[]
   gestionCobranzas              GestionCobranza[]
   archivosAdjuntos              ArchivoAdjunto[]
@@ -388,6 +389,8 @@ model OrdenProveedor {
   embalaje                String?
   observaciones           String?
   notaAdicional           String?                     @map("nota_adicional")
+  notaObservaciones       String?                     @map("nota_observaciones")
+  notaCobranzas           String?                     @map("nota_cobranzas")
   activo                  Boolean                     @default(true)
   ordenCompraId           Int?                        @map("orden_compra_id")
   createdAt               DateTime?                   @default(now()) @map("created_at") @db.Timestamp(6)
