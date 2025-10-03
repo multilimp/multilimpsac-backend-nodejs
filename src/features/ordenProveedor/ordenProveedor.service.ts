@@ -292,11 +292,12 @@ export const updateOrdenProveedor = async (id: number, data: UpdateOrdenProveedo
 };
 
 export const patchOrdenProveedor = async (id: number, data: Partial<UpdateOrdenProveedorData>): Promise<OrdenProveedor> => {
-  const existing = await prisma.ordenProveedor.findFirst({
-    where: { id, activo: true },
+  const existingOp = await prisma.ordenProveedor.findUnique({
+    where: { id },
+    include: { productos: true, pagos: true },
   });
 
-  if (!existing) {
+  if (!existingOp) {
     throw new Error('NOT_FOUND');
   }
 
@@ -312,3 +313,5 @@ export const patchOrdenProveedor = async (id: number, data: Partial<UpdateOrdenP
     },
   });
 };
+
+export { generateCodigoTransporte };

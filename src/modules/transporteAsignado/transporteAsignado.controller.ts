@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import * as service from './transporteAsignado.service';
 import { handleError } from '../../shared/middleware/handleError';
+import { generateCodigoTransporte } from '../../features/ordenProveedor/ordenProveedor.service';
 export const listTransporteAsignado = async (req: Request, res: Response) => {
   try {
     const items = await service.getAllTransporteAsignado();
@@ -22,7 +23,17 @@ export const getTransporteAsignado = async (req: Request, res: Response) => {
 };
 export const createTransporteAsignado = async (req: Request, res: Response) => {
   try {
-    const item = await service.createTransporteAsignado(req.body);
+    const { ordenProveedorId, ...data } = req.body;
+
+    // Generar código de transporte basado en la OP
+    const codigoTransporte = await generateCodigoTransporte(ordenProveedorId);
+
+    const item = await service.createTransporteAsignado({
+      ...data,
+      ordenProveedorId,
+      codigoTransporte
+    });
+
     res.status(201).json(item);
   } catch (error) {
     handleError({ res, error, msg: 'Error al crear transporte asignado' });
