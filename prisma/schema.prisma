@@ -391,6 +391,7 @@ model OrdenProveedor {
   notaAdicional           String?                     @map("nota_adicional")
   notaObservaciones       String?                     @map("nota_observaciones")
   notaCobranzas           String?                     @map("nota_cobranzas")
+  isCompleted             Boolean                     @default(false) @map("is_completed")
   activo                  Boolean                     @default(true)
   ordenCompraId           Int?                        @map("orden_compra_id")
   createdAt               DateTime?                   @default(now()) @map("created_at") @db.Timestamp(6)
