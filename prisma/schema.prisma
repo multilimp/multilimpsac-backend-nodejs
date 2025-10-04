@@ -444,6 +444,11 @@ model TransporteAsignado {
   notaTransporte       String?                  @map("nota_transporte")
   cotizacionTransporte String?                  @map("cotizacion_transporte")
   montoFlete           Decimal?                 @map("monto_flete") @db.Decimal(10, 2)
+  montoFletePagado     Decimal?                 @map("monto_flete_pagado") @db.Decimal(10, 2)
+  numeroFactura        String?                  @map("numero_factura")
+  guiaRemision         String?                  @map("guia_remision")
+  archivoFactura       String?                  @map("archivo_factura")
+  guiaTransporte       String?                  @map("guia_transporte")
   grt                  String?
   createdAt            DateTime                 @default(now()) @map("created_at")
   updatedAt            DateTime                 @updatedAt @map("updated_at")
