@@ -19,7 +19,6 @@
         "express": "^4.21.2",
         "formidable": "^3.5.4",
         "glob": "^11.0.2",
-        "handlebars": "^4.7.8",
         "helmet": "^7.1.0",
         "jsonwebtoken": "^9.0.2",
         "langchain": "^0.3.33",
