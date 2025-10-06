@@ -15,7 +15,7 @@ const envVarsSchema = z.object({
   AWS_REGION: z.string().default('auto'),
   R2_PUBLIC_URL: z.string().url(),
   JWT_SECRET: z.string().min(32, 'JWT_SECRET debe tener al menos 32 caracteres'),
-  JWT_EXPIRES_IN: z.number().default(36000), // 1 hora en segundos
+  JWT_EXPIRES_IN: z.number().default(43200), // 12 horas en segundos
   GOOGLE_GEMINI_API_KEY: z.string().min(1, 'GOOGLE_GEMINI_API_KEY es requerida'),
   GEMINI_MODEL: z.string().default('gemini-2.0-flash'),
   GEMINI_BASE_URL: z.string().default('https://generativelanguage.googleapis.com/v1beta'),
