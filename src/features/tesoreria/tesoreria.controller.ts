@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { handleError } from '../../shared/middleware/handleError';
-import { getPagosUrgentes, getPagosPendientes, getPagosPorEstado } from './tesoreria.service';
+import { getPagosUrgentes, getPagosPendientes } from './tesoreria.service';
 
 export const createOrUpdatePagoOp = async (req: Request, res: Response) => {
   try {
@@ -70,24 +70,3 @@ export const getPagosPendientesController = async (req: Request, res: Response) 
   }
 };
 
-export const getPagosPorEstadoController = async (req: Request, res: Response) => {
-  try {
-    const { estado } = req.query;
-
-    if (!estado || (estado !== 'URGENTE' && estado !== 'PENDIENTE')) {
-      return res.status(400).json({
-        success: false,
-        message: 'El parámetro estado es requerido y debe ser URGENTE o PENDIENTE'
-      });
-    }
-
-    const result = await getPagosPorEstado(estado as 'URGENTE' | 'PENDIENTE');
-    res.status(200).json(result);
-  } catch (error) {
-    handleError({
-      res,
-      error,
-      msg: 'Error al obtener los pagos por estado.'
-    });
-  }
-};
