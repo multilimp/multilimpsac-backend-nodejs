@@ -283,6 +283,7 @@ model OrdenCompra {
   multipleFuentesFinanciamiento Boolean               @default(false) @map("multiple_fuentes_financiamiento")
   estadoRolSeguimiento          EstadoRol             @default(PENDIENTE) @map("estado_rol_seguimiento")
   estadoVenta                   EstadoRol             @default(PENDIENTE) @map("estado_venta")
+  estadoFacturacion             EstadoRol             @default(PENDIENTE) @map("estado_facturacion")
   cobradorId                    Int?                  @map("cobrador_id")
   cartaCci                      String?               @map("carta_cci")
   cartaGarantia                 String?               @map("carta_garantia")
