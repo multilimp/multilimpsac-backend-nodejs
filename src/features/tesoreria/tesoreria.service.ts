@@ -6,7 +6,6 @@ const estadoPago = EstadoPago.URGENTE;
 export const getPagosUrgentes = async () => {
   const startTime = Date.now();
   try {
-    console.log('🔍 Consultando pagos urgentes (solo transportes)...');
     const transportesPagoUrgentes = await prisma.transporteAsignado.findMany({
       where: {
         estadoPago: estadoPago,
@@ -85,8 +84,6 @@ export const getPagosUrgentes = async () => {
     });
 
     const tiempoRespuesta = Date.now() - startTime;
-    console.log(`⏱️  Pagos urgentes: ${tiempoRespuesta}ms - ${transportesPagoUrgentes.length} transportes, ${ordenesProveedorPagoUrgentes.length} órdenes proveedor`);
-
     return {
       success: true,
       data: {
@@ -107,8 +104,6 @@ export const getPagosPendientes = async () => {
   const startTime = Date.now();
 
   try {
-    console.log('🔍 Consultando pagos pendientes (solo transportes)...');
-
     // Solo consultar transportes asignados
     const transportesPendientes = await prisma.transporteAsignado.findMany({
       where: {
@@ -187,7 +182,6 @@ export const getPagosPendientes = async () => {
     });
 
     const tiempoRespuesta = Date.now() - startTime;
-    console.log(`⏱️  Pagos pendientes: ${tiempoRespuesta}ms - ${transportesPendientes.length} transportes, ${ordenesProveedorPendientes.length} órdenes proveedor`);
 
     return {
       success: true,
