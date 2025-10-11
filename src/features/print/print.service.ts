@@ -1,5 +1,4 @@
 import prisma from '../../database/prisma';
-import dayjs from 'dayjs';
 
 export const getOrdenProveedorPrintData = async (id: number) => {
   const ordenProveedor = await prisma.ordenProveedor.findUnique({
@@ -119,7 +118,7 @@ export const getCargosEntregaData = async (fechaInicio: string, fechaFin: string
   const opsPorFecha = new Map<string, any[]>();
 
   for (const op of ordenesProveedor) {
-    const fechaKey = op.fechaProgramada ? dayjs(op.fechaProgramada).format('YYYY-MM-DD') : 'sin-fecha';
+    const fechaKey = op.fechaProgramada ? op.fechaProgramada.toISOString().slice(0, 10) : 'sin-fecha';
 
     if (!opsPorFecha.has(fechaKey)) {
       opsPorFecha.set(fechaKey, []);
@@ -190,14 +189,14 @@ export const getCargosEntregaData = async (fechaInicio: string, fechaFin: string
   const fechasConCargos = Array.from(opsPorFecha.entries())
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([fecha, ops]) => ({
-      fecha: fecha === 'sin-fecha' ? 'Sin fecha programada' : dayjs(fecha).format('DD/MM/YYYY'),
+      fecha: fecha === 'sin-fecha' ? 'Sin fecha programada' : new Date(fecha).toLocaleDateString('es-ES'),
       ops: ops.map((op: any, index: number) => ({ ...op, numero: index + 1 }))
     }));
 
   const data = {
-    fechaInicio: dayjs(fechaInicio).format('DD/MM/YYYY'),
-    fechaFin: dayjs(fechaFin).format('DD/MM/YYYY'),
-    fechaGeneracion: dayjs().format('DD/MM/YYYY HH:mm'),
+    fechaInicio: new Date(fechaInicio).toLocaleDateString('es-ES'),
+    fechaFin: new Date(fechaFin).toLocaleDateString('es-ES'),
+    fechaGeneracion: new Date().toLocaleDateString('es-ES') + ' ' + new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
     fechasConCargos,
     totalOps: ordenesProveedor.length
   };
