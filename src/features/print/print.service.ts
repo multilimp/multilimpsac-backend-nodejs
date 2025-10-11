@@ -130,6 +130,8 @@ export const getCargosEntregaData = async (fechaInicio: string, fechaFin: string
       ocf: op.ordenCompra?.documentoOcf || null,
       estadoOp: op.estadoOp || null,
       fechaProgramada: op.fechaProgramada,
+      cartaCci: op.ordenCompra?.cartaCci || null,
+      cartaGarantia: op.ordenCompra?.cartaGarantia || null,
       productos: op.productos.map(p => ({
         codigo: p.codigo || '',
         descripcion: p.descripcion || '',
