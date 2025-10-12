@@ -1,5 +1,5 @@
+import { chatbotService } from '@/shared/services/chatbot.service';
 import { Router } from 'express';
-const { chatbotService } = require('../services/chatbot/chatbot.service');
 
 const router = Router();
 

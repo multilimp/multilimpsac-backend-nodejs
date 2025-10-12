@@ -2,6 +2,7 @@ import axios, { AxiosInstance, AxiosError } from 'axios';
 import logger from '../config/logger';
 import { File as FormidableFile } from 'formidable';
 import * as fs from 'fs/promises';
+import * as path from 'path';
 
 export type AnalyzePdfResult = {
   success: boolean;
@@ -28,6 +29,8 @@ export class GeminiService {
   private baseUrl: string;
   private model: string;
   private generationConfig: Record<string, any>;
+  private maxFileSize: number;
+  private maxRetries: number;
 
   constructor() {
     this.apiKey = process.env.GOOGLE_GEMINI_API_KEY || '';
@@ -37,50 +40,52 @@ export class GeminiService {
     }
 
     this.baseUrl = process.env.GEMINI_BASE_URL || 'https://generativelanguage.googleapis.com/v1beta';
-    this.model = process.env.GEMINI_MODEL || 'gemini-2.0-flash'; // Asegúrate que el modelo soporta la entrada de archivos y JSON.
+    this.model = process.env.GEMINI_MODEL || 'gemini-2.0-flash';
+    this.maxFileSize = parseInt(process.env.GEMINI_MAX_FILE_SIZE || '10485760'); // 10MB default
+    this.maxRetries = parseInt(process.env.GEMINI_MAX_RETRIES || '3');
 
     this.client = axios.create({
-      timeout: 120000, // Aumentado el timeout por si el análisis del PDF toma tiempo
+      timeout: parseInt(process.env.GEMINI_TIMEOUT || '120000'),
       headers: {
         'Content-Type': 'application/json',
       },
     });
 
     this.generationConfig = {
-      temperature: 0.0, // Temperatura baja para respuestas más deterministas y factuales
+      temperature: 0.0,
       topK: 1,
       topP: 0.95,
-      maxOutputTokens: 8192, // Ajusta según necesidad
-      responseMimeType: "application/json", // Especifica que esperamos JSON
+      maxOutputTokens: 8192,
+      responseMimeType: "application/json",
     };
   }
 
   private getPdfAnalysisPrompt(): string {
-    // Prompt ajustado para el nuevo formato JSON deseado
     return `Analiza el siguiente contenido de un archivo PDF y extrae la información solicitada.
 Debes devolver la respuesta ÚNICAMENTE en formato JSON válido, sin ningún texto adicional antes o después del JSON, y sin usar markdown.
 La estructura del JSON debe ser la siguiente:
 {
     "ventaPrivada": false,
-    "empresaRuc": "EXTRAER_VALOR_O_NULL", --> datos del proveedor
+    "empresaRuc": "EXTRAER_VALOR_O_NULL",
     "empresaRazonSocial": "EXTRAER_VALOR_O_NULL",
-    "clienteRuc": "EXTRAER_VALOR_O_NULL", --> datos de la entidad
+    "clienteRuc": "EXTRAER_VALOR_O_NULL",
     "clienteRazonSocial": "EXTRAER_VALOR_O_NULL",
-    "codigoUnidadEjecutora" : "EXTRAER_VALOR_O_NULL", --> clienteRazonSocial [codigoUnidadEjecutora]
-    "codigoCatalogo": "EXTRAER_CODIGO_CATALOGO_O_NULL", --> código alfanumérico del catálogo
+    "codigoUnidadEjecutora": "EXTRAER_VALOR_O_NULL",
+    "codigoCatalogo": "EXTRAER_CODIGO_CATALOGO_O_NULL",
     "provinciaEntrega": "EXTRAER_VALOR_O_NULL",
     "distritoEntrega": "EXTRAER_VALOR_O_NULL",
     "departamentoEntrega": "EXTRAER_VALOR_O_NULL",
-    "regionEntrega": "EXTRAER_VALOR_O_NULL", --> región de entrega igual a departamentoEntrega
+    "regionEntrega": "EXTRAER_VALOR_O_NULL",
     "direccionEntrega": "EXTRAER_VALOR_O_NULL",
     "referenciaEntrega": "EXTRAER_VALOR_O_NULL",
     "fechaEntrega": "EXTRAER_FECHA_ISO_O_NULL",
     "montoVenta": "EXTRAER_NUMERO_O_NULL",
     "fechaForm": "EXTRAER_FECHA_ISO_O_NULL",
-    "fechaMaxForm": "EXTRAER DE FECHA MAX ENTREGA",    "fechaMaxEntrega": "EXTRAER_FECHA_ISO_O_NULL",
+    "fechaMaxForm": "EXTRAER_FECHA_MAX_ENTREGA",
+    "fechaMaxEntrega": "EXTRAER_FECHA_ISO_O_NULL",
     "productos": [
         {
-            "codigo": "EXTRAER_CODIGO_PRODUCTO_O_NULL",
+            "codigo": "Extraer el Código Único de Producto o NULL",
             "descripcion": "EXTRAER_DESCRIPCION_PRODUCTO_O_NULL",
             "marca": "EXTRAER_MARCA_PRODUCTO_O_NULL",
             "cantidad": "EXTRAER_CANTIDAD_NUMERICA_O_NULL"
@@ -121,16 +126,57 @@ Instrucciones específicas para la extracción:
 - "ventaPrivada" debe ser un booleano. Asume false si no hay información contraria.
 
 Presta MUCHA ATENCIÓN a la estructura del JSON y a los tipos de datos.
-No incluyas comentarios como "EXTRAER_VALOR_O_NULL" en el JSON final; reemplázalos con los datos extraídos o null.
-`;
+No incluyas comentarios como "EXTRAER_VALOR_O_NULL" en el JSON final; reemplázalos con los datos extraídos o null.`;
+  }
+
+  private async validateFile(file: FormidableFile): Promise<void> {
+    const stats = await fs.stat(file.filepath);
+    if (stats.size > this.maxFileSize) {
+      throw new GeminiServiceException(`File size exceeds limit of ${this.maxFileSize} bytes.`, 413);
+    }
+    const ext = path.extname(file.originalFilename || '').toLowerCase();
+    if (ext !== '.pdf' || !file.mimetype?.includes('pdf')) {
+      throw new GeminiServiceException('Invalid file type. Only PDF files are allowed.', 400);
+    }
+  }
+
+  private async readFileAsBase64(filePath: string): Promise<string> {
+    const fileBuffer = await fs.readFile(filePath);
+    return fileBuffer.toString('base64');
+  }
+
+  private async callGeminiWithRetry(requestBody: any, attempt: number = 1): Promise<any> {
+    try {
+      const endpoint = `${this.baseUrl}/models/${this.model}:generateContent?key=${this.apiKey}`;
+      const response = await this.client.post(endpoint, requestBody);
+      return response;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response && error.response.status >= 500 && attempt < this.maxRetries) {
+        const delay = Math.pow(2, attempt) * 1000; // Exponential backoff
+        logger.warn(`Gemini API error (attempt ${attempt}), retrying in ${delay}ms:`, error.message);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return this.callGeminiWithRetry(requestBody, attempt + 1);
+      }
+      throw error;
+    }
+  }
+
+  private validateJsonResponse(jsonData: any): void {
+    const requiredKeys = ['ventaPrivada', 'productos', 'contactos'];
+    for (const key of requiredKeys) {
+      if (!(key in jsonData)) {
+        throw new GeminiServiceException(`Invalid JSON response: missing key '${key}'.`, 500);
+      }
+    }
+    if (!Array.isArray(jsonData.productos) || !Array.isArray(jsonData.contactos)) {
+      throw new GeminiServiceException('Invalid JSON response: productos and contactos must be arrays.', 500);
+    }
   }
 
   public async analyzePdf(file: FormidableFile): Promise<AnalyzePdfResult> {
     try {
-      const fileBuffer = await fs.readFile(file.filepath);
-      const base64Pdf = fileBuffer.toString('base64');
-
-      const endpoint = `${this.baseUrl}/models/${this.model}:generateContent?key=${this.apiKey}`;
+      await this.validateFile(file);
+      const base64Pdf = await this.readFileAsBase64(file.filepath);
 
       const requestBody = {
         contents: [
@@ -149,7 +195,7 @@ No incluyas comentarios como "EXTRAER_VALOR_O_NULL" en el JSON final; reempláza
         generationConfig: this.generationConfig,
       };
 
-      const response = await this.client.post(endpoint, requestBody);
+      const response = await this.callGeminiWithRetry(requestBody);
 
       if (response.data.candidates && response.data.candidates.length > 0) {
         const candidate = response.data.candidates[0];
@@ -158,25 +204,23 @@ No incluyas comentarios como "EXTRAER_VALOR_O_NULL" en el JSON final; reempláza
           if (part.text) {
             try {
               const jsonData = JSON.parse(part.text);
+              this.validateJsonResponse(jsonData);
+              console.log('Gemini response data:', JSON.stringify(jsonData, null, 2));
               return { success: true, data: jsonData };
             } catch (parseError) {
               logger.error('Error parsing JSON response from Gemini:', parseError);
-              logger.error('Gemini raw response text:', part.text);
-              throw new GeminiServiceException('Error parsing JSON response from Gemini. Raw text: ' + part.text, 500, parseError as Error);
+              throw new GeminiServiceException('Error parsing JSON response from Gemini.', 500, parseError as Error);
             }
           } else {
-            logger.error('No text found in Gemini response part .');
-            logger.error('Gemini full candidate:', candidate);
+            logger.error('No text found in Gemini response part.');
             throw new GeminiServiceException('No text found in Gemini response part.', 500);
           }
         } else {
           logger.error('No content parts returned from Gemini API candidate.');
-          logger.error('Gemini full response:', response.data);
           throw new GeminiServiceException('No content parts returned from Gemini API candidate.', 500);
         }
       } else {
         logger.error('No content candidates returned from Gemini API.');
-        logger.error('Gemini full response:', response.data);
         throw new GeminiServiceException('No content candidates returned from Gemini API.', 500);
       }
 
@@ -192,34 +236,30 @@ No incluyas comentarios como "EXTRAER_VALOR_O_NULL" en el JSON final; reempláza
     }
   }
 
-  // Método para generar contenido de texto simple para el chatbot
   async generateTextContent(prompt: string, options: {
     temperature?: number;
     maxOutputTokens?: number;
     responseMimeType?: string;
   } = {}): Promise<string> {
     try {
-      const response = await this.client.post(
-        `${this.baseUrl}/models/${this.model}:generateContent?key=${this.apiKey}`,
-        {
-          contents: [
-            {
-              parts: [
-                {
-                  text: prompt
-                }
-              ]
-            }
-          ],
-          generationConfig: {
-            temperature: options.temperature ?? 0.7,
-            maxOutputTokens: options.maxOutputTokens ?? 1000,
-            responseMimeType: options.responseMimeType ?? "text/plain",
-            topK: 1,
-            topP: 0.95
+      const response = await this.callGeminiWithRetry({
+        contents: [
+          {
+            parts: [
+              {
+                text: prompt
+              }
+            ]
           }
+        ],
+        generationConfig: {
+          temperature: options.temperature ?? 0.7,
+          maxOutputTokens: options.maxOutputTokens ?? 1000,
+          responseMimeType: options.responseMimeType ?? "text/plain",
+          topK: 1,
+          topP: 0.95
         }
-      );
+      });
 
       return response.data.candidates[0].content.parts[0].text;
     } catch (error) {
