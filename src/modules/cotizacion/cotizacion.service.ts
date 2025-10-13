@@ -43,14 +43,6 @@ export const createCotizacion = async (data: CreateCotizacionData): Promise<Coti
     throw new Error('Faltan campos requeridos para crear la cotización.');
   }
 
-  // Convertir fechas si vienen como string
-  if (data.fechaCotizacion && typeof data.fechaCotizacion === 'string') {
-    data.fechaCotizacion = new Date(data.fechaCotizacion);
-  }
-  if (data.fechaEntrega && typeof data.fechaEntrega === 'string') {
-    data.fechaEntrega = new Date(data.fechaEntrega);
-  }
-
   // Crear la cotización primero
   const cotizacion = await prisma.cotizacion.create({
     data: {
