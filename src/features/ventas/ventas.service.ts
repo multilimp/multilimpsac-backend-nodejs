@@ -64,10 +64,9 @@ export const getVentaById = (id: number): Promise<OrdenCompra | null> => {
 type CreateVentaType = Prisma.OrdenCompraCreateInput & {
   ventaPrivada: Omit<Prisma.OrdenCompraPrivadaCreateInput, 'id' | 'createdAt' | 'updatedAt'> & {
     pagos: Omit<Prisma.PagoOrdenCompraPrivadaCreateInput, 'id' | 'createdAt' | 'updatedAt' | 'ordenCompraPrivada'>[];
-    documentoCotizacion?: string; // Documento de cotización
-    cotizacion?: string; // Campo de cotización
-    notaPago?: string; // Aseguramos que notaPago esté disponible
-    // Campos de tipo de entrega
+    documentoCotizacion?: string;
+    cotizacion?: string;
+    notaPago?: string;
     tipoDestino?: string;
     nombreAgencia?: string;
     destinoFinal?: string;
@@ -79,15 +78,12 @@ export const createVenta = async (data: CreateVentaType): Promise<OrdenCompra> =
   try {
     const { ventaPrivada, ...directSaleBody } = data;
 
-    // 1. Validar que exista empresa
     const empresaId = directSaleBody.empresa?.connect?.id;
     if (!empresaId) throw new Error('Se requiere el ID de la empresa');
 
-    // 2. Generar código único de venta
     const codigoVenta = await ocService.generateUniqueOrdenCompraCode(empresaId);
     logger.info('Código de venta generado:', codigoVenta);
 
-    // 3. Preparar los datos para la creación
     const ventaBody: Prisma.OrdenCompraCreateInput = {
       // Relaciones
       empresa: directSaleBody.empresa,
@@ -105,15 +101,15 @@ export const createVenta = async (data: CreateVentaType): Promise<OrdenCompra> =
       distritoEntrega: directSaleBody.distritoEntrega,
       direccionEntrega: directSaleBody.direccionEntrega,
       referenciaEntrega: directSaleBody.referenciaEntrega,
-      fechaEntrega: directSaleBody.fechaEntrega ? new Date(directSaleBody.fechaEntrega) : null,
+      fechaEntrega: directSaleBody.fechaEntrega,
 
       // Datos de formulario y SIAF
-      fechaForm: new Date(directSaleBody.fechaForm!),
-      fechaMaxForm: new Date(directSaleBody.fechaMaxForm!),
+      fechaForm: directSaleBody.fechaForm,
+      fechaMaxForm: directSaleBody.fechaMaxForm,
       montoVenta: directSaleBody.montoVenta,
       siaf: directSaleBody.siaf,
       etapaSiaf: directSaleBody.etapaSiaf,
-      fechaSiaf: directSaleBody.fechaSiaf ? new Date(directSaleBody.fechaSiaf) : null,
+      fechaSiaf: directSaleBody.fechaSiaf,
 
       // Documentos
       documentoOce: directSaleBody.documentoOce,
@@ -127,9 +123,6 @@ export const createVenta = async (data: CreateVentaType): Promise<OrdenCompra> =
       fechaEmision: new Date(),
     };
 
-    logger.info('Datos finales para crear venta:', ventaBody);
-
-    // 4. Crear la venta
     const createResponse = await ocService.createOrdenCompra(ventaBody);
 
     if (!ventaPrivada) return createResponse;
@@ -190,20 +183,17 @@ export const updateVenta = async (id: number, data: UpdateVentaType): Promise<Or
   try {
     const { ventaPrivada, ...ventaData } = data;
 
-    // 1. Actualizar orden de compra principal
     const updatedVenta = await ocService.updateOrdenCompra(id, ventaData);
 
-    // 2. Si existe información de venta privada, manejar esa relación
     if (ventaPrivada) {
       const pagos = ventaPrivada.pagos;
       const privateOrderData = {
         estadoPago: ventaPrivada.estadoPago,
         fechaPago: ventaPrivada.fechaPago,
         documentoPago: ventaPrivada.documentoPago,
-        documentoCotizacion: ventaPrivada.documentoCotizacion, // Documento de cotización
-        cotizacion: ventaPrivada.cotizacion, // Campo de cotización
-        notaPago: ventaPrivada.notaPago, // Campo que faltaba
-        // Campos de tipo de entrega
+        documentoCotizacion: ventaPrivada.documentoCotizacion,
+        cotizacion: ventaPrivada.cotizacion,
+        notaPago: ventaPrivada.notaPago,
         tipoDestino: ventaPrivada.tipoDestino,
         nombreAgencia: ventaPrivada.nombreAgencia,
         destinoFinal: ventaPrivada.destinoFinal,
@@ -222,12 +212,11 @@ export const updateVenta = async (id: number, data: UpdateVentaType): Promise<Or
           where: { id: existingPrivateOrder.id },
           data: {
             estadoPago: privateOrderData.estadoPago,
-            fechaPago: privateOrderData.fechaPago ? new Date(privateOrderData.fechaPago) : null,
+            fechaPago: privateOrderData.fechaPago,
             documentoPago: privateOrderData.documentoPago,
-            documentoCotizacion: privateOrderData.documentoCotizacion, // Documento de cotización
-            cotizacion: privateOrderData.cotizacion, // Campo de cotización
-            notaPago: privateOrderData.notaPago, // Campo que faltaba
-            // Campos de tipo de entrega
+            documentoCotizacion: privateOrderData.documentoCotizacion,
+            cotizacion: privateOrderData.cotizacion,
+            notaPago: privateOrderData.notaPago,
             tipoDestino: privateOrderData.tipoDestino as "ENTREGA_DOMICILIO" | "ENTREGA_AGENCIA" | "RECOJO_ALMACEN" | null,
             nombreAgencia: privateOrderData.nombreAgencia,
             destinoFinal: privateOrderData.destinoFinal,
@@ -244,7 +233,7 @@ export const updateVenta = async (id: number, data: UpdateVentaType): Promise<Or
           for (const pago of pagos) {
             await prisma.pagoOrdenCompraPrivada.create({
               data: {
-                fechaPago: new Date(pago.fechaPago),
+                fechaPago: pago.fechaPago,
                 bancoPago: pago.bancoPago,
                 descripcionPago: pago.descripcionPago,
                 archivoPago: pago.archivoPago,
@@ -260,7 +249,7 @@ export const updateVenta = async (id: number, data: UpdateVentaType): Promise<Or
         const privateOrderBody = {
           ordenCompraId: id,
           estadoPago: privateOrderData.estadoPago,
-          fechaPago: privateOrderData.fechaPago ? new Date(privateOrderData.fechaPago) : null,
+          fechaPago: privateOrderData.fechaPago,
           documentoPago: privateOrderData.documentoPago,
           documentoCotizacion: privateOrderData.documentoCotizacion, // Documento de cotización
           cotizacion: privateOrderData.cotizacion, // Campo de cotización
@@ -276,7 +265,7 @@ export const updateVenta = async (id: number, data: UpdateVentaType): Promise<Or
           for (const pago of pagos) {
             await prisma.pagoOrdenCompraPrivada.create({
               data: {
-                fechaPago: new Date(pago.fechaPago),
+                fechaPago: pago.fechaPago,
                 bancoPago: pago.bancoPago,
                 descripcionPago: pago.descripcionPago,
                 archivoPago: pago.archivoPago,

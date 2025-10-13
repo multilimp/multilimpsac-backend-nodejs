@@ -4,6 +4,7 @@ import * as ventasService from './ventas.service';
 import { AnalyzePdfResult, GeminiService, GeminiServiceException } from '../../shared/services/gemini.service';
 import formidable from 'formidable';
 import logger from '../../shared/config/logger';
+import { parseUTCDate } from '@/shared/utils/dateHelpers';
 
 export const listVentas = async (req: Request, res: Response) => {
   try {
@@ -44,7 +45,20 @@ export const getVenta = async (req: Request, res: Response) => {
 export const createVenta = async (req: Request, res: Response) => {
   try {
     const data = req.body;
+    if (data.fechaForm) data.fechaForm = parseUTCDate(data.fechaForm) || undefined;
+    if (data.fechaMaxForm) data.fechaMaxForm = parseUTCDate(data.fechaMaxForm) || undefined;
+    if (data.fechaSiaf) data.fechaSiaf = parseUTCDate(data.fechaSiaf) || undefined;
+    if (data.fechaEntrega) data.fechaEntrega = parseUTCDate(data.fechaEntrega) || undefined;
 
+    if (data.ventaPrivada && data.ventaPrivada.fechaPago) {
+      data.ventaPrivada.fechaPago = parseUTCDate(data.ventaPrivada.fechaPago) || undefined;
+    }
+    if (data.ventaPrivada && Array.isArray(data.ventaPrivada.pagos)) {
+      data.ventaPrivada.pagos = data.ventaPrivada.pagos.map((p: any) => ({
+        ...p,
+        fechaPago: p.fechaPago ? (parseUTCDate(p.fechaPago) || undefined) : undefined,
+      }));
+    }
     const nuevaVenta = await ventasService.createVenta(data);
     res.status(201).json(nuevaVenta);
 
@@ -59,7 +73,20 @@ export const updateVenta = async (req: Request, res: Response) => {
     const id = parseInt(req.params.ventaId, 10);
     const data = req.body;
     if (isNaN(id)) throw new Error('NOT_FOUND');
+    if (data.fechaForm) data.fechaForm = parseUTCDate(data.fechaForm) || undefined;
+    if (data.fechaMaxForm) data.fechaMaxForm = parseUTCDate(data.fechaMaxForm) || undefined;
+    if (data.fechaSiaf) data.fechaSiaf = parseUTCDate(data.fechaSiaf) || undefined;
+    if (data.fechaEntrega) data.fechaEntrega = parseUTCDate(data.fechaEntrega) || undefined;
 
+    if (data.ventaPrivada && data.ventaPrivada.fechaPago) {
+      data.ventaPrivada.fechaPago = parseUTCDate(data.ventaPrivada.fechaPago) || undefined;
+    }
+    if (data.ventaPrivada && Array.isArray(data.ventaPrivada.pagos)) {
+      data.ventaPrivada.pagos = data.ventaPrivada.pagos.map((p: any) => ({
+        ...p,
+        fechaPago: p.fechaPago ? (parseUTCDate(p.fechaPago) || undefined) : undefined,
+      }));
+    }
     const updated = await ventasService.updateVenta(id, data);
     res.status(200).json(updated);
   } catch (error) {

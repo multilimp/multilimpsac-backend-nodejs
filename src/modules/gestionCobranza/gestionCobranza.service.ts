@@ -1,5 +1,6 @@
 import { GestionCobranza, Prisma } from '@prisma/client';
 import prisma from '../../database/prisma';
+import { parseSmartDate } from '../../shared/utils/dateHelpers';
 
 type CreateGestionCobranzaData = Omit<GestionCobranza, 'id' | 'createdAt' | 'updatedAt'>;
 type UpdateGestionCobranzaData = Partial<CreateGestionCobranzaData>;
@@ -9,11 +10,11 @@ type UpdateGestionCobranzaData = Partial<CreateGestionCobranzaData>;
  */
 const processGestionData = (data: CreateGestionCobranzaData | UpdateGestionCobranzaData) => {
   const processedData: any = { ...data };
-  
+
   // Procesar fechaGestion
   if (processedData.fechaGestion) {
     if (typeof processedData.fechaGestion === 'string' && processedData.fechaGestion.trim() !== '') {
-      processedData.fechaGestion = new Date(processedData.fechaGestion);
+      processedData.fechaGestion = parseSmartDate(processedData.fechaGestion);
     } else if (processedData.fechaGestion === '' || processedData.fechaGestion === null) {
       processedData.fechaGestion = null;
     }
@@ -76,7 +77,7 @@ export const getGestionCobranzaByOrdenCompra = (ordenCompraId: number): Promise<
  * Obtiene una gestión de cobranza por ID
  */
 export const getGestionCobranzaById = (id: number): Promise<GestionCobranza | null> => {
-  return prisma.gestionCobranza.findUnique({ 
+  return prisma.gestionCobranza.findUnique({
     where: { id },
     include: {
       ordenCompra: {
@@ -100,7 +101,7 @@ export const getGestionCobranzaById = (id: number): Promise<GestionCobranza | nu
  */
 export const createGestionCobranza = (data: CreateGestionCobranzaData): Promise<GestionCobranza> => {
   const processedData = processGestionData(data);
-  return prisma.gestionCobranza.create({ 
+  return prisma.gestionCobranza.create({
     data: processedData,
     include: {
       ordenCompra: {
@@ -124,8 +125,8 @@ export const createGestionCobranza = (data: CreateGestionCobranzaData): Promise<
  */
 export const updateGestionCobranza = (id: number, data: UpdateGestionCobranzaData): Promise<GestionCobranza> => {
   const processedData = processGestionData(data);
-  return prisma.gestionCobranza.update({ 
-    where: { id }, 
+  return prisma.gestionCobranza.update({
+    where: { id },
     data: processedData,
     include: {
       ordenCompra: {

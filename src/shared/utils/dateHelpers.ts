@@ -28,3 +28,15 @@ export const parseUTCDateString = (dateString: string | null | undefined): strin
     const date = parseUTCDate(dateString);
     return formatDateToUTC(date);
 };
+
+export const parseSmartDate = (dateString: string | null | undefined): Date | null => {
+    if (!dateString) return null;
+
+    const date = parseUTCDate(dateString);
+    if (date) return date;
+
+    const formattedDate = parseUTCDateString(dateString);
+    if (formattedDate) return parseUTCDate(formattedDate);
+
+    return null;
+};

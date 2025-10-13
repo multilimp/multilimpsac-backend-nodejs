@@ -1,5 +1,6 @@
 import prisma from '../../database/prisma';
 import { GestionCobranza, Prisma, EstadoCobranza } from '@prisma/client';
+import { parseSmartDate } from '../../shared/utils/dateHelpers';
 
 // Tipos de Datos
 type CreateGestionData = Omit<GestionCobranza, 'id' | 'createdAt' | 'updatedAt' | 'ordenCompraId'>; // ordenCompraId will be provided
@@ -42,7 +43,7 @@ const processCobranzaData = (data: CobranzaData) => {
 
   if (processedData.fechaEstadoCobranza) {
     if (typeof processedData.fechaEstadoCobranza === 'string' && processedData.fechaEstadoCobranza.trim() !== '') {
-      processedData.fechaEstadoCobranza = new Date(processedData.fechaEstadoCobranza);
+      processedData.fechaEstadoCobranza = parseSmartDate(processedData.fechaEstadoCobranza);
     } else if (processedData.fechaEstadoCobranza === '' || processedData.fechaEstadoCobranza === null) {
       processedData.fechaEstadoCobranza = null;
     }
