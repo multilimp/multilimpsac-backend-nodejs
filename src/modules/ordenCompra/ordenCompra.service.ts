@@ -2,7 +2,6 @@ import { OrdenCompra, Prisma } from '@prisma/client';
 import prisma from '../../database/prisma';
 
 export const getAllOrdenesCompra = (args?: Prisma.OrdenCompraFindManyArgs): Promise<OrdenCompra[]> => {
-  // Si no se especifica orderBy, usar ordenamiento descendente por fecha de creación
   const defaultArgs: Prisma.OrdenCompraFindManyArgs = {
     orderBy: { createdAt: 'desc' },
     ...args
@@ -31,42 +30,6 @@ export const updateOrdenCompra = (id: number, data: Prisma.OrdenCompraUpdateInpu
 
 export const patchOrdenCompra = (id: number, data: Partial<Prisma.OrdenCompraUpdateInput>): Promise<OrdenCompra> => {
   const processedData: Prisma.OrdenCompraUpdateInput = { ...data };
-
-  if (data.fechaEmision && typeof data.fechaEmision === 'string') {
-    processedData.fechaEmision = new Date(data.fechaEmision);
-  }
-
-  if (data.fechaEntregaOc && typeof data.fechaEntregaOc === 'string') {
-    processedData.fechaEntregaOc = new Date(data.fechaEntregaOc);
-  }
-
-  if (data.fechaPeruCompras && typeof data.fechaPeruCompras === 'string') {
-    processedData.fechaPeruCompras = new Date(data.fechaPeruCompras);
-  }
-
-  if (data.fechaEntrega && typeof data.fechaEntrega === 'string') {
-    processedData.fechaEntrega = new Date(data.fechaEntrega);
-  }
-
-  if (data.fechaForm && typeof data.fechaForm === 'string') {
-    processedData.fechaForm = new Date(data.fechaForm);
-  }
-
-  if (data.fechaMaxForm && typeof data.fechaMaxForm === 'string') {
-    processedData.fechaMaxForm = new Date(data.fechaMaxForm);
-  }
-
-  if (data.fechaSiaf && typeof data.fechaSiaf === 'string') {
-    processedData.fechaSiaf = new Date(data.fechaSiaf);
-  }
-
-  if (data.fechaEstadoCobranza && typeof data.fechaEstadoCobranza === 'string') {
-    processedData.fechaEstadoCobranza = new Date(data.fechaEstadoCobranza);
-  }
-
-  if (data.fechaProximaGestion && typeof data.fechaProximaGestion === 'string') {
-    processedData.fechaProximaGestion = new Date(data.fechaProximaGestion);
-  }
 
   return prisma.ordenCompra.update({
     where: { id },

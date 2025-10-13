@@ -4,10 +4,10 @@ import {
     getTransportFinancialData,
     createProviderSaldo,
     createTransportSaldo,
-    updateSaldo,
-    deleteSaldo,
+    updateProviderSaldo,
     updateTransportSaldo,
-    deleteTransportSaldo
+    deleteTransportSaldo,
+    deleteProviderSaldo
 } from './saldos.controller';
 
 const router = Router();
@@ -20,9 +20,9 @@ router.get('/transports/:transportId/financial-data', getTransportFinancialData)
 router.post('/providers/:providerId/saldos', createProviderSaldo);
 router.post('/transports/:transportId/saldos', createTransportSaldo);
 
-// Rutas para gestionar saldos
-router.put('/saldos/:saldoId', updateSaldo);
-router.delete('/saldos/:saldoId', deleteSaldo);
+// Rutas para gestionar saldos de proveedores
+router.put('/saldos/:saldoId', updateProviderSaldo);
+router.delete('/saldos/:saldoId', deleteProviderSaldo);
 
 // Rutas para gestionar saldos de transporte
 router.put('/transport-saldos/:saldoId', updateTransportSaldo);

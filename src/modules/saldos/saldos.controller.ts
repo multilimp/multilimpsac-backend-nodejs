@@ -191,7 +191,7 @@ export const createTransportSaldo = async (req: Request, res: Response) => {
                 monto,
                 descripcion,
                 banco,
-                fecha: fecha ? new Date(fecha) : undefined
+                fecha
             }
         });
 
@@ -203,7 +203,7 @@ export const createTransportSaldo = async (req: Request, res: Response) => {
 };
 
 // Actualizar saldo
-export const updateSaldo = async (req: Request, res: Response) => {
+export const updateProviderSaldo = async (req: Request, res: Response) => {
     try {
         const saldoId = parseInt(req.params.saldoId, 10);
         const { tipoMovimiento, monto, descripcion, activo, banco, fecha } = req.body;
@@ -315,7 +315,7 @@ export const deleteTransportSaldo = async (req: Request, res: Response) => {
 };
 
 // Eliminar saldo de proveedor
-export const deleteSaldo = async (req: Request, res: Response) => {
+export const deleteProviderSaldo = async (req: Request, res: Response) => {
     try {
         const saldoId = parseInt(req.params.saldoId, 10);
 
