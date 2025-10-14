@@ -164,12 +164,29 @@ export const getAllOrdenesProveedor = (): Promise<OrdenProveedor[]> => {
       empresa: true,
       proveedor: true,
       contactoProveedor: true,
-      ordenCompra: true,
+      ordenCompra: {
+        select: {
+          id: true,
+          codigoVenta: true,
+          fechaEmision: true,
+          empresaId: true,
+          clienteId: true,
+          contactoClienteId: true,
+          departamentoEntrega: true,
+          provinciaEntrega: true,
+          distritoEntrega: true,
+          direccionEntrega: true,
+          referenciaEntrega: true,
+          montoVenta: true,
+          cliente: true,
+          contactoCliente: true,
+        },
+      },
       productos: true,
       pagos: true,
       transportesAsignados: { include: { transporte: true, contactoTransporte: true, pagos: true } },
     },
-    orderBy: { createdAt: 'desc' }, // Ordenamiento descendente por fecha de creación
+    orderBy: { createdAt: 'desc' },
   });
 };
 

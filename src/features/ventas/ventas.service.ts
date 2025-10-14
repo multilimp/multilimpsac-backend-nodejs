@@ -25,6 +25,12 @@ export const getAllVentas = async (): Promise<OrdenCompra[]> => {
       },
       contactoCliente: true,
       catalogoEmpresa: true,
+      ordenesProveedor: {
+        select: {
+          id: true,
+          totalProveedor: true,
+        },
+      },
     },
     orderBy: {
       createdAt: 'desc'
