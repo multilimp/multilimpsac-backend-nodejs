@@ -76,7 +76,7 @@ export const getOrdenProveedorPrintData = async (id: number) => {
     throw new Error(`Orden de proveedor con ID ${id} no encontrada.`);
   }
   return {
-    data: ordenProveedor
+    ordenProveedor
   };
 };
 
