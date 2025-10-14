@@ -32,7 +32,7 @@ class Server {
 
   middlewares() {
     this.app.use(helmet());
-    
+
     const corsOptions = {
       origin: [
         'http://localhost:5173',
@@ -44,7 +44,7 @@ class Server {
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
     };
-    
+
     this.app.use(cors(corsOptions));
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: false }));
