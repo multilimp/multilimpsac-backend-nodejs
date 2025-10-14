@@ -32,7 +32,20 @@ class Server {
 
   middlewares() {
     this.app.use(helmet());
-    this.app.use(cors());
+    
+    const corsOptions = {
+      origin: [
+        'http://localhost:5173',
+        'http://localhost:3000',
+        'https://multilimpsac.vercel.app',
+        'https://multilimpsac-nodejs.onrender.com',
+      ],
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    };
+    
+    this.app.use(cors(corsOptions));
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: false }));
 
