@@ -3,6 +3,7 @@ import express, { Application, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import logger from './shared/config/logger';
+import { config } from './shared/config/env';
 import { configureRoutes } from './router';
 
 dotenv.config();
@@ -11,7 +12,7 @@ class Server {
   public app: Application;
   private readonly puerto: string | number;
   private readonly url: string; constructor() {
-    this.puerto = process.env.PORT ?? 5001;
+    this.puerto = config.port;
     this.url = process.env.URL ?? 'http://localhost';
     this.app = express();
 
