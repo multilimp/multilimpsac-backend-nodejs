@@ -133,6 +133,13 @@ export const getStockByProducto = (productoId: number) => {
   });
 };
 
+export const getMovimientosByStock = (productoId: number, almacenId: number) => {
+  return (prisma as any).movimientoStock.findMany({
+    where: { productoId, almacenId },
+    orderBy: { createdAt: 'desc' },
+  });
+};
+
 export const createOrUpdateStock = async (data: CreateStockData): Promise<StockProducto> => {
   const existingStock = await prisma.stockProducto.findUnique({
     where: {
@@ -144,7 +151,8 @@ export const createOrUpdateStock = async (data: CreateStockData): Promise<StockP
   });
 
   if (existingStock) {
-    return prisma.stockProducto.update({
+    const delta = data.cantidad - existingStock.cantidad;
+    const updated = await prisma.stockProducto.update({
       where: {
         productoId_almacenId: {
           productoId: data.productoId,
@@ -157,14 +165,40 @@ export const createOrUpdateStock = async (data: CreateStockData): Promise<StockP
         almacen: true,
       },
     });
+
+    if (delta !== 0) {
+      await (prisma as any).movimientoStock.create({
+        data: {
+          productoId: data.productoId,
+          almacenId: data.almacenId,
+          cantidad: Math.abs(delta),
+          tipo: delta > 0 ? 'ENTRADA' : 'SALIDA',
+          referencia: 'Actualización de stock',
+        },
+      });
+    }
+
+    return updated;
   } else {
-    return prisma.stockProducto.create({
+    const created = await prisma.stockProducto.create({
       data,
       include: {
         producto: true,
         almacen: true,
       },
     });
+
+    await (prisma as any).movimientoStock.create({
+      data: {
+        productoId: data.productoId,
+        almacenId: data.almacenId,
+        cantidad: data.cantidad,
+        tipo: 'ENTRADA',
+        referencia: 'Creación de stock',
+      },
+    });
+
+    return created;
   }
 };
 
@@ -173,18 +207,31 @@ export const updateStock = (
   almacenId: number,
   data: UpdateStockData
 ): Promise<StockProducto> => {
-  return prisma.stockProducto.update({
-    where: {
-      productoId_almacenId: {
-        productoId,
-        almacenId,
-      },
-    },
-    data,
-    include: {
-      producto: true,
-      almacen: true,
-    },
+  return prisma.$transaction(async (tx) => {
+    const current = await tx.stockProducto.findUnique({
+      where: { productoId_almacenId: { productoId, almacenId } },
+    });
+
+    const updated = await tx.stockProducto.update({
+      where: { productoId_almacenId: { productoId, almacenId } },
+      data,
+      include: { producto: true, almacen: true },
+    });
+
+    if (current && current.cantidad !== data.cantidad) {
+      const delta = data.cantidad - current.cantidad;
+      await (tx as any).movimientoStock.create({
+         data: {
+           productoId,
+           almacenId,
+           cantidad: Math.abs(delta),
+           tipo: delta > 0 ? 'ENTRADA' : 'SALIDA',
+           referencia: 'Actualización de stock',
+         },
+       });
+    }
+
+    return updated;
   });
 };
 

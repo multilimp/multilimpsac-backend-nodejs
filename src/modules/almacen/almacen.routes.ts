@@ -19,6 +19,7 @@ import {
   createOrUpdateStock,
   updateStock,
   deleteStock,
+  listMovimientosByStock,
 } from './almacen.controller';
 
 const router = Router();
@@ -44,5 +45,6 @@ router.get('/stock/producto/:productoId', getStockByProducto);
 router.post('/stock', createOrUpdateStock);
 router.put('/stock/:productoId/:almacenId', updateStock);
 router.delete('/stock/:productoId/:almacenId', deleteStock);
+router.get('/stock/movimientos/:productoId/:almacenId', listMovimientosByStock);
 
 export default router;

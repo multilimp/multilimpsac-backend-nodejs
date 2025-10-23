@@ -503,15 +503,16 @@ model PagoOrdenProveedor {
 }
 
 model Producto {
-  id             Int             @id @default(autoincrement())
+  id             Int                 @id @default(autoincrement())
   nombre         String
   descripcion    String?
-  unidadMedida   String?         @map("unidad_medida")
-  precioBase     Decimal?        @map("precio_base") @db.Decimal(10, 4)
-  estado         Boolean?        @default(true)
-  createdAt      DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt      DateTime        @updatedAt @map("updated_at")
+  unidadMedida   String?             @map("unidad_medida")
+  precioBase     Decimal?            @map("precio_base") @db.Decimal(10, 4)
+  estado         Boolean?            @default(true)
+  createdAt      DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime            @updatedAt @map("updated_at")
   stockProductos StockProducto[]
+  movimientosStock MovimientoStock[]
 
   @@map("productos")
 }
@@ -530,6 +531,20 @@ model StockProducto {
   @@map("stock_productos")
 }
 
+model MovimientoStock {
+  id         Int      @id @default(autoincrement())
+  productoId Int      @map("producto_id")
+  almacenId  Int      @map("almacen_id")
+  cantidad   Int
+  tipo       String
+  referencia String?
+  createdAt  DateTime @default(now()) @map("created_at")
+  producto   Producto @relation(fields: [productoId], references: [id])
+  almacen    Almacen  @relation(fields: [almacenId], references: [id])
+
+  @@map("movimientos_stock")
+}
+
 model Almacen {
   id                   Int                  @id @default(autoincrement())
   nombre               String
@@ -538,6 +553,7 @@ model Almacen {
   createdAt            DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt            DateTime             @updatedAt @map("updated_at")
   stockProductos       StockProducto[]
+  movimientosStock     MovimientoStock[]
   transportesAsignados TransporteAsignado[]
 
   @@map("almacenes")

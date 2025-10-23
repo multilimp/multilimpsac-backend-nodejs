@@ -218,3 +218,19 @@ export const deleteStock = async (req: Request, res: Response) => {
     handleError({ res, error, msg: 'Error al eliminar stock' });
   }
 };
+
+export const listMovimientosByStock = async (req: Request, res: Response) => {
+  try {
+    const productoId = parseInt(req.params.productoId, 10);
+    const almacenId = parseInt(req.params.almacenId, 10);
+
+    if (isNaN(productoId) || isNaN(almacenId)) {
+      return res.status(400).json({ message: 'Producto ID y Almacén ID inválidos' });
+    }
+
+    const movimientos = await almacenService.getMovimientosByStock(productoId, almacenId);
+    res.status(200).json(movimientos);
+  } catch (error) {
+    handleError({ res, error, msg: 'Error al listar movimientos de stock' });
+  }
+};
