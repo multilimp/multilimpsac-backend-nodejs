@@ -162,7 +162,7 @@ export const getStockByProducto = async (req: Request, res: Response) => {
 
 export const createOrUpdateStock = async (req: Request, res: Response) => {
   try {
-    const { productoId, almacenId, cantidad } = req.body;
+    const { productoId, almacenId, cantidad, referencia } = req.body;
 
     if (!productoId || !almacenId || cantidad === undefined) {
       return res.status(400).json({
@@ -173,7 +173,8 @@ export const createOrUpdateStock = async (req: Request, res: Response) => {
     const stock = await almacenService.createOrUpdateStock({
       productoId: parseInt(productoId, 10),
       almacenId: parseInt(almacenId, 10),
-      cantidad: parseInt(cantidad, 10)
+      cantidad: parseInt(cantidad, 10),
+      referencia: typeof referencia === 'string' ? referencia : undefined,
     });
 
     res.status(200).json(stock);
@@ -186,7 +187,7 @@ export const updateStock = async (req: Request, res: Response) => {
   try {
     const productoId = parseInt(req.params.productoId, 10);
     const almacenId = parseInt(req.params.almacenId, 10);
-    const { cantidad } = req.body;
+    const { cantidad, referencia } = req.body;
 
     if (isNaN(productoId) || isNaN(almacenId) || cantidad === undefined) {
       return res.status(400).json({
@@ -194,7 +195,10 @@ export const updateStock = async (req: Request, res: Response) => {
       });
     }
 
-    const updatedStock = await almacenService.updateStock(productoId, almacenId, { cantidad });
+    const updatedStock = await almacenService.updateStock(productoId, almacenId, {
+      cantidad: parseInt(cantidad, 10),
+      referencia: typeof referencia === 'string' ? referencia : undefined,
+    });
     res.status(200).json(updatedStock);
   } catch (error) {
     handleError({ res, error, msg: 'Error al actualizar stock' });
