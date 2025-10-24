@@ -743,9 +743,12 @@ enum MovimientoProveedor {
 
 enum EstadoRol {
   PENDIENTE
+  ENTREGADO
+  EN_PROCESO
+  COMPLETO
+  ANULADO
   COMPLETADO
   CANCELADO
-  EN_PROCESO
 }
 
 enum MovimientoTransporte {
