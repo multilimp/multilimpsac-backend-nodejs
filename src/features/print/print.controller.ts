@@ -36,6 +36,6 @@ export const getCargosEntregaData = async (req: Request, res: Response) => {
     });
 
   } catch (error) {
-    handleError({ res, error, msg: 'Error al obtener los datos de cargos de entrega' });
+    handleError({ res, error, msg: 'Error al obtener los datos de Reporte de Programación' });
   }
 };
