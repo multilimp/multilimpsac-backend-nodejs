@@ -104,7 +104,15 @@ export const getCargosEntregaData = async (fechaInicio: string, fechaFin: string
       ordenCompra: {
         include: {
           cliente: true,
-          contactoCliente: true
+          contactoCliente: true,
+          facturaciones: {
+            select: {
+              factura: true,
+              facturaArchivo: true,
+              grr: true,
+              grrArchivo: true,
+            }
+          }
         }
       }
     },
@@ -132,6 +140,16 @@ export const getCargosEntregaData = async (fechaInicio: string, fechaFin: string
       fechaProgramada: op.fechaProgramada,
       cartaCci: op.ordenCompra?.cartaCci || null,
       cartaGarantia: op.ordenCompra?.cartaGarantia || null,
+      ordenCompraFisica: op.ordenCompra?.documentoOcf || null,
+      ordenCompraElectronica: op.ordenCompra?.documentoOce || null,
+      facturasArchivo: (op.ordenCompra?.facturaciones || []).map((f: any) => f.facturaArchivo).filter(Boolean),
+      grrsArchivo: (op.ordenCompra?.facturaciones || []).map((f: any) => f.grrArchivo).filter(Boolean),
+      documentosFacturacion: (op.ordenCompra?.facturaciones || []).map((f: any) => ({
+        facturaNumero: f.factura || null,
+        facturaArchivo: f.facturaArchivo || null,
+        grrNumero: f.grr || null,
+        grrArchivo: f.grrArchivo || null,
+      })),
       productos: op.productos.map(p => ({
         codigo: p.codigo || '',
         descripcion: p.descripcion || '',
