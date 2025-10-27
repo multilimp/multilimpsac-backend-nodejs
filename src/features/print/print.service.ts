@@ -108,6 +108,7 @@ export const getCargosEntregaData = async (fechaInicio: string, fechaFin: string
           facturaciones: {
             select: {
               factura: true,
+              fechaFactura: true,
               facturaArchivo: true,
               grr: true,
               grrArchivo: true,
@@ -145,6 +146,7 @@ export const getCargosEntregaData = async (fechaInicio: string, fechaFin: string
       facturasArchivo: (op.ordenCompra?.facturaciones || []).map((f: any) => f.facturaArchivo).filter(Boolean),
       grrsArchivo: (op.ordenCompra?.facturaciones || []).map((f: any) => f.grrArchivo).filter(Boolean),
       documentosFacturacion: (op.ordenCompra?.facturaciones || []).map((f: any) => ({
+        fechaFactura: f.fechaFactura || null,
         facturaNumero: f.factura || null,
         facturaArchivo: f.facturaArchivo || null,
         grrNumero: f.grr || null,
