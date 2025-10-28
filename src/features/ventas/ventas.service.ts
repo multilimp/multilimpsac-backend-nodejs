@@ -37,6 +37,7 @@ export const getAllVentas = async (): Promise<OrdenCompra[]> => {
           factura: true,
           fechaFactura: true,
           grr: true,
+          esRefacturacion: true,
         }
       }
     },
