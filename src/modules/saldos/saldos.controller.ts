@@ -77,48 +77,72 @@ export const getProviderFinancialData = async (req: Request, res: Response) => {
 // Obtener información financiera de un transporte
 export const getTransportFinancialData = async (req: Request, res: Response) => {
     try {
-        const { transportId } = req.params;
+        const transportId = parseInt(req.params.transportId, 10);
 
-        // Verificar que el transporte existe
-        const transporte = await prisma.transporte.findUnique({
-            where: { id: parseInt(transportId) },
-            include: {
-                saldosTransporte: {
-                    where: { activo: true },
-                    orderBy: { fecha: 'desc' }
-                },
-                cuentasBancarias: {
-                    where: { activa: true }
-                }
-            }
-        });
-
-        if (!transporte) {
-            return res.status(404).json({ message: 'Transporte no encontrado' });
+        if (isNaN(transportId)) {
+            return res.status(400).json({
+                success: false,
+                message: 'ID de transporte inválido'
+            });
         }
 
-        // Calcular saldo total
-        const saldoTotal = transporte.saldosTransporte.reduce((total, saldo) => {
-            if (saldo.tipoMovimiento === 'A_FAVOR') {
-                return total + Number(saldo.monto);
-            } else {
-                return total - Number(saldo.monto);
-            }
-        }, 0);
-
-        res.json({
-            transporte: {
-                id: transporte.id,
-                razonSocial: transporte.razonSocial,
-                ruc: transporte.ruc
+        // Obtener saldos del transporte
+        const saldos = await prisma.saldoTransporte.findMany({
+            where: {
+                transporteId: transportId,
+                activo: true
             },
-            saldoTotal,
-            saldos: transporte.saldosTransporte,
-            cuentasBancarias: transporte.cuentasBancarias
+            orderBy: {
+                fecha: 'desc'
+            }
         });
+
+        // Obtener cuentas bancarias del transporte
+        const cuentasBancarias = await prisma.cuentaBancaria.findMany({
+            where: {
+                transporteId: transportId,
+                activa: true
+            },
+            orderBy: {
+                createdAt: 'desc'
+            }
+        });
+
+        // Calcular resumen de saldos
+        const saldoFavor = saldos
+            .filter(s => s.tipoMovimiento === 'A_FAVOR')
+            .reduce((sum, s) => sum + Number(s.monto), 0);
+
+        const saldoDeuda = saldos
+            .filter(s => s.tipoMovimiento === 'DEBE')
+            .reduce((sum, s) => sum + Number(s.monto), 0);
+
+        const saldoNeto = Math.abs(saldoFavor - saldoDeuda);
+        const tipoSaldo = saldoFavor > saldoDeuda ? 'A_FAVOR' :
+            saldoDeuda > saldoFavor ? 'DEBE' : 'NEUTRO';
+
+        const resumenSaldo = {
+            saldoFavor,
+            saldoDeuda,
+            saldoNeto,
+            tipoSaldo
+        };
+
+        res.status(200).json({
+            success: true,
+            data: {
+                saldos,
+                cuentasBancarias,
+                resumenSaldo
+            }
+        });
+
     } catch (error) {
-        console.error('Error obteniendo información financiera del transporte:', error);
-        res.status(500).json({ message: 'Error interno del servidor' });
+        handleError({
+            res,
+            error,
+            msg: 'Error al obtener datos financieros del transporte'
+        });
     }
 };
 
