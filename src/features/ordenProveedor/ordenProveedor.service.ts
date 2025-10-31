@@ -177,10 +177,12 @@ export const getAllOrdenesProveedor = (): Promise<OrdenProveedor[]> => {
           distritoEntrega: true,
           direccionEntrega: true,
           referenciaEntrega: true,
+          documentoOce: true,
+          documentoOcf: true,
           montoVenta: true,
           cliente: true,
           contactoCliente: true,
-        },
+        }
       },
       productos: true,
       pagos: true,
