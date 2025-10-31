@@ -21,6 +21,7 @@ export const getAllVentas = async (): Promise<OrdenCompra[]> => {
           ruc: true,
           codigoUnidadEjecutora: true,
           promedioCobranza: true,
+          departamento: true,
         }
       },
       contactoCliente: true,
