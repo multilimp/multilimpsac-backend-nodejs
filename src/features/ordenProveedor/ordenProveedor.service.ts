@@ -182,11 +182,13 @@ export const getAllOrdenesProveedor = (): Promise<OrdenProveedor[]> => {
           montoVenta: true,
           cliente: true,
           contactoCliente: true,
+          fechaMaxForm: true,
+          fechaEntregaOc: true,
         }
       },
       productos: true,
       pagos: true,
-      transportesAsignados: { include: { transporte: true, contactoTransporte: true, pagos: true } },
+      transportesAsignados: { include: { transporte: true, pagos: true } },
     },
     orderBy: { createdAt: 'desc' },
   });
