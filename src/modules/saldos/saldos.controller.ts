@@ -173,7 +173,11 @@ export const createProviderSaldo = async (req: Request, res: Response) => {
                 monto,
                 descripcion,
                 banco,
-                fecha: fecha ? new Date(fecha) : undefined
+                fecha: fecha ? (() => {
+                    const fechaObj = new Date(fecha);
+                    fechaObj.setDate(fechaObj.getDate() + 1);
+                    return fechaObj;
+                })() : undefined
             }
         });
 
@@ -215,7 +219,15 @@ export const createTransportSaldo = async (req: Request, res: Response) => {
                 monto,
                 descripcion,
                 banco,
-                fecha
+                fecha: fecha ? (() => {
+                    const fechaObj = new Date(fecha);
+                    fechaObj.setDate(fechaObj.getDate() + 1);
+                    return fechaObj;
+                })() : (() => {
+                    const hoy = new Date();
+                    hoy.setDate(hoy.getDate() + 1);
+                    return hoy;
+                })()
             }
         });
 
@@ -246,7 +258,13 @@ export const updateProviderSaldo = async (req: Request, res: Response) => {
                 ...(monto && { monto }),
                 ...(descripcion !== undefined && { descripcion }),
                 ...(banco !== undefined && { banco }),
-                ...(fecha && { fecha: new Date(fecha) }),
+                ...(fecha && { 
+                    fecha: (() => {
+                        const fechaObj = new Date(fecha);
+                        fechaObj.setDate(fechaObj.getDate() + 1);
+                        return fechaObj;
+                    })()
+                }),
                 ...(activo !== undefined && { activo })
             }
         });
@@ -286,7 +304,13 @@ export const updateTransportSaldo = async (req: Request, res: Response) => {
                 ...(monto && { monto }),
                 ...(descripcion !== undefined && { descripcion }),
                 ...(banco !== undefined && { banco }),
-                ...(fecha && { fecha: new Date(fecha) }),
+                ...(fecha && { 
+                    fecha: (() => {
+                        const fechaObj = new Date(fecha);
+                        fechaObj.setDate(fechaObj.getDate() + 1);
+                        return fechaObj;
+                    })()
+                }),
                 ...(activo !== undefined && { activo })
             }
         });

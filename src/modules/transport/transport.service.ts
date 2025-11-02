@@ -7,12 +7,101 @@ import { CuentaBancariaTipo } from '@prisma/client';
 type CreateTransportData = Omit<Transporte, 'id' | 'createdAt' | 'updatedAt'>;
 type UpdateTransportData = Partial<CreateTransportData>;
 
-export const getAllTransports = (): Promise<Transporte[]> => {
-  return prisma.transporte.findMany({
+export const getAllTransports = async () => {
+  const transportes = await prisma.transporte.findMany({
     include: {
       cuentasBancarias: true,
+      saldosTransporte: {
+        where: {
+          activo: true
+        }
+      },
     },
   });
+
+  return transportes.map(transporte => {
+    const saldoFavor = transporte.saldosTransporte
+      .filter(s => s.tipoMovimiento === 'A_FAVOR')
+      .reduce((sum, s) => sum + Number(s.monto), 0);
+
+    const saldoDeuda = transporte.saldosTransporte
+      .filter(s => s.tipoMovimiento === 'DEBE')
+      .reduce((sum, s) => sum + Number(s.monto), 0);
+
+    const saldo = saldoFavor - saldoDeuda;
+
+    return {
+      ...transporte,
+      saldo
+    };
+  });
+};
+
+// Versión optimizada con cálculo de saldo
+export const getAllTransportsWithSaldo = async () => {
+  const transportes = await prisma.transporte.findMany({
+    select: {
+      id: true,
+      razonSocial: true,
+      ruc: true,
+      direccion: true,
+      telefono: true,
+      email: true,
+      estado: true,
+      cobertura: true,
+      departamento: true,
+      provincia: true,
+      distrito: true,
+      createdAt: true,
+      updatedAt: true,
+      cuentasBancarias: true,
+      saldosTransporte: {
+        select: {
+          tipoMovimiento: true,
+          monto: true
+        },
+        where: {
+          activo: true
+        }
+      }
+    }
+  });
+
+  return transportes.map(transporte => {
+    const saldoFavor = transporte.saldosTransporte
+      .filter(s => s.tipoMovimiento === 'A_FAVOR')
+      .reduce((sum, s) => sum + Number(s.monto), 0);
+
+    const saldoDeuda = transporte.saldosTransporte
+      .filter(s => s.tipoMovimiento === 'DEBE')
+      .reduce((sum, s) => sum + Number(s.monto), 0);
+
+    const saldo = saldoFavor - saldoDeuda;
+
+    const { saldosTransporte, ...transporteData } = transporte;
+    
+    return {
+      ...transporteData,
+      saldo
+    };
+  });
+};
+
+// Versión usando SQL raw para máximo rendimiento
+export const getAllTransportsWithSaldoRaw = async () => {
+  return await prisma.$queryRaw`
+    SELECT 
+      t.*,
+      COALESCE(
+        SUM(CASE WHEN st.tipo_movimiento = 'A_FAVOR' THEN st.monto ELSE 0 END) - 
+        SUM(CASE WHEN st.tipo_movimiento = 'DEBE' THEN st.monto ELSE 0 END), 
+        0
+      ) as saldo
+    FROM transportes t
+    LEFT JOIN saldos_transporte st ON t.id = st."transporteId" AND st.activo = true
+    GROUP BY t.id
+    ORDER BY t.id
+  `;
 };
 
 export const getTransportById = (id: number): Promise<Transporte | null> => {

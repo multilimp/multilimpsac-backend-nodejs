@@ -10,11 +10,29 @@ import { CuentaBancariaTipo } from '@prisma/client';
 type CreateProviderData = Omit<Proveedor, 'id' | 'createdAt' | 'updatedAt'>;
 type UpdateProviderData = Partial<CreateProviderData>;
 
-export const getAllProviders = (): Promise<Proveedor[]> => {
-  return prisma.proveedor.findMany({
+export const getAllProviders = async (): Promise<Proveedor[]> => {
+  const providers = await prisma.proveedor.findMany({
     include: {
       cuentasBancarias: true,
+      saldosProveedor: true,
     },
+  });
+
+  return providers.map(provider => {
+    const saldoFavor = provider.saldosProveedor
+      .filter(s => s.tipoMovimiento === 'A_FAVOR')
+      .reduce((sum, s) => sum + Number(s.monto), 0);
+
+    const saldoDeuda = provider.saldosProveedor
+      .filter(s => s.tipoMovimiento === 'DEBE')
+      .reduce((sum, s) => sum + Number(s.monto), 0);
+
+    const saldo = saldoFavor - saldoDeuda;
+
+    return {
+      ...provider,
+      saldo
+    };
   });
 };
 
