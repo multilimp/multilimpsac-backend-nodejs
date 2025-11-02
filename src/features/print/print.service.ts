@@ -225,3 +225,49 @@ export const getCargosEntregaData = async (fechaInicio: string, fechaFin: string
 
   return data;
 };
+
+export const getCotizacionPrintData = async (id: number) => {
+  const cotizacion = await prisma.cotizacion.findUnique({
+    where: { id },
+    include: {
+      empresa: {
+        select: {
+          razonSocial: true,
+          ruc: true,
+          direccion: true,
+          telefono: true,
+          email: true,
+          web: true,
+          direcciones: true,
+          logo: true,
+        },
+      },
+      cliente: {
+        select: {
+          razonSocial: true,
+          ruc: true,
+          direccion: true,
+          telefono: true,
+          email: true,
+        },
+      },
+      contactoCliente: {
+        select: {
+          nombre: true,
+          telefono: true,
+          email: true,
+          cargo: true,
+        },
+      },
+      productos: true,
+    },
+  });
+
+  if (!cotizacion) {
+    throw new Error(`Cotización con ID ${id} no encontrada.`);
+  }
+  
+  return {
+    cotizacion
+  };
+};

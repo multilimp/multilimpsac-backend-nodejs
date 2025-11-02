@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { getOrdenProveedorPrintData, getCargosEntregaData as getCargosEntregaDataService } from './print.service';
+import { getOrdenProveedorPrintData, getCargosEntregaData as getCargosEntregaDataService, getCotizacionPrintData } from './print.service';
 import { handleError } from '../../shared/middleware/handleError';
 
 export const getOrdenProveedorPrintDataHandler = async (req: Request, res: Response) => {
@@ -37,5 +37,20 @@ export const getCargosEntregaData = async (req: Request, res: Response) => {
 
   } catch (error) {
     handleError({ res, error, msg: 'Error al obtener los datos de Reporte de Programación' });
+  }
+};
+
+export const getCotizacionPrintDataHandler = async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    if (isNaN(id)) {
+      return res.status(400).json({ success: false, message: 'ID de cotización inválido.' });
+    }
+
+    const data = await getCotizacionPrintData(id);
+
+    res.json({ success: true, data });
+  } catch (error) {
+    handleError({ res, error, msg: 'Error al obtener datos para imprimir la cotización.' });
   }
 };
