@@ -53,6 +53,15 @@ export const createVenta = async (req: Request, res: Response) => {
     if (data.ventaPrivada && data.ventaPrivada.fechaPago) {
       data.ventaPrivada.fechaPago = parseUTCDate(data.ventaPrivada.fechaPago) || undefined;
     }
+    if (data.ventaPrivada && data.ventaPrivada.fechaFactura) {
+      const parsed = parseUTCDate(data.ventaPrivada.fechaFactura) || undefined;
+      if (parsed) {
+        parsed.setDate(parsed.getDate() + 1);
+        data.ventaPrivada.fechaFactura = parsed;
+      } else {
+        data.ventaPrivada.fechaFactura = undefined;
+      }
+    }
     if (data.ventaPrivada && Array.isArray(data.ventaPrivada.pagos)) {
       data.ventaPrivada.pagos = data.ventaPrivada.pagos.map((p: any) => ({
         ...p,
@@ -80,6 +89,15 @@ export const updateVenta = async (req: Request, res: Response) => {
 
     if (data.ventaPrivada && data.ventaPrivada.fechaPago) {
       data.ventaPrivada.fechaPago = parseUTCDate(data.ventaPrivada.fechaPago) || undefined;
+    }
+    if (data.ventaPrivada && data.ventaPrivada.fechaFactura) {
+      const parsed = parseUTCDate(data.ventaPrivada.fechaFactura) || undefined;
+      if (parsed) {
+        parsed.setDate(parsed.getDate() + 1);
+        data.ventaPrivada.fechaFactura = parsed;
+      } else {
+        data.ventaPrivada.fechaFactura = undefined;
+      }
     }
     if (data.ventaPrivada && Array.isArray(data.ventaPrivada.pagos)) {
       data.ventaPrivada.pagos = data.ventaPrivada.pagos.map((p: any) => ({

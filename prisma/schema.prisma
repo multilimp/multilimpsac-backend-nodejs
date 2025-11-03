@@ -333,10 +333,12 @@ model OrdenCompraPrivada {
   id                  Int                      @id @default(autoincrement())
   ordenCompraId       Int                      @unique @map("orden_compra_id")
   fechaPago           DateTime?                @map("fecha_pago") @db.Date
+  fechaFactura        DateTime?                @map("fecha_factura") @db.Date
   documentoPago       String?                  @map("documento_pago")
   createdAt           DateTime                 @default(now()) @map("created_at")
   updatedAt           DateTime                 @updatedAt @map("updated_at")
   estadoPago          EstadoPago?              @map("estado_pago")
+  estadoFactura       String?                  @map("estado_factura")
   notaPago            String?                  @map("nota_pago")
   documentoCotizacion String?                  @map("documento_cotizacion")
   cotizacion          String?                  @map("cotizacion")

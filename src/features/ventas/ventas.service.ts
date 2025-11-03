@@ -181,7 +181,9 @@ type UpdateVentaType = Prisma.OrdenCompraUpdateInput & {
   ventaPrivada?: {
     estadoPago?: any;
     fechaPago?: string | Date;
+    fechaFactura?: string | Date;
     documentoPago?: string;
+    estadoFactura?: any;
     documentoCotizacion?: string; // Documento de cotización
     cotizacion?: string; // Campo de cotización
     notaPago?: string; // Campo que ya existía pero ahora se maneja correctamente
@@ -207,17 +209,19 @@ export const updateVenta = async (id: number, data: UpdateVentaType): Promise<Or
 
     const updatedVenta = await ocService.updateOrdenCompra(id, ventaData);
 
-    if (ventaPrivada) {
-      const pagos = ventaPrivada.pagos;
-      const privateOrderData = {
-        estadoPago: ventaPrivada.estadoPago,
-        fechaPago: ventaPrivada.fechaPago,
-        documentoPago: ventaPrivada.documentoPago,
-        documentoCotizacion: ventaPrivada.documentoCotizacion,
-        cotizacion: ventaPrivada.cotizacion,
-        notaPago: ventaPrivada.notaPago,
-        tipoDestino: ventaPrivada.tipoDestino,
-        nombreAgencia: ventaPrivada.nombreAgencia,
+  if (ventaPrivada) {
+    const pagos = ventaPrivada.pagos;
+    const privateOrderData = {
+      estadoPago: ventaPrivada.estadoPago,
+      fechaPago: ventaPrivada.fechaPago,
+      fechaFactura: ventaPrivada.fechaFactura,
+      documentoPago: ventaPrivada.documentoPago,
+      estadoFactura: ventaPrivada.estadoFactura,
+      documentoCotizacion: ventaPrivada.documentoCotizacion,
+      cotizacion: ventaPrivada.cotizacion,
+      notaPago: ventaPrivada.notaPago,
+      tipoDestino: ventaPrivada.tipoDestino,
+      nombreAgencia: ventaPrivada.nombreAgencia,
         destinoFinal: ventaPrivada.destinoFinal,
         nombreEntidad: ventaPrivada.nombreEntidad,
       };
@@ -235,7 +239,9 @@ export const updateVenta = async (id: number, data: UpdateVentaType): Promise<Or
           data: {
             estadoPago: privateOrderData.estadoPago,
             fechaPago: privateOrderData.fechaPago,
+            fechaFactura: privateOrderData.fechaFactura,
             documentoPago: privateOrderData.documentoPago,
+            estadoFactura: privateOrderData.estadoFactura,
             documentoCotizacion: privateOrderData.documentoCotizacion,
             cotizacion: privateOrderData.cotizacion,
             notaPago: privateOrderData.notaPago,
@@ -272,7 +278,9 @@ export const updateVenta = async (id: number, data: UpdateVentaType): Promise<Or
           ordenCompraId: id,
           estadoPago: privateOrderData.estadoPago,
           fechaPago: privateOrderData.fechaPago,
+          fechaFactura: privateOrderData.fechaFactura,
           documentoPago: privateOrderData.documentoPago,
+          estadoFactura: privateOrderData.estadoFactura,
           documentoCotizacion: privateOrderData.documentoCotizacion, // Documento de cotización
           cotizacion: privateOrderData.cotizacion, // Campo de cotización
           notaPago: privateOrderData.notaPago, // Campo que faltaba
