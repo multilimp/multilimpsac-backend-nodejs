@@ -3,6 +3,7 @@ import prisma from '../../database/prisma';
 import * as ocService from '../../modules/ordenCompra/ordenCompra.service';
 import { BaseVentaService } from '../../shared/services/baseVenta.service';
 import logger from '../../shared/config/logger';
+import { parseDatePreserveDay } from '../../shared/utils/dateHelpers';
 
 class VentaService extends BaseVentaService<OrdenCompra, Prisma.OrdenCompraCreateInput, Prisma.OrdenCompraUpdateInput> {
   protected model = prisma.ordenCompra;
@@ -123,15 +124,15 @@ export const createVenta = async (data: CreateVentaType): Promise<OrdenCompra> =
       distritoEntrega: directSaleBody.distritoEntrega,
       direccionEntrega: directSaleBody.direccionEntrega,
       referenciaEntrega: directSaleBody.referenciaEntrega,
-      fechaEntrega: directSaleBody.fechaEntrega,
+      fechaEntrega: parseDatePreserveDay(directSaleBody.fechaEntrega) ?? undefined,
 
       // Datos de formulario y SIAF
-      fechaForm: directSaleBody.fechaForm,
-      fechaMaxForm: directSaleBody.fechaMaxForm,
+      fechaForm: parseDatePreserveDay(directSaleBody.fechaForm) ?? undefined,
+      fechaMaxForm: parseDatePreserveDay(directSaleBody.fechaMaxForm) ?? undefined,
       montoVenta: directSaleBody.montoVenta,
       siaf: directSaleBody.siaf,
       etapaSiaf: directSaleBody.etapaSiaf,
-      fechaSiaf: directSaleBody.fechaSiaf,
+      fechaSiaf: parseDatePreserveDay(directSaleBody.fechaSiaf) ?? undefined,
 
       // Documentos
       documentoOce: directSaleBody.documentoOce,
@@ -162,6 +163,7 @@ export const createVenta = async (data: CreateVentaType): Promise<OrdenCompra> =
     // 7. Generar array para el create many
     const formatBodyPayments = pagos.map((pago) => ({
       ...pago,
+      fechaPago: parseDatePreserveDay(pago.fechaPago) ?? undefined,
       ordenCompraPrivada: { connect: { id: privateOrderResponse.id } },
     }));
     // @ts-expect-error 8. Crear todos los pagos a la vez
@@ -207,21 +209,47 @@ export const updateVenta = async (id: number, data: UpdateVentaType): Promise<Or
   try {
     const { ventaPrivada, ...ventaData } = data;
 
-    const updatedVenta = await ocService.updateOrdenCompra(id, ventaData);
+    const processedVentaData: Prisma.OrdenCompraUpdateInput = { ...ventaData };
+    if (ventaData.fechaEntrega && typeof ventaData.fechaEntrega !== 'undefined') {
+      const d = parseDatePreserveDay(ventaData.fechaEntrega as string | Date);
+      if (d) processedVentaData.fechaEntrega = d;
+    }
+    if (ventaData.fechaEntregaOc && typeof ventaData.fechaEntregaOc !== 'undefined') {
+      const d = parseDatePreserveDay(ventaData.fechaEntregaOc as string | Date);
+      if (d) processedVentaData.fechaEntregaOc = d;
+    }
+    if (ventaData.fechaForm && typeof ventaData.fechaForm !== 'undefined') {
+      const d = parseDatePreserveDay(ventaData.fechaForm as string | Date);
+      if (d) processedVentaData.fechaForm = d;
+    }
+    if (ventaData.fechaMaxForm && typeof ventaData.fechaMaxForm !== 'undefined') {
+      const d = parseDatePreserveDay(ventaData.fechaMaxForm as string | Date);
+      if (d) processedVentaData.fechaMaxForm = d;
+    }
+    if (ventaData.fechaSiaf && typeof ventaData.fechaSiaf !== 'undefined') {
+      const d = parseDatePreserveDay(ventaData.fechaSiaf as string | Date);
+      if (d) processedVentaData.fechaSiaf = d;
+    }
+    if (ventaData.fechaPeruCompras && typeof ventaData.fechaPeruCompras !== 'undefined') {
+      const d = parseDatePreserveDay(ventaData.fechaPeruCompras as string | Date);
+      if (d) processedVentaData.fechaPeruCompras = d;
+    }
 
-  if (ventaPrivada) {
-    const pagos = ventaPrivada.pagos;
-    const privateOrderData = {
-      estadoPago: ventaPrivada.estadoPago,
-      fechaPago: ventaPrivada.fechaPago,
-      fechaFactura: ventaPrivada.fechaFactura,
-      documentoPago: ventaPrivada.documentoPago,
-      estadoFactura: ventaPrivada.estadoFactura,
-      documentoCotizacion: ventaPrivada.documentoCotizacion,
-      cotizacion: ventaPrivada.cotizacion,
-      notaPago: ventaPrivada.notaPago,
-      tipoDestino: ventaPrivada.tipoDestino,
-      nombreAgencia: ventaPrivada.nombreAgencia,
+    const updatedVenta = await ocService.updateOrdenCompra(id, processedVentaData);
+
+    if (ventaPrivada) {
+      const pagos = ventaPrivada.pagos;
+      const privateOrderData = {
+        estadoPago: ventaPrivada.estadoPago,
+        fechaPago: parseDatePreserveDay(ventaPrivada.fechaPago) ?? undefined,
+        fechaFactura: parseDatePreserveDay(ventaPrivada.fechaFactura) ?? undefined,
+        documentoPago: ventaPrivada.documentoPago,
+        estadoFactura: ventaPrivada.estadoFactura,
+        documentoCotizacion: ventaPrivada.documentoCotizacion,
+        cotizacion: ventaPrivada.cotizacion,
+        notaPago: ventaPrivada.notaPago,
+        tipoDestino: ventaPrivada.tipoDestino,
+        nombreAgencia: ventaPrivada.nombreAgencia,
         destinoFinal: ventaPrivada.destinoFinal,
         nombreEntidad: ventaPrivada.nombreEntidad,
       };
@@ -261,7 +289,7 @@ export const updateVenta = async (id: number, data: UpdateVentaType): Promise<Or
           for (const pago of pagos) {
             await prisma.pagoOrdenCompraPrivada.create({
               data: {
-                fechaPago: pago.fechaPago,
+                fechaPago: parseDatePreserveDay(pago.fechaPago) ?? undefined,
                 bancoPago: pago.bancoPago,
                 descripcionPago: pago.descripcionPago,
                 archivoPago: pago.archivoPago,
@@ -295,7 +323,7 @@ export const updateVenta = async (id: number, data: UpdateVentaType): Promise<Or
           for (const pago of pagos) {
             await prisma.pagoOrdenCompraPrivada.create({
               data: {
-                fechaPago: pago.fechaPago,
+                fechaPago: parseDatePreserveDay(pago.fechaPago) ?? undefined,
                 bancoPago: pago.bancoPago,
                 descripcionPago: pago.descripcionPago,
                 archivoPago: pago.archivoPago,
@@ -326,12 +354,34 @@ export const patchVenta = async (id: number, data: Partial<UpdateVentaType>): Pr
     // Convertir fechas string a objetos Date para Prisma
     const processedData: Partial<Prisma.OrdenCompraUpdateInput> = { ...ventaData };
 
-    if (ventaData.fechaEntregaOc && typeof ventaData.fechaEntregaOc === 'string') {
-      processedData.fechaEntregaOc = new Date(ventaData.fechaEntregaOc);
+    if (typeof ventaData.fechaEntregaOc !== 'undefined') {
+      const d = parseDatePreserveDay(ventaData.fechaEntregaOc as string | Date);
+      if (d) processedData.fechaEntregaOc = d;
     }
 
-    if (ventaData.fechaPeruCompras && typeof ventaData.fechaPeruCompras === 'string') {
-      processedData.fechaPeruCompras = new Date(ventaData.fechaPeruCompras);
+    if (typeof ventaData.fechaPeruCompras !== 'undefined') {
+      const d = parseDatePreserveDay(ventaData.fechaPeruCompras as string | Date);
+      if (d) processedData.fechaPeruCompras = d;
+    }
+
+    if (typeof ventaData.fechaEntrega !== 'undefined') {
+      const d = parseDatePreserveDay(ventaData.fechaEntrega as string | Date);
+      if (d) processedData.fechaEntrega = d;
+    }
+
+    if (typeof ventaData.fechaForm !== 'undefined') {
+      const d = parseDatePreserveDay(ventaData.fechaForm as string | Date);
+      if (d) processedData.fechaForm = d;
+    }
+
+    if (typeof ventaData.fechaMaxForm !== 'undefined') {
+      const d = parseDatePreserveDay(ventaData.fechaMaxForm as string | Date);
+      if (d) processedData.fechaMaxForm = d;
+    }
+
+    if (typeof ventaData.fechaSiaf !== 'undefined') {
+      const d = parseDatePreserveDay(ventaData.fechaSiaf as string | Date);
+      if (d) processedData.fechaSiaf = d;
     }
 
     if (ventaData.documentoPeruCompras) {

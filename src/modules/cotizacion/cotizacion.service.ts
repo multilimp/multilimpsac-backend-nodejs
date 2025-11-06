@@ -1,5 +1,6 @@
 import { Cotizacion, Prisma } from '@prisma/client';
 import prisma from '../../database/prisma';
+import { parseDatePreserveDay } from '../../shared/utils/dateHelpers';
 
 // Asumiendo que CotizacionProducto se maneja aquí o se pasa como data anidada
 type CreateCotizacionData = Omit<Cotizacion, 'id' | 'createdAt' | 'updatedAt' | 'codigoCotizacion'> & {
@@ -43,6 +44,13 @@ export const createCotizacion = async (data: CreateCotizacionData): Promise<Coti
     throw new Error('Faltan campos requeridos para crear la cotización.');
   }
 
+  const fechaCotizacionParsed = parseDatePreserveDay(data.fechaCotizacion as unknown as Date | string);
+  const fechaEntregaParsed = parseDatePreserveDay(data.fechaEntrega as unknown as Date | string);
+
+  if (!fechaCotizacionParsed) {
+    throw new Error('fechaCotizacion inválida. Debe ser una fecha ISO-8601 válida.');
+  }
+
   // Crear la cotización primero
   const cotizacion = await prisma.cotizacion.create({
     data: {
@@ -59,8 +67,8 @@ export const createCotizacion = async (data: CreateCotizacionData): Promise<Coti
       provinciaEntrega: data.provinciaEntrega,
       departamentoEntrega: data.departamentoEntrega,
       referenciaEntrega: data.referenciaEntrega,
-      fechaCotizacion: data.fechaCotizacion,
-      fechaEntrega: data.fechaEntrega,
+      fechaCotizacion: fechaCotizacionParsed,
+      fechaEntrega: fechaEntregaParsed ?? undefined,
     },
   });
 
@@ -144,11 +152,11 @@ export const updateCotizacion = async (id: number, data: UpdateCotizacionData): 
   const { productos, ...cotizacionData } = data;
 
   // Convertir fechas si vienen como string
-  if (cotizacionData.fechaCotizacion && typeof cotizacionData.fechaCotizacion === 'string') {
-    cotizacionData.fechaCotizacion = new Date(cotizacionData.fechaCotizacion);
+  if (cotizacionData.fechaCotizacion) {
+    cotizacionData.fechaCotizacion = parseDatePreserveDay(cotizacionData.fechaCotizacion as unknown as Date | string) as Date;
   }
-  if (cotizacionData.fechaEntrega && typeof cotizacionData.fechaEntrega === 'string') {
-    cotizacionData.fechaEntrega = new Date(cotizacionData.fechaEntrega);
+  if (cotizacionData.fechaEntrega) {
+    cotizacionData.fechaEntrega = parseDatePreserveDay(cotizacionData.fechaEntrega as unknown as Date | string) as Date;
   }
 
   return prisma.$transaction(async (tx) => {

@@ -1,6 +1,6 @@
 import { OrdenCompra, Prisma } from '@prisma/client';
 import prisma from '../../database/prisma';
-import { parseSmartDate } from '../../shared/utils/dateHelpers';
+import { parseDatePreserveDay } from '../../shared/utils/dateHelpers';
 
 export const getAllOrdenesCompra = (args?: Prisma.OrdenCompraFindManyArgs): Promise<OrdenCompra[]> => {
   // Si no se especifica orderBy, usar ordenamiento descendente por fecha de creación
@@ -37,52 +37,37 @@ export const patchOrdenCompra = (id: number, data: Partial<Prisma.OrdenCompraUpd
     processedData.fechaEmision = new Date(data.fechaEmision);
   }
 
-  if (data.fechaEntregaOc && typeof data.fechaEntregaOc === 'string') {
-    processedData.fechaEntregaOc = parseSmartDate(data.fechaEntregaOc)!;
+  if (typeof data.fechaEntregaOc !== 'undefined') {
+    const d = parseDatePreserveDay(data.fechaEntregaOc as string | Date);
+    if (d) processedData.fechaEntregaOc = d;
   }
-
-  if (data.fechaPeruCompras && typeof data.fechaPeruCompras === 'string') {
-    processedData.fechaPeruCompras = parseSmartDate(data.fechaPeruCompras)!;
+  if (typeof data.fechaPeruCompras !== 'undefined') {
+    const d = parseDatePreserveDay(data.fechaPeruCompras as string | Date);
+    if (d) processedData.fechaPeruCompras = d;
   }
-
-  if (data.fechaForm && typeof data.fechaForm === 'string') {
-    processedData.fechaForm = parseSmartDate(data.fechaForm)!;
+  if (typeof data.fechaForm !== 'undefined') {
+    const d = parseDatePreserveDay(data.fechaForm as string | Date);
+    if (d) processedData.fechaForm = d;
   }
-
-  if (data.fechaMaxForm && typeof data.fechaMaxForm === 'string') {
-    processedData.fechaMaxForm = parseSmartDate(data.fechaMaxForm)!;
+  if (typeof data.fechaMaxForm !== 'undefined') {
+    const d = parseDatePreserveDay(data.fechaMaxForm as string | Date);
+    if (d) processedData.fechaMaxForm = d;
   }
-
-  if (data.fechaSiaf && typeof data.fechaSiaf === 'string') {
-    processedData.fechaSiaf = parseSmartDate(data.fechaSiaf)!;
+  if (typeof data.fechaSiaf !== 'undefined') {
+    const d = parseDatePreserveDay(data.fechaSiaf as string | Date);
+    if (d) processedData.fechaSiaf = d;
   }
-
-  if (data.fechaEstadoCobranza && typeof data.fechaEstadoCobranza === 'string') {
-    processedData.fechaEstadoCobranza = parseSmartDate(data.fechaEstadoCobranza)!;
+  if (typeof data.fechaEstadoCobranza !== 'undefined') {
+    const d = parseDatePreserveDay(data.fechaEstadoCobranza as string | Date);
+    if (d) processedData.fechaEstadoCobranza = d;
   }
-
-  if (data.fechaEntrega && typeof data.fechaEntrega === 'string') {
-    processedData.fechaEntrega = new Date(data.fechaEntrega);
+  if (typeof data.fechaEntrega !== 'undefined') {
+    const d = parseDatePreserveDay(data.fechaEntrega as string | Date);
+    if (d) processedData.fechaEntrega = d;
   }
-
-  if (data.fechaForm && typeof data.fechaForm === 'string') {
-    processedData.fechaForm = new Date(data.fechaForm);
-  }
-
-  if (data.fechaMaxForm && typeof data.fechaMaxForm === 'string') {
-    processedData.fechaMaxForm = new Date(data.fechaMaxForm);
-  }
-
-  if (data.fechaSiaf && typeof data.fechaSiaf === 'string') {
-    processedData.fechaSiaf = new Date(data.fechaSiaf);
-  }
-
-  if (data.fechaEstadoCobranza && typeof data.fechaEstadoCobranza === 'string') {
-    processedData.fechaEstadoCobranza = new Date(data.fechaEstadoCobranza);
-  }
-
-  if (data.fechaProximaGestion && typeof data.fechaProximaGestion === 'string') {
-    processedData.fechaProximaGestion = new Date(data.fechaProximaGestion);
+  if (typeof data.fechaProximaGestion !== 'undefined') {
+    const d = parseDatePreserveDay(data.fechaProximaGestion as string | Date);
+    if (d) processedData.fechaProximaGestion = d;
   }
 
   return prisma.ordenCompra.update({
