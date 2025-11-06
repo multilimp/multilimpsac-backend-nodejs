@@ -82,29 +82,6 @@ export const updateVenta = async (req: Request, res: Response) => {
     const id = parseInt(req.params.ventaId, 10);
     const data = req.body;
     if (isNaN(id)) throw new Error('NOT_FOUND');
-    if (data.fechaForm) data.fechaForm = parseUTCDate(data.fechaForm) || undefined;
-    if (data.fechaMaxForm) data.fechaMaxForm = parseUTCDate(data.fechaMaxForm) || undefined;
-    if (data.fechaSiaf) data.fechaSiaf = parseUTCDate(data.fechaSiaf) || undefined;
-    if (data.fechaEntrega) data.fechaEntrega = parseUTCDate(data.fechaEntrega) || undefined;
-
-    if (data.ventaPrivada && data.ventaPrivada.fechaPago) {
-      data.ventaPrivada.fechaPago = parseUTCDate(data.ventaPrivada.fechaPago) || undefined;
-    }
-    if (data.ventaPrivada && data.ventaPrivada.fechaFactura) {
-      const parsed = parseUTCDate(data.ventaPrivada.fechaFactura) || undefined;
-      if (parsed) {
-        parsed.setDate(parsed.getDate() + 1);
-        data.ventaPrivada.fechaFactura = parsed;
-      } else {
-        data.ventaPrivada.fechaFactura = undefined;
-      }
-    }
-    if (data.ventaPrivada && Array.isArray(data.ventaPrivada.pagos)) {
-      data.ventaPrivada.pagos = data.ventaPrivada.pagos.map((p: any) => ({
-        ...p,
-        fechaPago: p.fechaPago ? (parseUTCDate(p.fechaPago) || undefined) : undefined,
-      }));
-    }
     const updated = await ventasService.updateVenta(id, data);
     res.status(200).json(updated);
   } catch (error) {

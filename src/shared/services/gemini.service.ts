@@ -205,7 +205,6 @@ No incluyas comentarios como "EXTRAER_VALOR_O_NULL" en el JSON final; reempláza
             try {
               const jsonData = JSON.parse(part.text);
               this.validateJsonResponse(jsonData);
-              console.log('Gemini response data:', JSON.stringify(jsonData, null, 2));
               return { success: true, data: jsonData };
             } catch (parseError) {
               logger.error('Error parsing JSON response from Gemini:', parseError);
