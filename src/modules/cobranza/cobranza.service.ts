@@ -1,6 +1,6 @@
 import prisma from '../../database/prisma';
 import { Prisma, EstadoCobranza, EstadoRol } from '@prisma/client';
-import { parseSmartDate } from '../../shared/utils/dateHelpers';
+import { parseDatePreserveDay } from '../../shared/utils/dateHelpers';
 
 // Tipos específicos para cobranza
 interface CobranzaFields {
@@ -33,7 +33,7 @@ const processCobranzaFields = (data: CobranzaFields) => {
   // Procesar fechaSiaf
   if (processedData.fechaSiaf) {
     if (typeof processedData.fechaSiaf === 'string' && processedData.fechaSiaf.trim() !== '') {
-      processedData.fechaSiaf = parseSmartDate(processedData.fechaSiaf);
+      processedData.fechaSiaf = parseDatePreserveDay(processedData.fechaSiaf);
     } else if (processedData.fechaSiaf === '' || processedData.fechaSiaf === null) {
       processedData.fechaSiaf = null;
     }
@@ -42,7 +42,7 @@ const processCobranzaFields = (data: CobranzaFields) => {
   // Procesar fechaEstadoCobranza
   if (processedData.fechaEstadoCobranza) {
     if (typeof processedData.fechaEstadoCobranza === 'string' && processedData.fechaEstadoCobranza.trim() !== '') {
-      processedData.fechaEstadoCobranza = parseSmartDate(processedData.fechaEstadoCobranza);
+      processedData.fechaEstadoCobranza = parseDatePreserveDay(processedData.fechaEstadoCobranza);
     } else if (processedData.fechaEstadoCobranza === '' || processedData.fechaEstadoCobranza === null) {
       processedData.fechaEstadoCobranza = null;
     }

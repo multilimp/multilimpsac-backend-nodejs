@@ -4,12 +4,12 @@ import prisma from '../../database/prisma';
 type CreateProductoData = Omit<Producto, 'id' | 'createdAt' | 'updatedAt'>;
 type UpdateProductoData = Partial<CreateProductoData>;
 
-// Función auxiliar para procesar datos (Decimal)
-const processProductoData = (data: any) => {
-  if (data.precioBase && typeof data.precioBase !== 'object') {
-     data.precioBase = new Prisma.Decimal(data.precioBase);
+const processProductoData = <T extends CreateProductoData | UpdateProductoData>(data: T): T => {
+  const next = { ...data } as T;
+  if ((next as any).precioBase && typeof (next as any).precioBase !== 'object') {
+    (next as any).precioBase = new Prisma.Decimal((next as any).precioBase as unknown as number | string);
   }
-  return data;
+  return next;
 }
 
 export const getAllProductos = (): Promise<Producto[]> => {
@@ -34,14 +34,14 @@ export const createProducto = (data: CreateProductoData): Promise<Producto> => {
     throw new Error('Falta el campo requerido: nombre.');
   }
   const processedData = processProductoData(data);
-  return prisma.producto.create({ data: processedData as any });
+  return prisma.producto.create({ data: processedData });
 };
 
 export const updateProducto = (id: number, data: UpdateProductoData): Promise<Producto> => {
   const processedData = processProductoData(data);
   return prisma.producto.update({
     where: { id },
-    data: processedData as any,
+    data: processedData,
   });
 };
 

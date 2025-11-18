@@ -1,6 +1,6 @@
 import prisma from '../../database/prisma';
 import { GestionCobranza, Prisma, EstadoCobranza } from '@prisma/client';
-import { parseSmartDate } from '../../shared/utils/dateHelpers';
+import { parseDatePreserveDay } from '../../shared/utils/dateHelpers';
 
 // Tipos de Datos
 type CreateGestionData = Omit<GestionCobranza, 'id' | 'createdAt' | 'updatedAt' | 'ordenCompraId'>; // ordenCompraId will be provided
@@ -43,7 +43,7 @@ const processCobranzaData = (data: CobranzaData) => {
 
   if (processedData.fechaEstadoCobranza) {
     if (typeof processedData.fechaEstadoCobranza === 'string' && processedData.fechaEstadoCobranza.trim() !== '') {
-      processedData.fechaEstadoCobranza = parseSmartDate(processedData.fechaEstadoCobranza);
+      processedData.fechaEstadoCobranza = parseDatePreserveDay(processedData.fechaEstadoCobranza);
     } else if (processedData.fechaEstadoCobranza === '' || processedData.fechaEstadoCobranza === null) {
       processedData.fechaEstadoCobranza = null;
     }
@@ -54,7 +54,7 @@ const processCobranzaData = (data: CobranzaData) => {
 
   if (processedData.fechaProximaGestion) {
     if (typeof processedData.fechaProximaGestion === 'string' && processedData.fechaProximaGestion.trim() !== '') {
-      processedData.fechaProximaGestion = new Date(processedData.fechaProximaGestion);
+      processedData.fechaProximaGestion = parseDatePreserveDay(processedData.fechaProximaGestion);
     } else if (processedData.fechaProximaGestion === '' || processedData.fechaProximaGestion === null) {
       processedData.fechaProximaGestion = null;
     }
@@ -79,7 +79,7 @@ const processGestionData = (gestion: CreateGestionData | (UpdateGestionData & { 
 
   if (processedGestion.fechaGestion) {
     if (typeof processedGestion.fechaGestion === 'string' && processedGestion.fechaGestion.trim() !== '') {
-      processedGestion.fechaGestion = new Date(processedGestion.fechaGestion);
+      processedGestion.fechaGestion = parseDatePreserveDay(processedGestion.fechaGestion);
     } else if (processedGestion.fechaGestion === '' || processedGestion.fechaGestion === null) {
       processedGestion.fechaGestion = null;
     }

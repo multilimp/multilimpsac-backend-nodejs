@@ -5,13 +5,15 @@ import { AnalyzePdfResult, GeminiService, GeminiServiceException } from '../../s
 import formidable from 'formidable';
 import logger from '../../shared/config/logger';
 import { parseUTCDate } from '@/shared/utils/dateHelpers';
+import { AuthRequest } from '../../shared/middleware/auth.middleware';
+import { PagoOrdenCompraPrivada } from '@prisma/client';
 
 export const listVentas = async (req: Request, res: Response) => {
   try {
     const result = await ventasService.getAllVentas();
 
     // Obtener usuario de la request (agregado por middleware de auth)
-    const user = (req as any).user;
+    const user = (req as AuthRequest).user;
 
     // Si el usuario tiene permiso JEFECOBRANZAS, mostrar todas las ventas
     if (user?.permisos?.includes('jefecobranzas')) {
@@ -63,7 +65,7 @@ export const createVenta = async (req: Request, res: Response) => {
       }
     }
     if (data.ventaPrivada && Array.isArray(data.ventaPrivada.pagos)) {
-      data.ventaPrivada.pagos = data.ventaPrivada.pagos.map((p: any) => ({
+      data.ventaPrivada.pagos = data.ventaPrivada.pagos.map((p: Partial<PagoOrdenCompraPrivada>) => ({
         ...p,
         fechaPago: p.fechaPago ? (parseUTCDate(p.fechaPago) || undefined) : undefined,
       }));

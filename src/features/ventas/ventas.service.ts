@@ -167,7 +167,7 @@ export const createVenta = async (data: CreateVentaType): Promise<OrdenCompra> =
       ordenCompraPrivada: { connect: { id: privateOrderResponse.id } },
     }));
     // @ts-expect-error 8. Crear todos los pagos a la vez
-    prisma.pagoOrdenCompraPrivada.createMany({ data: formatBodyPayments });
+    await prisma.pagoOrdenCompraPrivada.createMany({ data: formatBodyPayments });
 
     return createResponse;
   } catch (error) {
@@ -261,45 +261,43 @@ export const updateVenta = async (id: number, data: UpdateVentaType): Promise<Or
       });
 
       if (existingPrivateOrder) {
-        // Actualizar orden privada existente
-        await prisma.ordenCompraPrivada.update({
-          where: { id: existingPrivateOrder.id },
-          data: {
-            estadoPago: privateOrderData.estadoPago,
-            fechaPago: privateOrderData.fechaPago,
-            fechaFactura: privateOrderData.fechaFactura,
-            documentoPago: privateOrderData.documentoPago,
-            estadoFactura: privateOrderData.estadoFactura,
-            documentoCotizacion: privateOrderData.documentoCotizacion,
-            cotizacion: privateOrderData.cotizacion,
-            notaPago: privateOrderData.notaPago,
-            tipoDestino: privateOrderData.tipoDestino as "ENTREGA_DOMICILIO" | "ENTREGA_AGENCIA" | "RECOJO_ALMACEN" | null,
-            nombreAgencia: privateOrderData.nombreAgencia,
-            destinoFinal: privateOrderData.destinoFinal,
-            nombreEntidad: privateOrderData.nombreEntidad,
-          }
-        });
-
-        // Eliminar pagos existentes y crear nuevos si se proporcionan
-        if (pagos && Array.isArray(pagos) && pagos.length > 0) {
-          await prisma.pagoOrdenCompraPrivada.deleteMany({
-            where: { ordenCompraPrivadaId: existingPrivateOrder.id }
+        await prisma.$transaction(async tx => {
+          await tx.ordenCompraPrivada.update({
+            where: { id: existingPrivateOrder.id },
+            data: {
+              estadoPago: privateOrderData.estadoPago,
+              fechaPago: privateOrderData.fechaPago,
+              fechaFactura: privateOrderData.fechaFactura,
+              documentoPago: privateOrderData.documentoPago,
+              estadoFactura: privateOrderData.estadoFactura,
+              documentoCotizacion: privateOrderData.documentoCotizacion,
+              cotizacion: privateOrderData.cotizacion,
+              notaPago: privateOrderData.notaPago,
+              tipoDestino: privateOrderData.tipoDestino as "ENTREGA_DOMICILIO" | "ENTREGA_AGENCIA" | "RECOJO_ALMACEN" | null,
+              nombreAgencia: privateOrderData.nombreAgencia,
+              destinoFinal: privateOrderData.destinoFinal,
+              nombreEntidad: privateOrderData.nombreEntidad,
+            }
           });
 
-          for (const pago of pagos) {
-            await prisma.pagoOrdenCompraPrivada.create({
-              data: {
-                fechaPago: parseDatePreserveDay(pago.fechaPago) ?? undefined,
-                bancoPago: pago.bancoPago,
-                descripcionPago: pago.descripcionPago,
-                archivoPago: pago.archivoPago,
-                montoPago: pago.montoPago,
-                estadoPago: pago.estadoPago,
-                ordenCompraPrivadaId: existingPrivateOrder.id,
-              },
+          if (pagos && Array.isArray(pagos) && pagos.length > 0) {
+            await tx.pagoOrdenCompraPrivada.deleteMany({
+              where: { ordenCompraPrivadaId: existingPrivateOrder.id }
             });
+
+            const newPayments = pagos.map(pago => ({
+              fechaPago: parseDatePreserveDay(pago.fechaPago) ?? undefined,
+              bancoPago: pago.bancoPago,
+              descripcionPago: pago.descripcionPago,
+              archivoPago: pago.archivoPago,
+              montoPago: pago.montoPago,
+              estadoPago: pago.estadoPago,
+              ordenCompraPrivadaId: existingPrivateOrder.id,
+            }));
+
+            await tx.pagoOrdenCompraPrivada.createMany({ data: newPayments });
           }
-        }
+        });
       } else {
         // Crear nueva orden privada si no existe pero la venta es privada
         const privateOrderBody = {
@@ -320,19 +318,17 @@ export const updateVenta = async (id: number, data: UpdateVentaType): Promise<Or
 
         // Crear pagos si se proporcionan
         if (pagos && Array.isArray(pagos) && pagos.length > 0) {
-          for (const pago of pagos) {
-            await prisma.pagoOrdenCompraPrivada.create({
-              data: {
-                fechaPago: parseDatePreserveDay(pago.fechaPago) ?? undefined,
-                bancoPago: pago.bancoPago,
-                descripcionPago: pago.descripcionPago,
-                archivoPago: pago.archivoPago,
-                montoPago: pago.montoPago,
-                estadoPago: pago.estadoPago,
-                ordenCompraPrivadaId: newPrivateOrder.id,
-              },
-            });
-          }
+          const newPayments = pagos.map(pago => ({
+            fechaPago: parseDatePreserveDay(pago.fechaPago) ?? undefined,
+            bancoPago: pago.bancoPago,
+            descripcionPago: pago.descripcionPago,
+            archivoPago: pago.archivoPago,
+            montoPago: pago.montoPago,
+            estadoPago: pago.estadoPago,
+            ordenCompraPrivadaId: newPrivateOrder.id,
+          }));
+
+          await prisma.pagoOrdenCompraPrivada.createMany({ data: newPayments });
         }
       }
     }
