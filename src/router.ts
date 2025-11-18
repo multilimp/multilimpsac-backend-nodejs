@@ -32,7 +32,6 @@ import pagoOrdenCompraPrivadaRoutes from './modules/pagoOrdenCompraPrivada/pagoO
 import pagoOrdenProveedorRoutes from './modules/pagoOrdenProveedor/pagoOrdenProveedor.routes';
 import pagoTransporteAsignadoRoutes from './modules/pagoTransporteAsignado/pagoTransporteAsignado.routes';
 import paymentsRoutes from './modules/payments/payments.routes';
-import chatbotRoutes from './routes/chatbot.routes';
 import saldosRoutes from './modules/saldos/saldos.routes';
 import archivosAdjuntosRoutes from './modules/archivosAdjuntos/archivosAdjuntos.routes';
 import transporteAsignadoRoutes from './modules/transporteAsignado/transporteAsignado.routes';
@@ -86,9 +85,6 @@ export const configureRoutes = async (app: Application): Promise<void> => {
 
   // Saldos y información financiera
   app.use('/api/saldos', saldosRoutes);
-
-  // Chatbot/Asistente Virtual
-  app.use('/api/chatbot', chatbotRoutes);
 
   // Middleware para rutas no encontradas
   app.use((req: Request, res: Response) => {

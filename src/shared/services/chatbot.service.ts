@@ -1,20 +1,40 @@
-import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
 import { PrismaClient } from '@prisma/client';
+import axios from 'axios';
 
 // Configuración de Gemini
 const geminiApiKey = process.env.GOOGLE_GEMINI_API_KEY || '';
 
 export class ChatbotService {
     private prisma: PrismaClient;
-    private llm: ChatGoogleGenerativeAI;
+    private geminiApiUrl: string;
 
     constructor() {
         this.prisma = new PrismaClient();
-        this.llm = new ChatGoogleGenerativeAI({
-            apiKey: geminiApiKey,
-            model: 'gemini-1.5-flash',
-            temperature: 0,
-        });
+        this.geminiApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`;
+    }
+
+    private async callGemini(prompt: string): Promise<string> {
+        try {
+            const response = await axios.post(this.geminiApiUrl, {
+                contents: [{
+                    parts: [{
+                        text: prompt
+                    }]
+                }],
+                generationConfig: {
+                    temperature: 0
+                }
+            });
+
+            if (response.data?.candidates?.[0]?.content?.parts?.[0]?.text) {
+                return response.data.candidates[0].content.parts[0].text;
+            }
+
+            return 'No pude procesar la consulta correctamente.';
+        } catch (error) {
+            console.error('Error llamando a Gemini API:', error);
+            throw error;
+        }
     }
 
     async processQuery(userQuery: string): Promise<string> {
@@ -130,8 +150,8 @@ export class ChatbotService {
         Si no puedes responder con datos específicos, explica qué información adicional necesitas.
       `;
 
-            const response = await this.llm.invoke(prompt);
-            return typeof response.content === 'string' ? response.content : response.content.toString();
+            const response = await this.callGemini(prompt);
+            return response;
 
         } catch (error) {
             console.error('Error procesando consulta:', error);
