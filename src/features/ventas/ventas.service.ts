@@ -71,7 +71,12 @@ export const getVentaById = (id: number): Promise<OrdenCompra | null> => {
       },
       contactoCliente: true,
       catalogoEmpresa: true,
-      ordenesProveedor: true,
+      ordenesProveedor: {
+        select: {
+          id: true,
+          totalProveedor: true,
+        },
+      },
       ordenCompraPrivada: {
         include: {
           pagos: true,
