@@ -40,6 +40,23 @@ export const getAllVentas = async (): Promise<OrdenCompra[]> => {
           totalProveedor: true,
         },
       },
+      ordenCompraPrivada: {
+        select: {
+          id: true,
+          ordenCompraId: true,
+          estadoPago: true,
+          estadoFactura: true,
+          fechaFactura: true,
+          documentoPago: true,
+          documentoCotizacion: true,
+          cotizacion: true,
+          notaPago: true,
+          tipoDestino: true,
+          destinoFinal: true,
+          nombreAgencia: true,
+          nombreEntidad: true,
+        }
+      },
       facturaciones: {
         select: {
           id: true,
