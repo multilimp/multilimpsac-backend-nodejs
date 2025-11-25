@@ -26,7 +26,7 @@ CREATE TYPE "TipoPago" AS ENUM ('CONTADO', 'CREDITO', 'ANTICIPADO', 'OTROS');
 CREATE TYPE "MovimientoProveedor" AS ENUM ('A_FAVOR', 'DEBE');
 
 -- CreateEnum
-CREATE TYPE "EstadoRol" AS ENUM ('PENDIENTE', 'COMPLETADO', 'CANCELADO', 'EN_PROCESO');
+CREATE TYPE "EstadoRol" AS ENUM ('PENDIENTE', 'COMPLETADO', 'CANCELADO', 'EN_PROCESO', 'ENTREGADO', 'COMPLETO', 'ANULADO');
 
 -- CreateEnum
 CREATE TYPE "MovimientoTransporte" AS ENUM ('A_FAVOR', 'DEBE');
@@ -44,7 +44,7 @@ CREATE TYPE "CuentaBancariaTipo" AS ENUM ('CLIENTE', 'PROVEEDOR', 'TRANSPORTE', 
 CREATE TYPE "TipoCobranza" AS ENUM ('ESPECIAL', 'NORMAL');
 
 -- CreateEnum
-CREATE TYPE "EstadoPago" AS ENUM ('PAGADO', 'URGENTE', 'PENDIENTE');
+CREATE TYPE "EstadoPago" AS ENUM ('PAGADO', 'URGENTE', 'PENDIENTE', 'PAGO_ENVIADO_VERIFICADO');
 
 -- CreateEnum
 CREATE TYPE "TipoProgramacionOp" AS ENUM ('NORMAL', 'URGENTE', 'ESPECIAL');
@@ -71,6 +71,7 @@ CREATE TABLE "clientes" (
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
     "sede" TEXT,
+    "promedio_cobranza" DECIMAL(10,2),
 
     CONSTRAINT "clientes_pkey" PRIMARY KEY ("id")
 );
@@ -303,6 +304,12 @@ CREATE TABLE "ordenes_compra" (
     "multiple_fuentes_financiamiento" BOOLEAN NOT NULL DEFAULT false,
     "estado_rol_seguimiento" "EstadoRol" NOT NULL DEFAULT 'PENDIENTE',
     "estado_venta" "EstadoRol" NOT NULL DEFAULT 'PENDIENTE',
+    "cobrador_id" INTEGER,
+    "carta_cci" TEXT,
+    "carta_garantia" TEXT,
+    "carta_ampliacion" TEXT,
+    "estado_facturacion" "EstadoRol" NOT NULL DEFAULT 'PENDIENTE',
+    "estado_cobranza_rol" "EstadoRol" NOT NULL DEFAULT 'PENDIENTE',
 
     CONSTRAINT "ordenes_compra_pkey" PRIMARY KEY ("id")
 );
@@ -335,10 +342,12 @@ CREATE TABLE "ordenes_compra_privadas" (
     "id" SERIAL NOT NULL,
     "orden_compra_id" INTEGER NOT NULL,
     "fecha_pago" DATE,
+    "fecha_factura" DATE,
     "documento_pago" TEXT,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
     "estado_pago" "EstadoPago",
+    "estado_factura" TEXT,
     "nota_pago" TEXT,
     "documento_cotizacion" TEXT,
     "cotizacion" TEXT,
@@ -379,6 +388,7 @@ CREATE TABLE "ordenes_proveedor" (
     "nota_pedido" TEXT,
     "total_proveedor" DECIMAL(65,30),
     "tipo_pago" TEXT,
+    "forma_pago" TEXT,
     "nota_pago" TEXT,
     "nota_gestion_op" TEXT,
     "tipo_entrega" TEXT,
@@ -396,6 +406,9 @@ CREATE TABLE "ordenes_proveedor" (
     "updated_at" TIMESTAMP(6),
     "estado_rol_op" "EstadoRol" NOT NULL DEFAULT 'PENDIENTE',
     "estado_rol_seguimiento" "EstadoRol" NOT NULL DEFAULT 'PENDIENTE',
+    "nota_cobranzas" TEXT,
+    "nota_observaciones" TEXT,
+    "is_completed" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "ordenes_proveedor_pkey" PRIMARY KEY ("id")
 );
@@ -440,6 +453,11 @@ CREATE TABLE "transportes_asignados" (
     "estado_pago" "EstadoPago",
     "nota_pago" TEXT,
     "almacen_id" INTEGER,
+    "guia_remision" TEXT,
+    "guia_transporte" TEXT,
+    "monto_flete_pagado" DECIMAL(10,2),
+    "numero_factura" TEXT,
+    "archivo_factura" TEXT,
 
     CONSTRAINT "transportes_asignados_pkey" PRIMARY KEY ("id")
 );
@@ -505,6 +523,19 @@ CREATE TABLE "stock_productos" (
 );
 
 -- CreateTable
+CREATE TABLE "movimientos_stock" (
+    "id" SERIAL NOT NULL,
+    "producto_id" INTEGER NOT NULL,
+    "almacen_id" INTEGER NOT NULL,
+    "cantidad" INTEGER NOT NULL,
+    "tipo" TEXT NOT NULL,
+    "referencia" TEXT,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "movimientos_stock_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "almacenes" (
     "id" SERIAL NOT NULL,
     "nombre" TEXT NOT NULL,
@@ -535,6 +566,7 @@ CREATE TABLE "facturaciones" (
     "id_factura_original" INTEGER,
     "factura_archivo" TEXT,
     "grr_archivo" TEXT,
+    "motivo_refacturacion" TEXT,
 
     CONSTRAINT "facturaciones_pkey" PRIMARY KEY ("id")
 );
@@ -634,6 +666,21 @@ CREATE TABLE "costos_adicionales_op" (
     CONSTRAINT "costos_adicionales_op_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "archivos_adjuntos" (
+    "id" SERIAL NOT NULL,
+    "orden_compra_id" INTEGER NOT NULL,
+    "nombre" TEXT NOT NULL,
+    "url" TEXT NOT NULL,
+    "tipo" TEXT NOT NULL,
+    "tamano" INTEGER NOT NULL,
+    "descripcion" TEXT,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "archivos_adjuntos_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "empresas_ruc_key" ON "empresas"("ruc");
 
@@ -713,6 +760,9 @@ ALTER TABLE "ordenes_compra" ADD CONSTRAINT "ordenes_compra_catalogo_empresa_id_
 ALTER TABLE "ordenes_compra" ADD CONSTRAINT "ordenes_compra_cliente_id_fkey" FOREIGN KEY ("cliente_id") REFERENCES "clientes"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "ordenes_compra" ADD CONSTRAINT "ordenes_compra_cobrador_id_fkey" FOREIGN KEY ("cobrador_id") REFERENCES "usuarios"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "ordenes_compra" ADD CONSTRAINT "ordenes_compra_contacto_cliente_id_fkey" FOREIGN KEY ("contacto_cliente_id") REFERENCES "contactos"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -770,6 +820,12 @@ ALTER TABLE "stock_productos" ADD CONSTRAINT "stock_productos_almacen_id_fkey" F
 ALTER TABLE "stock_productos" ADD CONSTRAINT "stock_productos_producto_id_fkey" FOREIGN KEY ("producto_id") REFERENCES "productos"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "movimientos_stock" ADD CONSTRAINT "movimientos_stock_almacen_id_fkey" FOREIGN KEY ("almacen_id") REFERENCES "almacenes"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "movimientos_stock" ADD CONSTRAINT "movimientos_stock_producto_id_fkey" FOREIGN KEY ("producto_id") REFERENCES "productos"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "facturaciones" ADD CONSTRAINT "facturaciones_id_factura_original_fkey" FOREIGN KEY ("id_factura_original") REFERENCES "facturaciones"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -801,3 +857,6 @@ ALTER TABLE "programaciones_entrega" ADD CONSTRAINT "programaciones_entrega_resp
 
 -- AddForeignKey
 ALTER TABLE "costos_adicionales_op" ADD CONSTRAINT "costos_adicionales_op_orden_proveedor_id_fkey" FOREIGN KEY ("orden_proveedor_id") REFERENCES "ordenes_proveedor"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "archivos_adjuntos" ADD CONSTRAINT "archivos_adjuntos_orden_compra_id_fkey" FOREIGN KEY ("orden_compra_id") REFERENCES "ordenes_compra"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

@@ -1,3 +1,51 @@
+// =================================================================
+// PRISMA SCHEMA - Sistema de Gestión de Distribución MULTILIMP
+// =================================================================
+//
+// 📦 MODELO DE NEGOCIO:
+// Este sistema gestiona las operaciones de una empresa DISTRIBUIDORA
+// que vende productos al por mayor, principalmente al sector público
+// (licitaciones del Estado peruano) y también a clientes privados.
+//
+// 🏢 ESTRUCTURA EMPRESARIAL:
+// La empresa opera con MÚLTIPLES RAZONES SOCIALES (tabla Empresa),
+// permitiendo facturar desde diferentes entidades legales según
+// el cliente o tipo de venta.
+//
+// 📋 FLUJO PRINCIPAL DE VENTAS:
+// 1. COTIZACIÓN → Se genera cotización al cliente
+// 2. ORDEN DE COMPRA (OC) → El cliente aprueba y genera la venta
+//    ⚠️ IMPORTANTE: En este sistema, "Orden de Compra" = VENTA
+//    (el cliente emite OC hacia nosotros, es decir, nos compra)
+// 3. ORDEN DE PROVEEDOR (OP) → Se genera pedido a nuestros proveedores
+// 4. TRANSPORTE → Se asigna transporte para entrega
+// 5. FACTURACIÓN → Se emite factura al cliente
+// 6. COBRANZA → Se gestiona el cobro de la factura
+//
+// 🏛️ VENTAS AL ESTADO (PERÚ COMPRAS / SEACE):
+// - Integración con plataformas de compras públicas
+// - Seguimiento de SIAF para pagos gubernamentales
+// - Gestión de documentos OCE (Orden de Compra Electrónica)
+// - Manejo de penalidades y conformidades
+//
+// 🏪 VENTAS PRIVADAS:
+// - Clientes particulares o empresas privadas
+// - Flujo simplificado de facturación y cobranza
+// - Diferentes formas de entrega (domicilio, agencia, almacén)
+//
+// 💰 GESTIÓN FINANCIERA:
+// - Control de pagos a proveedores
+// - Gestión de saldos (a favor/debe) por proveedor
+// - Seguimiento de cobranzas
+// - Múltiples cuentas bancarias por entidad
+//
+// 🚚 LOGÍSTICA:
+// - Gestión de múltiples transportistas
+// - Programación de entregas
+// - Control de almacenes y stock
+//
+// =================================================================
+
 generator client {
   provider = "prisma-client-js"
   output   = "./generated/client"
@@ -7,7 +55,13 @@ datasource db {
   provider = "postgresql"
 }
 
-/// Modelo de Cliente - Entidades del Estado o empresas privadas que compran productos
+// =================================================================
+// 👥 ENTIDADES DE NEGOCIO (Clientes, Proveedores, Transportes)
+// =================================================================
+
+/// Modelo de Cliente - Entidades del Estado o empresas privadas que NOS COMPRAN productos.
+/// En ventas al Estado: son unidades ejecutoras con código SIAF.
+/// En ventas privadas: son empresas o personas naturales.
 model Cliente {
   /// Identificador único del cliente
   id                    Int              @id @default(autoincrement())
@@ -51,7 +105,8 @@ model Cliente {
   @@map("clientes")
 }
 
-/// Modelo de Proveedor - Empresas que suministran productos
+/// Modelo de Proveedor - Empresas que NOS SUMINISTRAN productos para revender.
+/// Los proveedores reciben Órdenes de Proveedor (OP) cuando tenemos una venta confirmada.
 model Proveedor {
   /// Identificador único del proveedor
   id               Int              @id @default(autoincrement())
@@ -89,7 +144,13 @@ model Proveedor {
   @@map("proveedores")
 }
 
-/// Modelo de Saldo de Proveedor - Control de saldos a favor o deudas con proveedores
+// =================================================================
+// 💰 GESTIÓN FINANCIERA (Saldos y Cuentas Bancarias)
+// =================================================================
+
+/// Modelo de Saldo de Proveedor - Control de saldos a favor o deudas con proveedores.
+/// Cuando pagamos de más a un proveedor = A_FAVOR (nos debe mercadería o devolución).
+/// Cuando debemos a un proveedor = DEBE (pendiente de pago).
 model SaldoProveedor {
   /// Identificador único
   id             Int                 @id @default(autoincrement())
@@ -117,7 +178,8 @@ model SaldoProveedor {
   @@map("saldos_proveedor")
 }
 
-/// Modelo de Saldo de Transporte - Control de saldos a favor o deudas con transportistas
+/// Modelo de Saldo de Transporte - Control de saldos a favor o deudas con transportistas.
+/// Similar a SaldoProveedor pero para empresas de transporte.
 model SaldoTransporte {
   /// Identificador único
   id             Int                  @id @default(autoincrement())
@@ -145,7 +207,8 @@ model SaldoTransporte {
   @@map("saldos_transporte")
 }
 
-/// Modelo de Cuenta Bancaria - Cuentas bancarias de clientes, proveedores, transportes y empresa
+/// Modelo de Cuenta Bancaria - Cuentas bancarias de clientes, proveedores, transportes y empresas.
+/// Permite gestionar múltiples cuentas por entidad para pagos y cobros.
 model CuentaBancaria {
   /// Identificador único
   id           Int                @id @default(autoincrement())
@@ -187,7 +250,12 @@ model CuentaBancaria {
   @@map("cuentas_bancarias")
 }
 
-/// Modelo de Transporte - Empresas de transporte para envío de mercadería
+// =================================================================
+// 🚚 LOGÍSTICA (Transporte y Entrega)
+// =================================================================
+
+/// Modelo de Transporte - Empresas de transporte para envío de mercadería.
+/// Gestiona transportistas propios o terceros para entregas a clientes.
 model Transporte {
   /// Identificador único
   id                   Int                  @id @default(autoincrement())
@@ -227,7 +295,13 @@ model Transporte {
   @@map("transportes")
 }
 
-/// Modelo de Empresa - Datos de las empresas del grupo (Multilimp, etc.)
+// =================================================================
+// 🏢 ESTRUCTURA EMPRESARIAL (Múltiples Razones Sociales)
+// =================================================================
+
+/// Modelo de Empresa - RAZONES SOCIALES del grupo distribuidor.
+/// La empresa opera con múltiples razones sociales para facturar según el cliente/venta.
+/// Cada empresa tiene su RUC, cuentas bancarias y puede emitir sus propias facturas.
 model Empresa {
   /// Identificador único
   id               Int              @id @default(autoincrement())
@@ -271,7 +345,8 @@ model Empresa {
   @@map("empresas")
 }
 
-/// Modelo de Contacto - Personas de contacto de clientes, proveedores y transportes
+/// Modelo de Contacto - Personas de contacto de clientes, proveedores y transportes.
+/// Permite gestionar múltiples contactos por entidad con información de comunicación.
 model Contacto {
   /// Identificador único
   id                   Int                  @id @default(autoincrement())
@@ -321,7 +396,12 @@ model Contacto {
   @@map("contactos")
 }
 
-/// Modelo de Catálogo - Catálogos de productos por empresa
+// =================================================================
+// 📦 CATÁLOGOS Y PRODUCTOS
+// =================================================================
+
+/// Modelo de Catálogo - Catálogos de productos por empresa/razón social.
+/// Cada empresa puede tener diferentes catálogos de productos.
 model Catalogo {
   /// Identificador único
   id            Int           @id @default(autoincrement())
@@ -343,7 +423,12 @@ model Catalogo {
   @@map("catalogos")
 }
 
-/// Modelo de Cotización - Cotizaciones enviadas a clientes
+// =================================================================
+// 📋 PROCESO COMERCIAL (Cotización → Venta)
+// =================================================================
+
+/// Modelo de Cotización - Propuesta comercial enviada a clientes.
+/// Primer paso del flujo de ventas. Si el cliente aprueba, se genera una Orden de Compra.
 model Cotizacion {
   /// Identificador único
   id                  Int                  @id @default(autoincrement())
@@ -395,7 +480,7 @@ model Cotizacion {
   @@map("cotizaciones")
 }
 
-/// Modelo de Producto de Cotización - Productos incluidos en una cotización
+/// Modelo de Producto de Cotización - Líneas de productos incluidos en una cotización.
 model CotizacionProducto {
   /// Identificador único
   id              Int        @id @default(autoincrement())
@@ -429,7 +514,22 @@ model CotizacionProducto {
   @@map("cotizacion_productos")
 }
 
-/// Modelo de Orden de Compra - Ventas al Estado o empresas privadas
+// =================================================================
+// 🛒 ORDEN DE COMPRA = VENTA (Modelo Principal del Negocio)
+// =================================================================
+
+/// Modelo de Orden de Compra (OC) - ⚠️ REPRESENTA UNA VENTA.
+/// El cliente nos emite una OC = nosotros vendemos.
+/// 
+/// VENTAS AL ESTADO:
+/// - Tienen documentoOce (Orden de Compra Electrónica) y/o documentoOcf (física)
+/// - Requieren seguimiento SIAF para cobro
+/// - Pueden tener penalidades por incumplimiento
+/// - Se gestionan estados de cobranza (REQ, REIT1, REIT2, etc.)
+/// 
+/// VENTAS PRIVADAS (ventaPrivada = true):
+/// - Datos adicionales en OrdenCompraPrivada
+/// - Flujo de facturación y cobro simplificado
 model OrdenCompra {
   /// Identificador único
   id                            Int                   @id @default(autoincrement())
@@ -551,7 +651,8 @@ model OrdenCompra {
   @@map("ordenes_compra")
 }
 
-/// Modelo de Agrupación de Orden de Compra - Para agrupar múltiples OCs
+/// Modelo de Agrupación de Orden de Compra - Permite agrupar múltiples OCs para gestión conjunta.
+/// Útil cuando un cliente tiene varias OCs que se procesan o facturan juntas.
 model AgrupacionOrdenCompra {
   /// Identificador único
   id            Int                   @id @default(autoincrement())
@@ -571,7 +672,7 @@ model AgrupacionOrdenCompra {
   @@map("agrupaciones_orden_compra")
 }
 
-/// Modelo de Orden de Compra Agrupada - Relación entre agrupación y órdenes
+/// Modelo de Orden de Compra Agrupada - Tabla pivote entre agrupación y órdenes de compra.
 model OrdenCompraAgrupada {
   /// Identificador único
   id                      Int                   @id @default(autoincrement())
@@ -591,7 +692,12 @@ model OrdenCompraAgrupada {
   @@map("ordenes_compra_agrupadas")
 }
 
-/// Modelo de Orden de Compra Privada - Datos adicionales para ventas privadas
+// =================================================================
+// 🏪 VENTAS PRIVADAS (No al Estado)
+// =================================================================
+
+/// Modelo de Orden de Compra Privada - Datos específicos para ventas a clientes privados.
+/// Extiende OrdenCompra con campos adicionales para el flujo simplificado de ventas privadas.
 model OrdenCompraPrivada {
   /// Identificador único
   id                  Int                      @id @default(autoincrement())
@@ -636,7 +742,8 @@ model OrdenCompraPrivada {
   @@map("ordenes_compra_privadas")
 }
 
-/// Modelo de Pago de Orden de Compra Privada - Pagos recibidos de ventas privadas
+/// Modelo de Pago de Orden de Compra Privada - Registra pagos recibidos de clientes privados.
+/// Permite control de pagos parciales con verificación de vouchers.
 model PagoOrdenCompraPrivada {
   /// Identificador único
   id                   Int                @id @default(autoincrement())
@@ -664,7 +771,13 @@ model PagoOrdenCompraPrivada {
   @@map("pagos_ordenes_compra_privadas")
 }
 
-/// Modelo de Orden de Proveedor - Pedidos realizados a proveedores
+// =================================================================
+// 📤 ORDEN DE PROVEEDOR (Compras a Proveedores)
+// =================================================================
+
+/// Modelo de Orden de Proveedor (OP) - Pedidos que hacemos a NUESTROS proveedores.
+/// Se genera cuando tenemos una venta confirmada (OC) y necesitamos mercadería.
+/// Una OC puede generar múltiples OPs a diferentes proveedores.
 model OrdenProveedor {
   /// Identificador único
   id                      Int                         @id @default(autoincrement())
@@ -755,7 +868,8 @@ model OrdenProveedor {
   @@map("ordenes_proveedor")
 }
 
-/// Modelo de Producto de Orden de Proveedor - Productos incluidos en una OP
+/// Modelo de Producto de Orden de Proveedor - Líneas de productos en una OP.
+/// Detalle de cada producto solicitado al proveedor con cantidad y precio.
 model OpProducto {
   /// Identificador único
   id               Int            @id @default(autoincrement())
@@ -789,7 +903,12 @@ model OpProducto {
   @@map("productos_orden_proveedor")
 }
 
-/// Modelo de Transporte Asignado - Asignación de transporte a una orden de proveedor
+// =================================================================
+// 🚚 TRANSPORTE Y ENTREGAS
+// =================================================================
+
+/// Modelo de Transporte Asignado - Asignación de transportista a una orden de proveedor.
+/// Gestiona el envío de mercadería desde proveedor a cliente o almacén.
 model TransporteAsignado {
   /// Identificador único
   id                   Int                      @id @default(autoincrement())
@@ -826,6 +945,7 @@ model TransporteAsignado {
   @@map("transportes_asignados")
 }
 
+/// Modelo de Pago de Transporte Asignado - Pagos realizados al transportista.
 model PagoTransporteAsignado {
   id                   Int                @id @default(autoincrement())
   transporteAsignadoId Int                @map("transporte_asignado_id")
@@ -843,6 +963,8 @@ model PagoTransporteAsignado {
   @@map("pagos_transportes_asignados")
 }
 
+/// Modelo de Pago de Orden de Proveedor - Pagos realizados a proveedores por las OPs.
+/// Permite pagos parciales y registro de vouchers de pago.
 model PagoOrdenProveedor {
   id               Int             @id @default(autoincrement())
   fechaPago        DateTime?       @map("fecha_pago")
@@ -860,6 +982,11 @@ model PagoOrdenProveedor {
   @@map("pagos_orden_proveedor")
 }
 
+// =================================================================
+// 📦 INVENTARIO Y ALMACÉN
+// =================================================================
+
+/// Modelo de Producto - Catálogo maestro de productos manejados.
 model Producto {
   id               Int               @id @default(autoincrement())
   nombre           String
@@ -875,6 +1002,7 @@ model Producto {
   @@map("productos")
 }
 
+/// Modelo de Stock de Producto - Control de inventario por producto y almacén.
 model StockProducto {
   id         Int      @id @default(autoincrement())
   productoId Int      @map("producto_id")
@@ -889,6 +1017,7 @@ model StockProducto {
   @@map("stock_productos")
 }
 
+/// Modelo de Movimiento de Stock - Historial de entradas y salidas de inventario.
 model MovimientoStock {
   id         Int      @id @default(autoincrement())
   productoId Int      @map("producto_id")
@@ -903,6 +1032,7 @@ model MovimientoStock {
   @@map("movimientos_stock")
 }
 
+/// Modelo de Almacén - Ubicaciones físicas de almacenamiento de mercadería.
 model Almacen {
   id                   Int                  @id @default(autoincrement())
   nombre               String
@@ -917,6 +1047,12 @@ model Almacen {
   @@map("almacenes")
 }
 
+// =================================================================
+// 🧾 FACTURACIÓN Y COBRANZA
+// =================================================================
+
+/// Modelo de Facturación - Facturas emitidas por cada venta (OC).
+/// Gestiona facturación, notas de crédito y refacturación.
 model Facturacion {
   id                  Int           @id @default(autoincrement())
   ordenCompraId       Int           @map("orden_compra_id")
@@ -943,6 +1079,8 @@ model Facturacion {
   @@map("facturaciones")
 }
 
+/// Modelo de Gestión de Cobranza - Registro de gestiones realizadas para cobrar facturas.
+/// Estados de cobranza para ventas al Estado: REQ → REIT1 → REIT2 → OCI → PC → MAXIMA_AUTORIDAD → etc.
 model GestionCobranza {
   id                           Int                 @id @default(autoincrement())
   ordenCompraId                Int?                @map("orden_compra_id")
@@ -968,6 +1106,11 @@ model GestionCobranza {
   @@map("gestion_cobranzas")
 }
 
+// =================================================================
+// 👤 USUARIOS Y SEGURIDAD
+// =================================================================
+
+/// Modelo de Usuario - Usuarios del sistema con roles y permisos.
 model Usuario {
   id                      Int                         @id @default(autoincrement())
   nombre                  String
@@ -990,6 +1133,7 @@ model Usuario {
   @@map("usuarios")
 }
 
+/// Modelo de Historial de Modificaciones de OP - Auditoría de cambios en órdenes de proveedor.
 model HistorialModificacionesOp {
   id                Int            @id @default(autoincrement())
   ordenProveedorId  Int            @map("orden_proveedor_id")
@@ -1007,6 +1151,8 @@ model HistorialModificacionesOp {
   @@map("historial_modificaciones_op")
 }
 
+/// Modelo de Programación de Entrega - Planificación de entregas a clientes.
+/// Puede estar asociada a una OC o una OP.
 model ProgramacionEntrega {
   id                   Int                  @id @default(autoincrement())
   ordenProveedorId     Int?                 @map("orden_proveedor_id")
@@ -1032,6 +1178,7 @@ model ProgramacionEntrega {
   @@map("programaciones_entrega")
 }
 
+/// Modelo de Costo Adicional de OP - Gastos extra en órdenes de proveedor (embalaje, etc.)
 model CostoAdicionalOp {
   id               Int            @id @default(autoincrement())
   ordenProveedorId Int            @map("orden_proveedor_id")
@@ -1046,6 +1193,7 @@ model CostoAdicionalOp {
   @@map("costos_adicionales_op")
 }
 
+/// Modelo de Archivo Adjunto - Documentos adjuntos a órdenes de compra.
 model ArchivoAdjunto {
   id            Int         @id @default(autoincrement())
   ordenCompraId Int         @map("orden_compra_id")
@@ -1061,84 +1209,102 @@ model ArchivoAdjunto {
   @@map("archivos_adjuntos")
 }
 
+// =================================================================
+// 📌 ENUMERACIONES (Estados y Tipos)
+// =================================================================
+
+/// Tipo de destino para transporte asignado
 enum TipoDestino {
-  ALMACEN
-  CLIENTE
-  AGENCIA
+  ALMACEN /// Entrega a almacén propio
+  CLIENTE /// Entrega directa al cliente
+  AGENCIA /// Entrega a agencia de transporte
 }
 
+/// Tipo de entrega para ventas privadas
 enum TipoEntregaPrivada {
-  ENTREGA_DOMICILIO
-  ENTREGA_AGENCIA
-  RECOJO_ALMACEN
+  ENTREGA_DOMICILIO /// Entrega en domicilio del cliente
+  ENTREGA_AGENCIA /// Entrega en agencia de transporte
+  RECOJO_ALMACEN /// Cliente recoge en almacén
 }
 
+/// Tipo de contacto según la entidad relacionada
 enum ContactoTipo {
   CLIENTE
   PROVEEDOR
   TRANSPORTE
 }
 
+/// Estados de cotización
 enum CotizacionEstado {
-  PENDIENTE
-  APROBADO
-  COTIZADO
+  PENDIENTE /// Cotización enviada, esperando respuesta
+  APROBADO /// Cliente aprobó la cotización
+  COTIZADO /// Cotización completada
 }
 
+/// Estados de orden de compra (venta)
 enum OrdenCompraEstado {
-  PENDIENTE
-  FACTURADA
-  CANCELADA
+  PENDIENTE /// Venta en proceso
+  FACTURADA /// Venta facturada
+  CANCELADA /// Venta cancelada
 }
 
+/// Estados de orden de proveedor
 enum OrdenProveedorEstado {
-  PENDIENTE
-  RECIBIDA
-  ANULADA
+  PENDIENTE /// Pedido enviado al proveedor
+  RECIBIDA /// Mercadería recibida
+  ANULADA /// Pedido anulado
 }
 
+/// Roles de usuario en el sistema
 enum Role {
-  ADMIN
-  USER
+  ADMIN /// Administrador con acceso total
+  USER /// Usuario con acceso limitado según permisos
 }
 
+/// Tipos de pago acordados
 enum TipoPago {
-  CONTADO
-  CREDITO
-  ANTICIPADO
-  OTROS
+  CONTADO /// Pago inmediato
+  CREDITO /// Pago a plazo
+  ANTICIPADO /// Pago antes de despacho
+  OTROS /// Otros acuerdos
 }
 
+/// Tipo de movimiento de saldo con proveedor
 enum MovimientoProveedor {
-  A_FAVOR
-  DEBE
+  A_FAVOR /// Proveedor nos debe (pagamos de más)
+  DEBE /// Debemos al proveedor
 }
 
+/// Estados generales de seguimiento (usado en varios contextos)
 enum EstadoRol {
-  PENDIENTE
-  COMPLETADO
-  CANCELADO
-  EN_PROCESO
-  ENTREGADO
-  COMPLETO
-  ANULADO
+  PENDIENTE /// Por procesar
+  COMPLETADO /// Finalizado exitosamente
+  CANCELADO /// Cancelado
+  EN_PROCESO /// En ejecución
+  ENTREGADO /// Mercadería entregada
+  COMPLETO /// Proceso completo
+  ANULADO /// Anulado
 }
 
+/// Tipo de movimiento de saldo con transporte
 enum MovimientoTransporte {
-  A_FAVOR
-  DEBE
+  A_FAVOR /// Transportista nos debe
+  DEBE /// Debemos al transportista
 }
 
+/// Tipos de cuenta bancaria
 enum TipoCuenta {
   AHORROS
   CORRIENTE
 }
 
+/// Monedas soportadas
 enum Moneda {
-  SOLES
-  DOLARES
+  SOLES /// Soles peruanos (PEN)
+  DOLARES /// Dólares americanos (USD)
 }
 
+/// Tipo de propietario de cuenta bancaria
 enum CuentaBancariaTipo {
   CLIENTE
   PROVEEDOR
@@ -1146,38 +1312,44 @@ enum CuentaBancariaTipo {
   EMPRESA
 }
 
+/// Tipos de cobranza
 enum TipoCobranza {
-  ESPECIAL
-  NORMAL
+  ESPECIAL /// Cobranza con condiciones especiales
+  NORMAL /// Cobranza estándar
 }
 
+/// Estados de pago
 enum EstadoPago {
-  PAGADO
-  URGENTE
-  PENDIENTE
-  PAGO_ENVIADO_VERIFICADO
+  PAGADO /// Pago completado
+  URGENTE /// Pago urgente requerido
+  PENDIENTE /// Pago pendiente
+  PAGO_ENVIADO_VERIFICADO /// Pago enviado y verificado
 }
 
+/// Tipos de programación de entrega
 enum TipoProgramacionOp {
-  NORMAL
-  URGENTE
-  ESPECIAL
+  NORMAL /// Entrega estándar
+  URGENTE /// Entrega urgente
+  ESPECIAL /// Entrega con condiciones especiales
 }
 
+/// Estados de cobranza para ventas al Estado (escalamiento)
+/// Flujo: REQ → REIT1 → REIT2 → OCI → PC → MAXIMA_AUTORIDAD → CARTA_NOTARIAL → DENUNCIA_JUDICIAL
 enum EstadoCobranza {
-  REQ
-  REIT1
-  REIT2
-  OCI
-  PC
-  MAXIMA_AUTORIDAD
-  CARTA_NOTARIAL
-  DENUNCIA_JUDICIAL
+  REQ /// Requerimiento inicial
+  REIT1 /// Primer reiterativo
+  REIT2 /// Segundo reiterativo
+  OCI /// Órgano de Control Institucional
+  PC /// Procuraduría
+  MAXIMA_AUTORIDAD /// Escalado a máxima autoridad
+  CARTA_NOTARIAL /// Carta notarial enviada
+  DENUNCIA_JUDICIAL /// Proceso judicial iniciado
 }
 
+/// Estados de programación de entrega
 enum EstadoProgramacionOp {
-  PENDIENTE
-  EN_PROCESO
-  COMPLETADA
-  CANCELADA
+  PENDIENTE /// Programación pendiente
+  EN_PROCESO /// Entrega en proceso
+  COMPLETADA /// Entrega completada
+  CANCELADA /// Programación cancelada
 }
