@@ -23,6 +23,7 @@ export const getAllVentas = async (): Promise<OrdenCompra[]> => {
           codigoUnidadEjecutora: true,
           promedioCobranza: true,
           departamento: true,
+          sede: true,
         }
       },
       contactoCliente: true,
@@ -67,6 +68,7 @@ export const getVentaById = (id: number): Promise<OrdenCompra | null> => {
           ruc: true,
           codigoUnidadEjecutora: true,
           promedioCobranza: true,
+          sede: true,
         }
       },
       contactoCliente: true,
