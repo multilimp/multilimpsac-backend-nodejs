@@ -1,14 +1,14 @@
-import 'module-alias/register';
-import Server from "./src/app";
-import logger from "./src/shared/config/logger";
+import 'dotenv/config'
+import Server from "./src/app"
+import logger from "./src/shared/config/logger"
 
 const iniciarAplicacion = async () => {
   try {
     logger.info('🚀 Iniciando MULTILIMP ERP...');
-    
+
     const servidor = new Server();
     await servidor.iniciarServidor();
-    
+
     logger.info('✅ MULTILIMP ERP iniciado exitosamente');
   } catch (error) {
     logger.error(`❌ Error fatal al iniciar MULTILIMP ERP: ${(error as Error).message}`);

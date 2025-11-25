@@ -1,4 +1,4 @@
-import { Cotizacion, Prisma } from '@prisma/client';
+import { Cotizacion, Prisma } from '../../../prisma/generated/client';
 import prisma from '../../database/prisma';
 import { parseDatePreserveDay } from '../../shared/utils/dateHelpers';
 

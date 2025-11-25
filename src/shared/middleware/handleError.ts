@@ -1,7 +1,9 @@
 import { Response } from 'express';
 import logger from '../config/logger';
 import { ZodError, ZodIssue } from 'zod';
-import { PrismaClientKnownRequestError, PrismaClientValidationError } from '@prisma/client/runtime/library';
+import { Prisma } from '../../../prisma/generated/client';
+
+const { PrismaClientKnownRequestError, PrismaClientValidationError } = Prisma;
 
 interface HandleErrorParams {
   res: Response;
@@ -21,7 +23,7 @@ export const handleError = ({ res, error, statusCode = 500, msg = 'Ocurrió un e
       code: err.code,
       // Eliminar expected y received que no existen en ZodIssue
     }));
-    
+
     res.status(400).json({
       success: false,
       message: 'Error de validación.',
@@ -66,7 +68,7 @@ export const handleError = ({ res, error, statusCode = 500, msg = 'Ocurrió un e
         details = `Consulte la documentación de Prisma para el código ${error.code} o contacte al equipo de desarrollo.`;
         break;
     }
-    
+
     // Información de depuración enriquecida para errores 400
     const debugInfo = responseStatusCode === 400 ? {
       query: error.meta?.query,
@@ -74,7 +76,7 @@ export const handleError = ({ res, error, statusCode = 500, msg = 'Ocurrió un e
       arguments: error.meta?.arguments,
       // Eliminar la propiedad cause que no existe en PrismaClientKnownRequestError
     } : undefined;
-    
+
     res.status(responseStatusCode).json({
       success: false,
       message: responseMessage,
@@ -96,7 +98,7 @@ export const handleError = ({ res, error, statusCode = 500, msg = 'Ocurrió un e
       invalidFields: extractInvalidFields(errorMessage),
       suggestedFix: extractSuggestions(errorMessage)
     };
-    
+
     res.status(400).json({
       success: false,
       message: 'Error de validación de datos para la operación en la base de datos.',
@@ -109,7 +111,7 @@ export const handleError = ({ res, error, statusCode = 500, msg = 'Ocurrió un e
   // Errores personalizados con statusCode
   if (error.statusCode && error.message) {
     const isDebugError = error.statusCode === 400 && process.env.NODE_ENV === 'development';
-    
+
     res.status(error.statusCode).json({
       success: false,
       message: error.message,
@@ -149,36 +151,36 @@ function extractInvalidFields(errorMessage: string): Record<string, string> | nu
   const fields: Record<string, string> = {};
   const argPattern = /Unknown arg `([^`]+)`/g;
   const fieldPattern = /Field `([^`]+)`/g;
-  
+
   let match;
   while ((match = argPattern.exec(errorMessage)) !== null) {
     fields[match[1]] = 'Argumento desconocido';
   }
-  
+
   while ((match = fieldPattern.exec(errorMessage)) !== null) {
     if (!fields[match[1]]) {
       fields[match[1]] = 'Campo con problema';
     }
   }
-  
+
   return Object.keys(fields).length ? fields : null;
 }
 
 function extractSuggestions(errorMessage: string): string[] {
   const suggestions: string[] = [];
   const didYouMeanPattern = /Did you mean `([^`]+)`/g;
-  
+
   let match;
   while ((match = didYouMeanPattern.exec(errorMessage)) !== null) {
     suggestions.push(`¿Quizás quiso decir "${match[1]}"?`);
   }
-  
+
   return suggestions;
 }
 
 function extractRequestData(error: any): any {
   if (error.data) return error.data;
-  if (error.request) return { 
+  if (error.request) return {
     url: error.request.url,
     method: error.request.method,
     params: error.request.params,
@@ -189,21 +191,21 @@ function extractRequestData(error: any): any {
 
 function serializeError(error: any): any {
   if (!error) return null;
-  
+
   const serialized: any = {};
-  
+
   Object.getOwnPropertyNames(error).forEach(prop => {
     if (prop !== 'stack') {
       try {
         const value = error[prop];
-        serialized[prop] = typeof value === 'object' && value !== null 
-          ? JSON.parse(JSON.stringify(value)) 
+        serialized[prop] = typeof value === 'object' && value !== null
+          ? JSON.parse(JSON.stringify(value))
           : value;
       } catch (e) {
         serialized[prop] = '[No se puede serializar]';
       }
     }
   });
-  
+
   return serialized;
 }

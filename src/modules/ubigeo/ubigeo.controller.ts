@@ -14,7 +14,7 @@ export const getProvinces = (req: Request, res: Response) => {
   try {
     const regionId = req.query.region;
 
-    let data = [];
+    let data: typeof provincias = [];
     if (regionId) {
       data = provincias.filter((item) => item.department_id === regionId);
     } else {
@@ -31,7 +31,7 @@ export const getDistricts = (req: Request, res: Response) => {
   try {
     const provinceId = req.query.province;
 
-    let data = [];
+    let data: typeof distritos = [];
     if (provinceId) {
       data = distritos.filter((item) => item.province_id === provinceId);
     } else {

@@ -3,7 +3,11 @@ import { Request, Response } from 'express';
 import formidable, { File } from 'formidable';
 import path from 'path';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
 import { uploadFile } from './file.service';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const tempUploadDir = path.resolve(__dirname, '../../../uploads/temp');
 if (!fs.existsSync(tempUploadDir)) {

@@ -1,4 +1,4 @@
-import { PagoOrdenCompraPrivada, PagoOrdenProveedor, PagoTransporteAsignado } from '@prisma/client';
+import { PagoOrdenCompraPrivada, PagoOrdenProveedor, PagoTransporteAsignado } from '../../../prisma/generated/client';
 import prisma from '../../database/prisma';
 
 export type EntityType = 'ordenCompraPrivada' | 'ordenProveedor' | 'transporteAsignado';

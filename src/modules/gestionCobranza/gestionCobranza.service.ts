@@ -1,4 +1,4 @@
-import { GestionCobranza, Prisma } from '@prisma/client';
+import { GestionCobranza, Prisma } from '../../../prisma/generated/client';
 import prisma from '../../database/prisma';
 import { parseSmartDate } from '../../shared/utils/dateHelpers';
 

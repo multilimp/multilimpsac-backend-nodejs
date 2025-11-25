@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ContactoTipo } from '@prisma/client';
+import { ContactoTipo } from '../../../prisma/generated/client';
 import { NextFunction, Request, Response } from 'express';
 
 const baseContactSchema = z.object({

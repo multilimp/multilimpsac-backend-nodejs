@@ -1,4 +1,4 @@
-import { Almacen, Producto, StockProducto } from '@prisma/client';
+import { Almacen, Producto, StockProducto } from '../../../prisma/generated/client';
 import prisma from '../../database/prisma';
 
 // TTL constants removed (no backend cache)

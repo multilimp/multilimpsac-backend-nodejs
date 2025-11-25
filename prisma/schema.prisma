@@ -1,443 +1,797 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "../node_modules/.prisma/client"
+  output   = "./generated/client"
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
 }
 
+/// Modelo de Cliente - Entidades del Estado o empresas privadas que compran productos
 model Cliente {
+  /// Identificador único del cliente
   id                    Int              @id @default(autoincrement())
+  /// Razón social o nombre de la empresa
   razonSocial           String           @map("razon_social")
+  /// RUC del cliente
   ruc                   String
+  /// Dirección fiscal
   direccion             String?
+  /// Teléfono de contacto
   telefono              String?
+  /// Correo electrónico
   email                 String?
+  /// Estado activo/inactivo del cliente
   estado                Boolean          @default(true)
+  /// Código de unidad ejecutora (para entidades del Estado)
   codigoUnidadEjecutora String?          @map("codigo_unidad_ejecutora")
+  /// Departamento de ubicación
   departamento          String?
+  /// Provincia de ubicación
   provincia             String?
+  /// Distrito de ubicación
   distrito              String?
+  /// Fecha de creación del registro
   createdAt             DateTime         @default(now()) @map("created_at")
+  /// Fecha de última actualización
   updatedAt             DateTime         @updatedAt @map("updated_at")
+  /// Sede del cliente
   sede                  String?
+  /// Promedio de días de cobranza
   promedioCobranza      Decimal?         @map("promedio_cobranza") @db.Decimal(10, 2)
+  /// Contactos asociados al cliente
   contactos             Contacto[]
+  /// Cotizaciones realizadas al cliente
   cotizaciones          Cotizacion[]
+  /// Cuentas bancarias del cliente
   cuentasBancarias      CuentaBancaria[]
+  /// Órdenes de compra del cliente
   ordenesCompra         OrdenCompra[]
 
   @@map("clientes")
 }
 
+/// Modelo de Proveedor - Empresas que suministran productos
 model Proveedor {
+  /// Identificador único del proveedor
   id               Int              @id @default(autoincrement())
+  /// Razón social del proveedor
   razonSocial      String           @map("razon_social")
+  /// RUC del proveedor
   ruc              String
+  /// Dirección del proveedor
   direccion        String?
+  /// Teléfono de contacto
   telefono         String?
+  /// Correo electrónico
   email            String?
+  /// Estado activo/inactivo
   estado           Boolean          @default(true)
+  /// Departamento de ubicación
   departamento     String?
+  /// Provincia de ubicación
   provincia        String?
+  /// Distrito de ubicación
   distrito         String?
+  /// Fecha de creación
   createdAt        DateTime         @default(now()) @map("created_at")
+  /// Fecha de actualización
   updatedAt        DateTime         @updatedAt @map("updated_at")
+  /// Contactos del proveedor
   contactos        Contacto[]
+  /// Cuentas bancarias del proveedor
   cuentasBancarias CuentaBancaria[]
+  /// Órdenes de proveedor asociadas
   ordenesProveedor OrdenProveedor[]
+  /// Saldos a favor o deudas con el proveedor
   saldosProveedor  SaldoProveedor[]
 
   @@map("proveedores")
 }
 
+/// Modelo de Saldo de Proveedor - Control de saldos a favor o deudas con proveedores
 model SaldoProveedor {
+  /// Identificador único
   id             Int                 @id @default(autoincrement())
+  /// ID del proveedor relacionado
   proveedorId    Int
+  /// Tipo de movimiento: A_FAVOR o DEBE
   tipoMovimiento MovimientoProveedor @default(A_FAVOR)
+  /// Monto del saldo
   monto          Decimal
+  /// Descripción del movimiento
   descripcion    String?
+  /// Fecha del movimiento
   fecha          DateTime            @default(now())
+  /// Estado activo del saldo
   activo         Boolean             @default(true)
+  /// Fecha de creación
   createdAt      DateTime            @default(now()) @map("created_at")
+  /// Fecha de actualización
   updatedAt      DateTime            @updatedAt @map("updated_at")
+  /// Banco relacionado al movimiento
   banco          String?
+  /// Relación con proveedor
   proveedor      Proveedor           @relation(fields: [proveedorId], references: [id])
 
   @@map("saldos_proveedor")
 }
 
+/// Modelo de Saldo de Transporte - Control de saldos a favor o deudas con transportistas
 model SaldoTransporte {
+  /// Identificador único
   id             Int                  @id @default(autoincrement())
+  /// ID del transporte relacionado
   transporteId   Int
+  /// Tipo de movimiento: A_FAVOR o DEBE
   tipoMovimiento MovimientoTransporte @default(A_FAVOR)
+  /// Monto del saldo
   monto          Decimal
+  /// Descripción del movimiento
   descripcion    String?
+  /// Fecha del movimiento
   fecha          DateTime             @default(now())
+  /// Estado activo del saldo
   activo         Boolean              @default(true)
+  /// Fecha de creación
   createdAt      DateTime             @default(now()) @map("created_at")
+  /// Fecha de actualización
   updatedAt      DateTime             @updatedAt @map("updated_at")
+  /// Banco relacionado al movimiento
   banco          String?
+  /// Relación con transporte
   transporte     Transporte           @relation(fields: [transporteId], references: [id])
 
   @@map("saldos_transporte")
 }
 
+/// Modelo de Cuenta Bancaria - Cuentas bancarias de clientes, proveedores, transportes y empresa
 model CuentaBancaria {
+  /// Identificador único
   id           Int                @id @default(autoincrement())
+  /// ID de referencia del propietario
   referenciaId Int                @map("referencia_id")
+  /// Tipo de cuenta (CLIENTE, PROVEEDOR, TRANSPORTE, EMPRESA)
   tipoCuenta   CuentaBancariaTipo @map("tipo_cuenta")
+  /// Nombre del banco
   banco        String
+  /// Número de cuenta
   numeroCuenta String
+  /// Código de cuenta interbancaria (CCI)
   numeroCci    String?
+  /// Moneda de la cuenta
   moneda       Moneda
+  /// Estado activo de la cuenta
   activa       Boolean            @default(true)
+  /// ID del cliente propietario (opcional)
   clienteId    Int?               @map("cliente_id")
+  /// ID del proveedor propietario (opcional)
   proveedorId  Int?               @map("proveedor_id")
+  /// ID del transporte propietario (opcional)
   transporteId Int?               @map("transporte_id")
+  /// ID de la empresa propietaria (opcional)
   empresaId    Int?               @map("empresa_id")
+  /// Fecha de creación
   createdAt    DateTime           @default(now()) @map("created_at")
+  /// Fecha de actualización
   updatedAt    DateTime           @updatedAt @map("updated_at")
+  /// Relación con cliente
   cliente      Cliente?           @relation(fields: [clienteId], references: [id])
+  /// Relación con empresa
   empresa      Empresa?           @relation(fields: [empresaId], references: [id])
+  /// Relación con proveedor
   proveedor    Proveedor?         @relation(fields: [proveedorId], references: [id])
+  /// Relación con transporte
   transporte   Transporte?        @relation(fields: [transporteId], references: [id])
 
   @@map("cuentas_bancarias")
 }
 
+/// Modelo de Transporte - Empresas de transporte para envío de mercadería
 model Transporte {
+  /// Identificador único
   id                   Int                  @id @default(autoincrement())
+  /// Razón social del transporte
   razonSocial          String               @map("razon_social")
+  /// RUC del transporte
   ruc                  String
+  /// Dirección del transporte
   direccion            String?
+  /// Teléfono de contacto
   telefono             String?
+  /// Correo electrónico
   email                String?
+  /// Estado activo/inactivo
   estado               Boolean              @default(true)
+  /// Fecha de creación
   createdAt            DateTime             @default(now()) @map("created_at")
+  /// Fecha de actualización
   updatedAt            DateTime             @updatedAt @map("updated_at")
+  /// Zona de cobertura del transporte
   cobertura            String?
+  /// Departamento de ubicación
   departamento         String?
+  /// Distrito de ubicación
   distrito             String?
+  /// Provincia de ubicación
   provincia            String?
+  /// Contactos del transporte
   contactos            Contacto[]
+  /// Cuentas bancarias del transporte
   cuentasBancarias     CuentaBancaria[]
+  /// Saldos a favor o deudas con el transporte
   saldosTransporte     SaldoTransporte[]
+  /// Asignaciones de transporte a órdenes
   transportesAsignados TransporteAsignado[]
 
   @@map("transportes")
 }
 
+/// Modelo de Empresa - Datos de las empresas del grupo (Multilimp, etc.)
 model Empresa {
+  /// Identificador único
   id               Int              @id @default(autoincrement())
+  /// Razón social de la empresa
   razonSocial      String           @map("razon_social")
+  /// RUC de la empresa (único)
   ruc              String           @unique
+  /// Dirección fiscal
   direccion        String?
+  /// Teléfono de contacto
   telefono         String?
+  /// Correo electrónico
   email            String?
+  /// Departamento de ubicación
   departamento     String?
+  /// Provincia de ubicación
   provincia        String?
+  /// Distrito de ubicación
   distrito         String?
+  /// URL del logo de la empresa
   logo             String?
+  /// Direcciones adicionales
   direcciones      String?
+  /// Sitio web
   web              String?
+  /// Fecha de creación
   createdAt        DateTime         @default(now()) @map("created_at")
+  /// Fecha de actualización
   updatedAt        DateTime         @updatedAt @map("updated_at")
+  /// Catálogos de productos de la empresa
   catalogos        Catalogo[]
+  /// Cotizaciones realizadas por la empresa
   cotizaciones     Cotizacion[]
+  /// Cuentas bancarias de la empresa
   cuentasBancarias CuentaBancaria[]
+  /// Órdenes de compra de la empresa
   ordenesCompra    OrdenCompra[]
+  /// Órdenes de proveedor de la empresa
   ordenesProveedor OrdenProveedor[]
 
   @@map("empresas")
 }
 
+/// Modelo de Contacto - Personas de contacto de clientes, proveedores y transportes
 model Contacto {
+  /// Identificador único
   id                   Int                  @id @default(autoincrement())
+  /// Nombre completo del contacto
   nombre               String
+  /// Teléfono del contacto
   telefono             String?
+  /// Correo electrónico del contacto
   email                String?
+  /// Tipo de contacto (CLIENTE, PROVEEDOR, TRANSPORTE)
   tipo                 ContactoTipo
+  /// ID de referencia del propietario
   referenciaId         Int                  @map("referencia_id")
+  /// ID del cliente asociado (opcional)
   clienteId            Int?                 @map("cliente_id")
+  /// ID del proveedor asociado (opcional)
   proveedorId          Int?                 @map("proveedor_id")
+  /// ID del transporte asociado (opcional)
   transporteId         Int?                 @map("transporte_id")
+  /// Cargo o puesto del contacto
   cargo                String?
+  /// Fecha de creación
   createdAt            DateTime             @default(now()) @map("created_at")
+  /// Fecha de actualización
   updatedAt            DateTime             @updatedAt @map("updated_at")
+  /// Fecha de cumpleaños
   cumpleanos           DateTime?
+  /// Notas adicionales sobre el contacto
   nota                 String?
+  /// Indica si es un contacto destacado
   usuarioDestacado     Boolean?             @map("usuario_destacado")
+  /// Relación con cliente
   cliente              Cliente?             @relation(fields: [clienteId], references: [id])
+  /// Relación con proveedor
   proveedor            Proveedor?           @relation(fields: [proveedorId], references: [id])
+  /// Relación con transporte
   transporte           Transporte?          @relation(fields: [transporteId], references: [id])
+  /// Cotizaciones asociadas al contacto
   Cotizacion           Cotizacion[]
+  /// Órdenes de compra donde es contacto
   ordenesCompra        OrdenCompra[]
+  /// Órdenes de proveedor donde es contacto
   ordenesProveedor     OrdenProveedor[]
+  /// Transportes asignados donde es contacto
   transportesAsignados TransporteAsignado[]
 
   @@map("contactos")
 }
 
+/// Modelo de Catálogo - Catálogos de productos por empresa
 model Catalogo {
+  /// Identificador único
   id            Int           @id @default(autoincrement())
+  /// Nombre del catálogo
   nombre        String
+  /// Descripción del catálogo
   descripcion   String?
+  /// ID de la empresa propietaria
   empresaId     Int           @map("empresa_id")
+  /// Fecha de creación
   createdAt     DateTime      @default(now()) @map("created_at")
+  /// Fecha de actualización
   updatedAt     DateTime      @updatedAt @map("updated_at")
+  /// Relación con empresa
   empresa       Empresa       @relation(fields: [empresaId], references: [id])
+  /// Órdenes de compra asociadas al catálogo
   ordenesCompra OrdenCompra[]
 
   @@map("catalogos")
 }
 
+/// Modelo de Cotización - Cotizaciones enviadas a clientes
 model Cotizacion {
+  /// Identificador único
   id                  Int                  @id @default(autoincrement())
+  /// Código único de la cotización
   codigoCotizacion    String               @unique @map("codigo_cotizacion")
+  /// ID de la empresa que emite la cotización
   empresaId           Int                  @map("empresa_id")
+  /// ID del cliente destinatario
   clienteId           Int                  @map("cliente_id")
+  /// ID del contacto del cliente
   contactoClienteId   Int?                 @map("contacto_cliente_id")
+  /// Monto total de la cotización
   montoTotal          Decimal              @map("monto_total")
+  /// Tipo de pago propuesto
   tipoPago            TipoPago             @map("tipo_pago")
+  /// Notas sobre el pago
   notaPago            String?              @map("nota_pago")
+  /// Notas sobre el pedido
   notaPedido          String?              @map("nota_pedido")
+  /// Dirección de entrega
   direccionEntrega    String?              @map("direccion_entrega")
+  /// Distrito de entrega
   distritoEntrega     String?              @map("distrito_entrega")
+  /// Provincia de entrega
   provinciaEntrega    String?              @map("provincia_entrega")
+  /// Departamento de entrega
   departamentoEntrega String?              @map("departamento_entrega")
+  /// Referencia de entrega
   referenciaEntrega   String?              @map("referencia_entrega")
+  /// Estado de la cotización
   estado              CotizacionEstado     @default(PENDIENTE)
+  /// Fecha de la cotización
   fechaCotizacion     DateTime             @map("fecha_cotizacion")
+  /// Fecha estimada de entrega
   fechaEntrega        DateTime?            @map("fecha_entrega")
+  /// Fecha de creación
   createdAt           DateTime             @default(now()) @map("created_at")
+  /// Fecha de actualización
   updatedAt           DateTime             @updatedAt @map("updated_at")
+  /// Productos incluidos en la cotización
   productos           CotizacionProducto[]
+  /// Relación con cliente
   cliente             Cliente              @relation(fields: [clienteId], references: [id])
+  /// Relación con contacto del cliente
   contactoCliente     Contacto?            @relation(fields: [contactoClienteId], references: [id])
+  /// Relación con empresa
   empresa             Empresa              @relation(fields: [empresaId], references: [id])
 
   @@map("cotizaciones")
 }
 
+/// Modelo de Producto de Cotización - Productos incluidos en una cotización
 model CotizacionProducto {
+  /// Identificador único
   id              Int        @id @default(autoincrement())
+  /// Código del producto
   codigo          String
+  /// Descripción del producto
   descripcion     String
+  /// Unidad de medida
   unidadMedida    String?    @map("unidad_medida")
+  /// Cantidad solicitada
   cantidad        Int
+  /// Cantidad disponible en almacén
   cantidadAlmacen Int?       @map("cantidad_almacen")
+  /// Cantidad total
   cantidadTotal   Int        @map("cantidad_total")
+  /// Precio unitario
   precioUnitario  Decimal    @map("precio_unitario")
+  /// Total del producto
   total           Decimal
+  /// ID de la cotización
   cotizacionId    Int        @map("cotizacion_id")
+  /// Fecha de creación
   createdAt       DateTime   @default(now()) @map("created_at")
+  /// Fecha de actualización
   updatedAt       DateTime   @updatedAt @map("updated_at")
+  /// Cantidad para el cliente
   cantidadCliente Int?       @map("cantidad_cliente")
+  /// Relación con cotización
   cotizacion      Cotizacion @relation(fields: [cotizacionId], references: [id])
 
   @@map("cotizacion_productos")
 }
 
+/// Modelo de Orden de Compra - Ventas al Estado o empresas privadas
 model OrdenCompra {
+  /// Identificador único
   id                            Int                   @id @default(autoincrement())
+  /// Código único de la venta
   codigoVenta                   String                @unique @map("codigo_venta")
+  /// Fecha de emisión de la orden
   fechaEmision                  DateTime?             @map("fecha_emision") @db.Date
+  /// Archivo de la orden de compra
   archivoOc                     String?               @map("archivo_oc")
+  /// ID de la empresa vendedora
   empresaId                     Int?                  @map("empresa_id")
+  /// ID del cliente comprador
   clienteId                     Int?                  @map("cliente_id")
+  /// ID del contacto del cliente
   contactoClienteId             Int?                  @map("contacto_cliente_id")
+  /// ID del catálogo de la empresa
   catalogoEmpresaId             Int?                  @map("catalogo_empresa_id")
+  /// Indica si es una venta privada (no al Estado)
   ventaPrivada                  Boolean               @default(false) @map("venta_privada")
+  /// Provincia de entrega
   provinciaEntrega              String?               @map("provincia_entrega")
+  /// Distrito de entrega
   distritoEntrega               String?               @map("distrito_entrega")
+  /// Departamento de entrega
   departamentoEntrega           String?               @map("departamento_entrega")
+  /// Dirección de entrega
   direccionEntrega              String?               @map("direccion_entrega")
+  /// Referencia de entrega
   referenciaEntrega             String?               @map("referencia_entrega")
+  /// Fecha de entrega programada
   fechaEntrega                  DateTime?             @map("fecha_entrega") @db.Date
+  /// Monto total de la venta
   montoVenta                    Decimal?              @map("monto_venta") @db.Decimal(10, 2)
+  /// Fecha del formulario
   fechaForm                     DateTime?             @map("fecha_form") @db.Date
+  /// Fecha máxima del formulario
   fechaMaxForm                  DateTime?             @map("fecha_max_form") @db.Date
+  /// Productos en formato JSON
   productos                     Json?
+  /// Documento de orden de compra electrónica
   documentoOce                  String?               @map("documento_oce")
+  /// Documento de orden de compra física
   documentoOcf                  String?               @map("documento_ocf")
+  /// Número SIAF
   siaf                          String?
+  /// Etapa del SIAF
   etapaSiaf                     String?               @map("etapa_siaf")
+  /// Fecha del SIAF
   fechaSiaf                     DateTime?             @map("fecha_siaf") @db.Date
+  /// Documento de Perú Compras
   documentoPeruCompras          String?               @map("documento_peru_compras")
+  /// Fecha de Perú Compras
   fechaPeruCompras              DateTime?             @map("fecha_peru_compras") @db.Date
+  /// Fecha de entrega según OC
   fechaEntregaOc                DateTime?             @map("fecha_entrega_oc") @db.Date
+  /// Monto de penalidad aplicada
   penalidad                     Decimal?              @db.Decimal(10, 2)
+  /// Monto neto cobrado
   netoCobrado                   Decimal?              @map("neto_cobrado") @db.Decimal(10, 2)
+  /// Fecha del estado de cobranza
   fechaEstadoCobranza           DateTime?             @map("fecha_estado_cobranza") @db.Date
+  /// Fecha de próxima gestión de cobranza
   fechaProximaGestion           DateTime?             @map("fecha_proxima_gestion") @db.Date
+  /// Etapa actual del proceso
   etapaActual                   String                @default("creacion") @map("etapa_actual")
+  /// Estado activo de la orden
   estadoActivo                  Boolean               @default(true) @map("estado_activo")
+  /// Fecha de creación
   createdAt                     DateTime              @default(now()) @map("created_at")
+  /// Fecha de actualización
   updatedAt                     DateTime              @updatedAt @map("updated_at")
+  /// Código de la OCF
   codigoOcf                     String?               @map("codigo_ocf")
+  /// Estado de cobranza (REQ, REIT1, etc.)
   estadoCobranza                EstadoCobranza?       @map("estado_cobranza")
+  /// Indica si tiene múltiples fuentes de financiamiento
   multipleFuentesFinanciamiento Boolean               @default(false) @map("multiple_fuentes_financiamiento")
+  /// Estado del rol de seguimiento
   estadoRolSeguimiento          EstadoRol             @default(PENDIENTE) @map("estado_rol_seguimiento")
+  /// Estado general de la venta
   estadoVenta                   EstadoRol             @default(PENDIENTE) @map("estado_venta")
+  /// ID del cobrador asignado
   cobradorId                    Int?                  @map("cobrador_id")
+  /// Archivo de carta CCI
   cartaCci                      String?               @map("carta_cci")
+  /// Archivo de carta de garantía
   cartaGarantia                 String?               @map("carta_garantia")
+  /// Archivo de carta de ampliación
   cartaAmpliacion               String?               @map("carta_ampliacion")
+  /// Estado de facturación
   estadoFacturacion             EstadoRol             @default(PENDIENTE) @map("estado_facturacion")
+  /// Estado del rol de cobranza
   estadoCobranzaRol             EstadoRol             @default(PENDIENTE) @map("estado_cobranza_rol")
+  /// Archivos adjuntos de la orden
   archivosAdjuntos              ArchivoAdjunto[]
+  /// Facturaciones asociadas
   facturaciones                 Facturacion[]
+  /// Gestiones de cobranza realizadas
   gestionCobranzas              GestionCobranza[]
+  /// Relación con catálogo de empresa
   catalogoEmpresa               Catalogo?             @relation(fields: [catalogoEmpresaId], references: [id])
+  /// Relación con cliente
   cliente                       Cliente?              @relation(fields: [clienteId], references: [id])
+  /// Relación con cobrador asignado
   cobrador                      Usuario?              @relation("CobradorOrdenCompra", fields: [cobradorId], references: [id])
+  /// Relación con contacto del cliente
   contactoCliente               Contacto?             @relation(fields: [contactoClienteId], references: [id])
+  /// Relación con empresa
   empresa                       Empresa?              @relation(fields: [empresaId], references: [id])
+  /// Agrupaciones de órdenes de compra
   OrdenCompraAgrupada           OrdenCompraAgrupada[]
+  /// Datos de venta privada (si aplica)
   ordenCompraPrivada            OrdenCompraPrivada?
+  /// Órdenes de proveedor asociadas
   ordenesProveedor              OrdenProveedor[]
+  /// Programaciones de entrega
   programacionesEntrega         ProgramacionEntrega[]
 
   @@map("ordenes_compra")
 }
 
+/// Modelo de Agrupación de Orden de Compra - Para agrupar múltiples OCs
 model AgrupacionOrdenCompra {
+  /// Identificador único
   id            Int                   @id @default(autoincrement())
+  /// Código único del grupo
   codigoGrupo   String                @unique @map("codigo_grupo") @db.VarChar(255)
+  /// Descripción del grupo
   descripcion   String?
+  /// Fecha de creación del grupo
   fecha         DateTime              @default(now())
+  /// Fecha de creación
   createdAt     DateTime              @default(now()) @map("created_at")
+  /// Fecha de actualización
   updatedAt     DateTime              @updatedAt @map("updated_at")
+  /// Órdenes de compra en el grupo
   ordenesCompra OrdenCompraAgrupada[]
 
   @@map("agrupaciones_orden_compra")
 }
 
+/// Modelo de Orden de Compra Agrupada - Relación entre agrupación y órdenes
 model OrdenCompraAgrupada {
+  /// Identificador único
   id                      Int                   @id @default(autoincrement())
+  /// ID de la agrupación
   agrupacionOrdenCompraId Int                   @map("agrupacion_orden_compra_id")
+  /// ID de la orden de compra
   ordenCompraId           Int                   @map("orden_compra_id")
+  /// Fecha de creación
   createdAt               DateTime              @default(now()) @map("created_at")
+  /// Fecha de actualización
   updatedAt               DateTime              @updatedAt @map("updated_at")
+  /// Relación con agrupación
   agrupacion              AgrupacionOrdenCompra @relation(fields: [agrupacionOrdenCompraId], references: [id])
+  /// Relación con orden de compra
   ordenCompra             OrdenCompra           @relation(fields: [ordenCompraId], references: [id])
 
   @@map("ordenes_compra_agrupadas")
 }
 
+/// Modelo de Orden de Compra Privada - Datos adicionales para ventas privadas
 model OrdenCompraPrivada {
+  /// Identificador único
   id                  Int                      @id @default(autoincrement())
+  /// ID de la orden de compra asociada
   ordenCompraId       Int                      @unique @map("orden_compra_id")
+  /// Fecha de pago
   fechaPago           DateTime?                @map("fecha_pago") @db.Date
+  /// Fecha de la factura
   fechaFactura        DateTime?                @map("fecha_factura") @db.Date
+  /// Documento de pago
   documentoPago       String?                  @map("documento_pago")
+  /// Fecha de creación
   createdAt           DateTime                 @default(now()) @map("created_at")
+  /// Fecha de actualización
   updatedAt           DateTime                 @updatedAt @map("updated_at")
+  /// Estado del pago
   estadoPago          EstadoPago?              @map("estado_pago")
+  /// Estado de la factura
   estadoFactura       String?                  @map("estado_factura")
+  /// Notas sobre el pago
   notaPago            String?                  @map("nota_pago")
+  /// Documento de cotización
   documentoCotizacion String?                  @map("documento_cotizacion")
+  /// Número de cotización
   cotizacion          String?                  @map("cotizacion")
+  /// Destino final de la entrega
   destinoFinal        String?                  @map("destino_final")
+  /// Nombre de la agencia (si aplica)
   nombreAgencia       String?                  @map("nombre_agencia")
+  /// Nombre de la entidad (si aplica)
   nombreEntidad       String?                  @map("nombre_entidad")
+  /// Tipo de destino de entrega
   tipoDestino         TipoEntregaPrivada?      @map("tipo_destino")
+  /// Gestiones de cobranza asociadas
   gestionCobranzas    GestionCobranza[]
+  /// Relación con orden de compra
   ordenCompra         OrdenCompra              @relation(fields: [ordenCompraId], references: [id])
+  /// Pagos registrados
   pagos               PagoOrdenCompraPrivada[]
 
   @@index([estadoPago], map: "idx_estado_pago_privada")
   @@map("ordenes_compra_privadas")
 }
 
+/// Modelo de Pago de Orden de Compra Privada - Pagos recibidos de ventas privadas
 model PagoOrdenCompraPrivada {
+  /// Identificador único
   id                   Int                @id @default(autoincrement())
+  /// ID de la orden de compra privada
   ordenCompraPrivadaId Int                @map("orden_compra_privada_id")
+  /// Fecha del pago
   fechaPago            DateTime?          @map("fecha_pago") @db.Date
+  /// Banco donde se realizó el pago
   bancoPago            String?            @map("banco_pago")
+  /// Descripción del pago
   descripcionPago      String?            @map("descripcion_pago")
+  /// Archivo/voucher del pago
   archivoPago          String?            @map("archivo_pago")
+  /// Monto del pago
   montoPago            Decimal?           @map("monto_pago") @db.Decimal(10, 2)
+  /// Estado de verificación del pago
   estadoPago           Boolean            @default(false) @map("estado_pago")
+  /// Fecha de creación
   createdAt            DateTime           @default(now()) @map("created_at")
+  /// Fecha de actualización
   updatedAt            DateTime           @updatedAt @map("updated_at")
+  /// Relación con orden de compra privada
   ordenCompraPrivada   OrdenCompraPrivada @relation(fields: [ordenCompraPrivadaId], references: [id])
 
   @@map("pagos_ordenes_compra_privadas")
 }
 
+/// Modelo de Orden de Proveedor - Pedidos realizados a proveedores
 model OrdenProveedor {
+  /// Identificador único
   id                      Int                         @id @default(autoincrement())
+  /// Código único de la orden de proveedor
   codigoOp                String                      @map("codigo_op") @db.VarChar(255)
+  /// ID de la empresa que realiza el pedido
   empresaId               Int?                        @map("empresa_id")
+  /// ID del proveedor
   proveedorId             Int?                        @map("proveedor_id")
+  /// ID del contacto del proveedor
   contactoProveedorId     Int?                        @map("contacto_proveedor_id")
+  /// Fecha de despacho
   fechaDespacho           DateTime?                   @map("fecha_despacho")
+  /// Fecha programada de entrega
   fechaProgramada         DateTime?                   @map("fecha_programada")
+  /// Fecha de recepción
   fechaRecepcion          DateTime?                   @map("fecha_recepcion")
+  /// Notas del pedido
   notaPedido              String?                     @map("nota_pedido")
+  /// Total a pagar al proveedor
   totalProveedor          Decimal?                    @map("total_proveedor")
+  /// Tipo de pago acordado
   tipoPago                String?                     @map("tipo_pago")
+  /// Forma de pago
   formaPago               String?                     @map("forma_pago")
+  /// Notas sobre el pago
   notaPago                String?                     @map("nota_pago")
+  /// Notas de gestión de la OP
   notaGestionOp           String?                     @map("nota_gestion_op")
+  /// Tipo de entrega
   tipoEntrega             String?                     @map("tipo_entrega")
+  /// Información de retorno de mercadería
   retornoMercaderia       String?                     @map("retorno_mercaderia")
+  /// Estado de la orden de proveedor
   estadoOp                String?                     @map("estado_op")
+  /// Fecha de entrega (texto)
   fechaEntrega            String?                     @map("fecha_entrega")
+  /// Cargo OEA
   cargoOea                String?                     @map("cargo_oea")
+  /// Información de etiquetado
   etiquetado              String?
+  /// Información de embalaje
   embalaje                String?
+  /// Observaciones generales
   observaciones           String?
+  /// Notas adicionales
   notaAdicional           String?                     @map("nota_adicional")
+  /// Estado activo de la orden
   activo                  Boolean                     @default(true)
+  /// ID de la orden de compra asociada
   ordenCompraId           Int?                        @map("orden_compra_id")
+  /// Fecha de creación
   createdAt               DateTime?                   @default(now()) @map("created_at") @db.Timestamp(6)
+  /// Fecha de actualización
   updatedAt               DateTime?                   @updatedAt @map("updated_at") @db.Timestamp(6)
+  /// Estado del rol de la OP
   estadoRolOp             EstadoRol                   @default(PENDIENTE) @map("estado_rol_op")
+  /// Estado del rol de seguimiento
   estadoRolSeguimiento    EstadoRol                   @default(PENDIENTE) @map("estado_rol_seguimiento")
+  /// Notas para cobranzas
   notaCobranzas           String?                     @map("nota_cobranzas")
+  /// Notas de observaciones
   notaObservaciones       String?                     @map("nota_observaciones")
+  /// Indica si la orden está completada
   isCompleted             Boolean                     @default(false) @map("is_completed")
+  /// Costos adicionales de la orden
   costosAdicionales       CostoAdicionalOp[]
+  /// Historial de modificaciones
   historialModificaciones HistorialModificacionesOp[]
+  /// Relación con contacto del proveedor
   contactoProveedor       Contacto?                   @relation(fields: [contactoProveedorId], references: [id])
+  /// Relación con empresa
   empresa                 Empresa?                    @relation(fields: [empresaId], references: [id])
+  /// Relación con orden de compra
   ordenCompra             OrdenCompra?                @relation(fields: [ordenCompraId], references: [id])
+  /// Relación con proveedor
   proveedor               Proveedor?                  @relation(fields: [proveedorId], references: [id])
+  /// Pagos realizados al proveedor
   pagos                   PagoOrdenProveedor[]
+  /// Productos de la orden
   productos               OpProducto[]
+  /// Programaciones de entrega
   programacionesEntrega   ProgramacionEntrega[]
+  /// Transportes asignados
   transportesAsignados    TransporteAsignado[]
 
   @@index([tipoPago], map: "idx_tipo_pago")
   @@map("ordenes_proveedor")
 }
 
+/// Modelo de Producto de Orden de Proveedor - Productos incluidos en una OP
 model OpProducto {
+  /// Identificador único
   id               Int            @id @default(autoincrement())
+  /// Código del producto
   codigo           String
+  /// Descripción del producto
   descripcion      String
+  /// Unidad de medida
   unidadMedida     String?        @map("unidad_medida")
+  /// Cantidad solicitada
   cantidad         Int
+  /// Cantidad en almacén
   cantidadAlmacen  Int?           @map("cantidad_almacen")
+  /// Cantidad total
   cantidadTotal    Int            @map("cantidad_total")
+  /// Precio unitario
   precioUnitario   Decimal        @map("precio_unitario")
+  /// Total del producto
   total            Decimal
+  /// ID de la orden de proveedor
   ordenProveedorId Int            @map("orden_proveedor_id")
+  /// Fecha de creación
   createdAt        DateTime       @default(now()) @map("created_at")
+  /// Fecha de actualización
   updatedAt        DateTime       @updatedAt @map("updated_at")
+  /// Cantidad para el cliente
   cantidadCliente  Int?           @map("cantidad_cliente")
+  /// Relación con orden de proveedor
   ordenProveedor   OrdenProveedor @relation(fields: [ordenProveedorId], references: [id])
 
   @@map("productos_orden_proveedor")
 }
 
+/// Modelo de Transporte Asignado - Asignación de transporte a una orden de proveedor
 model TransporteAsignado {
+  /// Identificador único
   id                   Int                      @id @default(autoincrement())
   codigoTransporte     String                   @map("codigo_transporte")
   transporteId         Int                      @map("transporte_id")

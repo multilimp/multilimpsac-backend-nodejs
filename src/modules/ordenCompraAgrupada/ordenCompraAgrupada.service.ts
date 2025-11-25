@@ -1,4 +1,4 @@
-import { OrdenCompraAgrupada } from '@prisma/client';
+import { OrdenCompraAgrupada } from '../../../prisma/generated/client';
 import prisma from '../../database/prisma';
 type CreateOrdenCompraAgrupadaData = Omit<OrdenCompraAgrupada, 'id' | 'createdAt' | 'updatedAt'>;
 type UpdateOrdenCompraAgrupadaData = Partial<CreateOrdenCompraAgrupadaData>;

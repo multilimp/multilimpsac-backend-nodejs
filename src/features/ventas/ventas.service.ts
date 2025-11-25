@@ -1,4 +1,4 @@
-import { OrdenCompra, OrdenCompraPrivada, Prisma } from '@prisma/client';
+import { OrdenCompra, OrdenCompraPrivada, Prisma } from '../../../prisma/generated/client';
 import prisma from '../../database/prisma';
 import * as ocService from '../../modules/ordenCompra/ordenCompra.service';
 import { BaseVentaService } from '../../shared/services/baseVenta.service';

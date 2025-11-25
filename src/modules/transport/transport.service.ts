@@ -1,7 +1,7 @@
-import { Transporte } from '@prisma/client';
+import { Transporte } from '../../../prisma/generated/client';
 import prisma from '../../database/prisma';
 import { createBankAccount, updateBankAccount, deleteBankAccount, getBankAccountsByReference } from '../bankAccount/bankAccount.service';
-import { CuentaBancariaTipo } from '@prisma/client';
+import { CuentaBancariaTipo } from '../../../prisma/generated/client';
 
 
 type CreateTransportData = Omit<Transporte, 'id' | 'createdAt' | 'updatedAt'>;

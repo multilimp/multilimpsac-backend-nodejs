@@ -1,4 +1,4 @@
-import { StockProducto } from '@prisma/client';
+import { StockProducto } from '../../../prisma/generated/client';
 import prisma from '../../database/prisma';
 type CreateStockProductoData = Omit<StockProducto, 'id' | 'createdAt' | 'updatedAt'>;
 type UpdateStockProductoData = Partial<CreateStockProductoData>;

@@ -1,5 +1,5 @@
 import prisma from '../../database/prisma';
-import { Prisma, EstadoCobranza, EstadoRol } from '@prisma/client';
+import { Prisma, EstadoCobranza, EstadoRol } from '../../../prisma/generated/client';
 import { parseDatePreserveDay } from '../../shared/utils/dateHelpers';
 
 // Tipos específicos para cobranza

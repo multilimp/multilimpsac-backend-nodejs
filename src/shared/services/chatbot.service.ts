@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../../../prisma/generated/client';
 import axios from 'axios';
 
 // Configuración de Gemini

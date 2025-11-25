@@ -1,5 +1,5 @@
 import prisma from '../../database/prisma';
-import { Contacto, ContactoTipo, Prisma } from '@prisma/client';
+import { Contacto, ContactoTipo, Prisma } from '../../../prisma/generated/client';
 
 export type ContactFilters = {
   tipo?: ContactoTipo;

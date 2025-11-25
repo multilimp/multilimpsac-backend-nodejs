@@ -4,9 +4,9 @@ import * as ventasService from './ventas.service';
 import { AnalyzePdfResult, GeminiService, GeminiServiceException } from '../../shared/services/gemini.service';
 import formidable from 'formidable';
 import logger from '../../shared/config/logger';
-import { parseUTCDate } from '@/shared/utils/dateHelpers';
+import { parseUTCDate } from '../../shared/utils/dateHelpers';
 import { AuthRequest } from '../../shared/middleware/auth.middleware';
-import { PagoOrdenCompraPrivada } from '@prisma/client';
+import { PagoOrdenCompraPrivada } from '../../../prisma/generated/client';
 
 export const listVentas = async (req: Request, res: Response) => {
   try {

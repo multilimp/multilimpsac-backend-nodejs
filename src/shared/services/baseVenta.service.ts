@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { Prisma } from '../../../prisma/generated/client';
 
 export abstract class BaseVentaService<T, CreateInput, UpdateInput> {
   protected abstract model: any;

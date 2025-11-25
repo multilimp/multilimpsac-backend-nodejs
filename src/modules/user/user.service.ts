@@ -1,4 +1,4 @@
-import { Usuario, Role } from '@prisma/client';
+import { Usuario, Role } from '../../../prisma/generated/client';
 import bcrypt from 'bcryptjs';
 import { File } from 'formidable';
 import prisma from '../../database/prisma';

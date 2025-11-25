@@ -1,5 +1,5 @@
 import prisma from '../../database/prisma';
-import { GestionCobranza, Prisma, EstadoCobranza } from '@prisma/client';
+import { GestionCobranza, Prisma, EstadoCobranza } from '../../../prisma/generated/client';
 import { parseDatePreserveDay } from '../../shared/utils/dateHelpers';
 
 // Tipos de Datos

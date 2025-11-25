@@ -1,51 +1,33 @@
 {
   "compilerOptions": {
-    "ignoreDeprecations": "5.0",
-    "target": "ES2020",
-    "module": "CommonJS",
-    "moduleResolution": "node",
+    "target": "ES2024",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": [
+      "ES2024"
+    ],
     "outDir": "./dist",
     "rootDir": ".",
     "strict": true,
+    "strictNullChecks": true,
+    "noImplicitAny": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noFallthroughCasesInSwitch": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
+    "declaration": true,
+    "declarationMap": true,
     "sourceMap": true,
-    "baseUrl": "./src",
-    "paths": {
-      "@/*": [
-        "*"
-      ],
-      "@app/*": [
-        "app/*"
-      ],
-      "@entities/*": [
-        "entities/*"
-      ],
-      "@features/*": [
-        "features/*"
-      ],
-      "@widgets/*": [
-        "widgets/*"
-      ],
-      "@pages/*": [
-        "pages/*"
-      ],
-      "@processes/*": [
-        "processes/*"
-      ],
-      "@shared/*": [
-        "shared/*"
-      ],
-      "@modules/*": [
-        "modules/*"
-      ]
-    }
+    "isolatedModules": true,
+    "allowImportingTsExtensions": true,
+    "noEmit": true
   },
   "include": [
     "./src/**/*.ts",
-    "./src/types/**/*.d.ts",
+    "./prisma/**/*.ts",
     "index.ts"
   ],
   "exclude": [

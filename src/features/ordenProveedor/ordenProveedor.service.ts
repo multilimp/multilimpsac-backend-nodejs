@@ -1,4 +1,4 @@
-import { OrdenProveedor, Prisma } from '@prisma/client';
+import { OrdenProveedor, Prisma } from '../../../prisma/generated/client';
 import prisma from '../../database/prisma';
 
 type CreateOrdenProveedorData = Omit<OrdenProveedor, 'id' | 'createdAt' | 'updatedAt'> & {

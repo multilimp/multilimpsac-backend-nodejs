@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { handleError } from '../../shared/middleware/handleError';
 import * as bankAccountService from './bankAccount.service';
-import { CuentaBancariaTipo } from '@prisma/client';
+import { CuentaBancariaTipo } from '../../../prisma/generated/client';
 
 export const listBankAccounts = async (req: Request, res: Response) => {
   try {

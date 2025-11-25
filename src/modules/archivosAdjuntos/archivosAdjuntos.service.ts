@@ -1,4 +1,4 @@
-import { ArchivoAdjunto, Prisma } from '@prisma/client';
+import { ArchivoAdjunto, Prisma } from '../../../prisma/generated/client';
 import prisma from '../../database/prisma';
 
 type CreateArchivoAdjuntoData = Omit<ArchivoAdjunto, 'id' | 'createdAt' | 'updatedAt'>;

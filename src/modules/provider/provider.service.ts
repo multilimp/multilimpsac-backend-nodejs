@@ -1,11 +1,11 @@
-import { Proveedor } from '@prisma/client';
+import { Proveedor } from '../../../prisma/generated/client';
 import prisma from '../../database/prisma';
 import { createBankAccount, updateBankAccount, deleteBankAccount, getBankAccountsByReference } from '../bankAccount/bankAccount.service';
-import { CuentaBancariaTipo } from '@prisma/client';
+import { CuentaBancariaTipo } from '../../../prisma/generated/client';
 
 // Cambiar la importación para usar el alias @prisma/client
 
-// import { Proveedor } = from '@prisma/client'; // Comentar o eliminar la línea anterior
+// import { Proveedor } = from '../../../prisma/generated/client'; // Comentar o eliminar la línea anterior
 
 type CreateProviderData = Omit<Proveedor, 'id' | 'createdAt' | 'updatedAt'>;
 type UpdateProviderData = Partial<CreateProviderData>;

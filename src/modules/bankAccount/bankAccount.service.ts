@@ -1,4 +1,4 @@
-import { CuentaBancaria, Prisma, CuentaBancariaTipo } from '@prisma/client';
+import { CuentaBancaria, Prisma, CuentaBancariaTipo } from '../../../prisma/generated/client';
 import prisma from '../../database/prisma';
 import logger from '../../shared/config/logger';
 

@@ -1,4 +1,4 @@
-import { OpProducto, Prisma } from '@prisma/client';
+import { OpProducto, Prisma } from '../../../prisma/generated/client';
 import prisma from '../../database/prisma';
 
 type CreateOpProductoData = Omit<OpProducto, 'id' | 'createdAt' | 'updatedAt'>;

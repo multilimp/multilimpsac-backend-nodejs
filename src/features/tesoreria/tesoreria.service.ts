@@ -1,5 +1,5 @@
 import prisma from '../../database/prisma';
-import { EstadoPago } from '@prisma/client';
+import { EstadoPago } from '../../../prisma/generated/client';
 
 const estadoPago = EstadoPago.URGENTE;
 

@@ -1,8 +1,10 @@
-import { PrismaClient } from '@prisma/client';
-import { ContactoTipo, Role } from '@prisma/client';
-import bcrypt from 'bcryptjs';
+import 'dotenv/config'
+import { PrismaClient, ContactoTipo, Role } from './generated/client'
+import { PrismaPg } from '@prisma/adapter-pg'
+import bcrypt from 'bcryptjs'
 
-const prisma = new PrismaClient();
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! })
+const prisma = new PrismaClient({ adapter })
 
 async function main() {
   console.log('🌱 Iniciando el seed de la base de datos...');

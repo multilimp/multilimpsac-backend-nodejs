@@ -1,4 +1,4 @@
-import { AgrupacionOrdenCompra, Prisma } from '@prisma/client';
+import { AgrupacionOrdenCompra, Prisma } from '../../../prisma/generated/client';
 import prisma from '../../database/prisma';
 
 type CreateAgrupacionData = Omit<AgrupacionOrdenCompra, 'id' | 'createdAt' | 'updatedAt'> & {
