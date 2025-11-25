@@ -1,4 +1,13 @@
 import prisma from '../../database/prisma';
+import { parseDatePreserveDay } from '../../shared/utils/dateHelpers';
+
+// Helper para formatear fecha YYYY-MM-DD a formato local (es-ES) sin problemas de zona horaria
+const formatDateLocal = (dateStr: string): string => {
+  if (dateStr === 'sin-fecha') return 'Sin fecha programada';
+  const date = parseDatePreserveDay(dateStr);
+  if (!date) return dateStr;
+  return date.toLocaleDateString('es-ES');
+};
 
 export const getOrdenProveedorPrintData = async (id: number) => {
   const ordenProveedor = await prisma.ordenProveedor.findUnique({
@@ -81,12 +90,22 @@ export const getOrdenProveedorPrintData = async (id: number) => {
 };
 
 export const getCargosEntregaData = async (fechaInicio: string, fechaFin: string) => {
+  // Usar parseDatePreserveDay para evitar problemas de zona horaria
+  const startDate = parseDatePreserveDay(fechaInicio);
+  const endDateParsed = parseDatePreserveDay(fechaFin);
+
+  // Ajustar fecha fin al final del día (23:59:59.999)
+  const endDate = endDateParsed ? new Date(endDateParsed.getTime()) : null;
+  if (endDate) {
+    endDate.setHours(23, 59, 59, 999);
+  }
+
   // Obtener los datos usando la lógica de generateCargosEntregaHtml pero sin generar HTML
   const ordenesProveedor = await prisma.ordenProveedor.findMany({
     where: {
       fechaProgramada: {
-        gte: new Date(fechaInicio),
-        lte: new Date(fechaFin)
+        gte: startDate || undefined,
+        lte: endDate || undefined
       },
       activo: true
     },
@@ -211,13 +230,13 @@ export const getCargosEntregaData = async (fechaInicio: string, fechaFin: string
   const fechasConCargos = Array.from(opsPorFecha.entries())
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([fecha, ops]) => ({
-      fecha: fecha === 'sin-fecha' ? 'Sin fecha programada' : new Date(fecha).toLocaleDateString('es-ES'),
+      fecha: formatDateLocal(fecha),
       ops: ops.map((op: any, index: number) => ({ ...op, numero: index + 1 }))
     }));
 
   const data = {
-    fechaInicio: new Date(fechaInicio).toLocaleDateString('es-ES'),
-    fechaFin: new Date(fechaFin).toLocaleDateString('es-ES'),
+    fechaInicio: formatDateLocal(fechaInicio),
+    fechaFin: formatDateLocal(fechaFin),
     fechaGeneracion: new Date().toLocaleDateString('es-ES') + ' ' + new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
     fechasConCargos,
     totalOps: ordenesProveedor.length
@@ -266,7 +285,7 @@ export const getCotizacionPrintData = async (id: number) => {
   if (!cotizacion) {
     throw new Error(`Cotización con ID ${id} no encontrada.`);
   }
-  
+
   return {
     cotizacion
   };
