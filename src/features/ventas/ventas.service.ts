@@ -157,10 +157,12 @@ export const createVenta = async (data: CreateVentaType): Promise<OrdenCompra> =
       siaf: directSaleBody.siaf,
       etapaSiaf: directSaleBody.etapaSiaf,
       fechaSiaf: parseDatePreserveDay(directSaleBody.fechaSiaf) ?? undefined,
+      multipleFuentesFinanciamiento: directSaleBody.multipleFuentesFinanciamiento,
 
       // Documentos
       documentoOce: directSaleBody.documentoOce,
       documentoOcf: directSaleBody.documentoOcf,
+      codigoOcf: directSaleBody.codigoOcf,
 
       // Productos y estado
       productos: directSaleBody.productos,
