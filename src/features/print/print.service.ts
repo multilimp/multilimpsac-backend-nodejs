@@ -259,6 +259,7 @@ export const getCotizacionPrintData = async (id: number) => {
           web: true,
           direcciones: true,
           logo: true,
+          cuentasBancarias: true,
         },
       },
       cliente: {
