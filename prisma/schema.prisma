@@ -841,6 +841,8 @@ model OrdenProveedor {
   notaCobranzas           String?                     @map("nota_cobranzas")
   /// Notas de observaciones
   notaObservaciones       String?                     @map("nota_observaciones")
+  /// Nota privada para facturación
+  notaPrivadaFacturacion  String?                     @map("nota_privada_facturacion")
   /// Indica si la orden está completada
   isCompleted             Boolean                     @default(false) @map("is_completed")
   /// Costos adicionales de la orden
