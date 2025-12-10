@@ -24,6 +24,9 @@ export const getAllVentas = async (): Promise<OrdenCompra[]> => {
           promedioCobranza: true,
           departamento: true,
           sede: true,
+          direccion: true,
+          distrito: true,
+          provincia: true,
         }
       },
       contactoCliente: true,
@@ -86,6 +89,12 @@ export const getVentaById = (id: number): Promise<OrdenCompra | null> => {
           codigoUnidadEjecutora: true,
           promedioCobranza: true,
           sede: true,
+          direccion: true,
+          distrito: true,
+          provincia: true,
+          departamento: true,
+          email: true,
+          telefono: true,
         }
       },
       contactoCliente: true,
