@@ -20,6 +20,7 @@ export const getAllCotizaciones = (): Promise<Cotizacion[]> => {
       contactoCliente: true,
       productos: true, // Incluir productos relacionados
     },
+    orderBy: { createdAt: 'desc' }
   });
 };
 
