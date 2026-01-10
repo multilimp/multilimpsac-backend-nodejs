@@ -9,10 +9,10 @@
   "main": "index.ts",
   "scripts": {
     "dev": "tsx watch --clear-screen=false index.ts",
-    "build": "prisma generate",
+    "build": "prisma generate && npm run migrate:deploy",
     "start": "node --import tsx index.ts",
     "generate": "prisma generate",
-    "migrate:deploy": "prisma migrate deploy",
+    "migrate:deploy": "prisma migrate deploy && npm run seed",
     "migrate:dev": "prisma migrate dev",
     "seed": "tsx prisma/seed.ts",
     "typecheck": "tsc --noEmit",
