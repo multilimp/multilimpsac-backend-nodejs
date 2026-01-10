@@ -38,7 +38,8 @@
     "pg": "^8.16.3",
     "tsx": "^4.20.6",
     "winston": "^3.17.0",
-    "zod": "^3.25.67"
+    "zod": "^3.25.67",
+    "csv-parse": "^6.0.7"
   },
   "devDependencies": {
     "@types/bcryptjs": "^3.0.0",
