@@ -34,16 +34,15 @@ class Server {
   middlewares() {
     this.app.use(helmet());
 
-    const corsOptions = {
-      origin: [
-        '*'
-      ],
-      credentials: true,
+    this.app.use(cors({
+      origin: '*',
+      credentials: false,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-    };
+      allowedHeaders: ['Content-Type', 'Authorization'],
+    }));
 
-    this.app.use(cors(corsOptions));
+    this.app.options('*', cors());
+
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: false }));
 
