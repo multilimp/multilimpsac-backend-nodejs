@@ -34,6 +34,24 @@ export const getVentasReportData = async (
         },
     });
 
+    const monthLabels = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Set', 'Oct', 'Nov', 'Dic'];
+
+    const buildOrderMetrics = (oc: typeof ordenesCompra[number]) => {
+        const montoVenta = Number(oc.montoVenta || 0);
+        const totalProveedor = oc.ordenesProveedor.reduce(
+            (sum, op) => sum + Number(op.totalProveedor || 0),
+            0
+        );
+        const utilidad = montoVenta - totalProveedor;
+        const porcentajeUtilidad = montoVenta > 0 ? (utilidad / montoVenta) * 100 : 0;
+
+        return {
+            montoVenta,
+            utilidad: Number(utilidad.toFixed(2)),
+            porcentajeUtilidad: Number(porcentajeUtilidad.toFixed(2)),
+        };
+    };
+
     // Filtrar por mes inicio/fin
     const ordenesFiltradas = ordenesCompra.filter((oc) => {
         if (!oc.fechaForm) return false;
@@ -44,23 +62,17 @@ export const getVentasReportData = async (
     // Calcular utilidad y aplicar filtro
     const datosTabla = ordenesFiltradas
         .map((oc) => {
-            const montoVenta = Number(oc.montoVenta || 0);
-            const totalProveedor = oc.ordenesProveedor.reduce(
-                (sum, op) => sum + Number(op.totalProveedor || 0),
-                0
-            );
-            const utilidad = montoVenta - totalProveedor;
-            const porcentajeUtilidad = montoVenta > 0 ? (utilidad / montoVenta) * 100 : 0;
+            const metrics = buildOrderMetrics(oc);
 
             return {
                 id: oc.id,
                 codigoVenta: oc.codigoVenta,
                 cliente: oc.cliente?.razonSocial || 'N/A',
                 fecha: oc.fechaForm?.toISOString().split('T')[0],
-                montoVenta,
+                montoVenta: metrics.montoVenta,
                 opProveedor: oc.ordenesProveedor.map((op) => op.codigoOp).join(', '),
-                utilidad: Number(utilidad.toFixed(2)),
-                porcentajeUtilidad: Number(porcentajeUtilidad.toFixed(2)),
+                utilidad: metrics.utilidad,
+                porcentajeUtilidad: metrics.porcentajeUtilidad,
             };
         })
         .filter((item) => {
@@ -68,7 +80,14 @@ export const getVentasReportData = async (
             return rangoFiltro[filtroRango]?.(item.utilidad) ?? true;
         });
 
-    // Desglose mensual
+    const ordenesAnualesFiltradas = ordenesCompra.filter((oc) => {
+        if (!oc.fechaForm) return false;
+        if (!filtroRango) return true;
+        const metrics = buildOrderMetrics(oc);
+        return rangoFiltro[filtroRango]?.(metrics.utilidad) ?? true;
+    });
+
+    // Desglose mensual (rango seleccionado)
     const desgloseMensual: { [key: number]: number } = {};
     for (let m = mesInicio; m <= mesFin; m++) {
         desgloseMensual[m] = 0;
@@ -80,6 +99,19 @@ export const getVentasReportData = async (
             if (mes >= mesInicio && mes <= mesFin) {
                 desgloseMensual[mes] += Number(oc.montoVenta || 0);
             }
+        }
+    });
+
+    // Desglose mensual anual (12 meses)
+    const desgloseMensualAnual: { [key: number]: number } = {};
+    for (let m = 1; m <= 12; m++) {
+        desgloseMensualAnual[m] = 0;
+    }
+
+    ordenesAnualesFiltradas.forEach((oc) => {
+        if (oc.fechaForm) {
+            const mes = oc.fechaForm.getMonth() + 1;
+            desgloseMensualAnual[mes] += Number(oc.montoVenta || 0);
         }
     });
 
@@ -105,13 +137,18 @@ export const getVentasReportData = async (
         gráficoMensual: {
             meses: Array.from({ length: mesFin - mesInicio + 1 }, (_, i) => {
                 const mes = mesInicio + i;
-                return ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Set', 'Oct', 'Nov', 'Dic'][
-                    mes - 1
-                ];
+                return monthLabels[mes - 1];
             }),
             datos: Array.from({ length: mesFin - mesInicio + 1 }, (_, i) => {
                 const mes = mesInicio + i;
                 return desgloseMensual[mes] || 0;
+            }),
+        },
+        mensualAnual: {
+            meses: monthLabels,
+            datos: Array.from({ length: 12 }, (_, i) => {
+                const mes = i + 1;
+                return desgloseMensualAnual[mes] || 0;
             }),
         },
     };
