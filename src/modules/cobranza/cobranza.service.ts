@@ -11,6 +11,7 @@ interface CobranzaFields {
   fechaEstadoCobranza?: string | Date;
   cobradorId?: number;
   estadoCobranzaRol?: EstadoRol;
+  notaCobranzaSeguimiento?: string | null;
 }
 
 /**
@@ -99,6 +100,10 @@ export const updateCobranzaFields = async (ordenCompraId: number, data: Cobranza
     updateData.estadoCobranzaRol = processedData.estadoCobranzaRol;
   }
 
+  if (processedData.notaCobranzaSeguimiento !== undefined) {
+    updateData.notaCobranzaSeguimiento = processedData.notaCobranzaSeguimiento;
+  }
+
   // Si no hay campos para actualizar, retornar la orden actual
   if (Object.keys(updateData).length === 0) {
     return await getCobranzaByOrdenCompra(ordenCompraId);
@@ -116,6 +121,7 @@ export const updateCobranzaFields = async (ordenCompraId: number, data: Cobranza
       estadoCobranza: true,
       fechaEstadoCobranza: true,
       estadoCobranzaRol: true,
+      notaCobranzaSeguimiento: true,
       cobradorId: true,
       montoVenta: true,
       netoCobrado: true,
@@ -153,6 +159,7 @@ export const getCobranzaByOrdenCompra = async (ordenCompraId: number) => {
       estadoCobranza: true,
       fechaEstadoCobranza: true,
       estadoCobranzaRol: true,
+      notaCobranzaSeguimiento: true,
       cobradorId: true,
       montoVenta: true,
       netoCobrado: true,

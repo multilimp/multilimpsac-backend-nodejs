@@ -609,6 +609,8 @@ model OrdenCompra {
   multipleFuentesFinanciamiento Boolean               @default(false) @map("multiple_fuentes_financiamiento")
   /// Estado del rol de seguimiento
   estadoRolSeguimiento          EstadoRol             @default(PENDIENTE) @map("estado_rol_seguimiento")
+  /// Nota de cobranzas en seguimiento por OC
+  notaCobranzaSeguimiento       String?               @map("nota_cobranza_seguimiento")
   /// Estado general de la venta
   estadoVenta                   EstadoRol             @default(PENDIENTE) @map("estado_venta")
   /// ID del cobrador asignado
