@@ -7,12 +7,19 @@ export const getVentasReportData = async (
     mesFin: number,
     filtroRango?: string
 ) => {
-    // Filtro de rango de utilidad
-    const rangoFiltro: { [key: string]: (utilidad: number) => boolean } = {
-        'mayor-5k': (u) => u > 5000,
-        '2k-5k': (u) => u > 2000 && u <= 5000,
-        '1k-2k': (u) => u > 1000 && u <= 2000,
-        'menor-1k': (u) => u <= 1000,
+    // Filtro de rango por monto de venta (igual a Blade)
+    const rangoConfig = [
+        { key: 'menor-1k', label: '-1k', color: 'rgba(254,157,1,255)' },
+        { key: '1k-2k', label: '-2k', color: 'rgba(24,120,177,255)' },
+        { key: '2k-5k', label: '-5k', color: 'rgba(8,184,171,255)' },
+        { key: 'mayor-5k', label: '+5k', color: 'rgba(0,0,0,255)' },
+    ];
+
+    const getRangoKey = (montoVenta: number) => {
+        if (montoVenta <= 1000) return 'menor-1k';
+        if (montoVenta <= 2000) return '1k-2k';
+        if (montoVenta <= 5000) return '2k-5k';
+        return 'mayor-5k';
     };
 
     // Obtener órdenes de compra del año
@@ -77,14 +84,69 @@ export const getVentasReportData = async (
         })
         .filter((item) => {
             if (!filtroRango) return true;
-            return rangoFiltro[filtroRango]?.(item.utilidad) ?? true;
+            return getRangoKey(item.montoVenta) === filtroRango;
         });
 
     const ordenesAnualesFiltradas = ordenesCompra.filter((oc) => {
         if (!oc.fechaForm) return false;
         if (!filtroRango) return true;
         const metrics = buildOrderMetrics(oc);
-        return rangoFiltro[filtroRango]?.(metrics.utilidad) ?? true;
+        return getRangoKey(metrics.montoVenta) === filtroRango;
+    });
+
+    const ordenesResumen = filtroRango
+        ? ordenesFiltradas.filter((oc) => getRangoKey(Number(oc.montoVenta || 0)) === filtroRango)
+        : ordenesFiltradas;
+
+    const resumenRangosTotals = rangoConfig.reduce(
+        (acc, range) => {
+            acc[range.key] = { monto: 0, oc: 0 };
+            return acc;
+        },
+        {} as Record<string, { monto: number; oc: number }>
+    );
+
+    ordenesResumen.forEach((oc) => {
+        const montoVenta = Number(oc.montoVenta || 0);
+        const rangoKey = getRangoKey(montoVenta);
+        resumenRangosTotals[rangoKey].monto += montoVenta;
+        resumenRangosTotals[rangoKey].oc += 1;
+    });
+
+    const resumenTotalMonto = ordenesResumen.reduce((sum, oc) => sum + Number(oc.montoVenta || 0), 0);
+    const resumenTotalOc = ordenesResumen.length;
+
+    const resumenRangos = rangoConfig.map((range) => {
+        const info = resumenRangosTotals[range.key];
+        const porcentaje = resumenTotalOc > 0 ? (info.oc / resumenTotalOc) * 100 : 0;
+        return {
+            key: range.key,
+            label: range.label,
+            color: range.color,
+            monto: Number(info.monto.toFixed(2)),
+            oc: info.oc,
+            porcentaje: Number(porcentaje.toFixed(2)),
+        };
+    });
+
+    const monthlyRangos = {
+        total: Array(12).fill(0),
+        menor1k: Array(12).fill(0),
+        menor2k: Array(12).fill(0),
+        menor5k: Array(12).fill(0),
+        mayor5k: Array(12).fill(0),
+    };
+
+    ordenesCompra.forEach((oc) => {
+        if (!oc.fechaForm) return;
+        const mesIndex = oc.fechaForm.getMonth();
+        const montoVenta = Number(oc.montoVenta || 0);
+        monthlyRangos.total[mesIndex] += montoVenta;
+        const rangoKey = getRangoKey(montoVenta);
+        if (rangoKey === 'menor-1k') monthlyRangos.menor1k[mesIndex] += montoVenta;
+        if (rangoKey === '1k-2k') monthlyRangos.menor2k[mesIndex] += montoVenta;
+        if (rangoKey === '2k-5k') monthlyRangos.menor5k[mesIndex] += montoVenta;
+        if (rangoKey === 'mayor-5k') monthlyRangos.mayor5k[mesIndex] += montoVenta;
     });
 
     // Desglose mensual (rango seleccionado)
@@ -133,6 +195,11 @@ export const getVentasReportData = async (
             mesInicio,
             mesFin,
         },
+        resumenRangosTotal: {
+            monto: Number(resumenTotalMonto.toFixed(2)),
+            oc: resumenTotalOc,
+        },
+        resumenRangos,
         tabla: datosTabla,
         gráficoMensual: {
             meses: Array.from({ length: mesFin - mesInicio + 1 }, (_, i) => {
@@ -143,6 +210,14 @@ export const getVentasReportData = async (
                 const mes = mesInicio + i;
                 return desgloseMensual[mes] || 0;
             }),
+        },
+        rangoMensual: {
+            meses: monthLabels,
+            total: monthlyRangos.total,
+            menor1k: monthlyRangos.menor1k,
+            menor2k: monthlyRangos.menor2k,
+            menor5k: monthlyRangos.menor5k,
+            mayor5k: monthlyRangos.mayor5k,
         },
         mensualAnual: {
             meses: monthLabels,
